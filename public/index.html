@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Dropbox File Hub - 永久链接服务</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        body {
+            background: linear-gradient(135deg, #0061ff 0%, #60efff 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #333;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+            color: white;
+        }
+        header h1 {
+            font-size: 2.8rem;
+            margin-bottom: 10px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+        header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            max-width: 600px;
+            margin: 0 auto 20px;
+        }
+        .card-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 25px;
+        }
+        .folder-card {
+            background: white;
+            border-radius: 16px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+        }
+        .folder-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+        }
+        .card-icon {
+            background: linear-gradient(135deg, #0061ff, #60efff);
+            width: 60px;
+            height: 60px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+        .card-icon i {
+            font-size: 1.8rem;
+            color: white;
+        }
+        .card-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+            color: #2d3748;
+        }
+        .card-desc {
+            color: #718096;
+            line-height: 1.6;
+            margin-bottom: 20px;
+            flex-grow: 1;
+        }
+        .card-meta {
+            font-size: 0.9rem;
+            color: #a0aec0;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+        }
+        .card-meta i {
+            margin-right: 8px;
+        }
+        .access-btn {
+            background: linear-gradient(135deg, #0061ff, #60efff);
+            color: white;
+            border: none;
+            padding: 14px 20px;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            text-align: center;
+        }
+        .access-btn:hover {
+            background: linear-gradient(135deg, #0052d4, #4fd8ff);
+            box-shadow: 0 5px 15px rgba(0, 97, 255, 0.4);
+        }
+        .access-btn i {
+            margin-right: 10px;
+        }
+        .loading {
+            display: none;
+            font-size: 0.9rem;
+            color: #0061ff;
+            margin-top: 10px;
+        }
+        .shared-badge {
+            background-color: #e8f4ff;
+            color: #0061ff;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            display: inline-block;
+            margin-left: 10px;
+        }
+        footer {
+            text-align: center;
+            margin-top: 50px;
+            color: white;
+            opacity: 0.8;
+            font-size: 0.9rem;
+        }
+        .status-indicator {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background-color: #48bb78;
+            margin-right: 8px;
+        }
+        .deploy-info {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 20px;
+            font-size: 0.9rem;
+        }
+        @media (max-width: 768px) {
+            .card-grid {
+                grid-template-columns: 1fr;
+            }
+            header h1 {
+                font-size: 2.2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1><i class="fas fa-cloud"></i> Dropbox永久文件中心</h1>
+            <p>通过永久链接访问您的Dropbox文件。系统自动管理链接，确保永远不会失效。</p>
+            <div style="margin-top: 10px;">
+                <span class="status-indicator"></span>
+                <span id="status-text">正在检查连接状态...</span>
+            </div>
+            <div class="deploy-info" id="deploy-info" style="display: none;">
+                <p><i class="fas fa-server"></i> 云端部署版本 | 服务状态: <span id="service-status">检查中...</span></p>
+            </div>
+        </header>
+        <main class="card-grid">
+            <!-- Apps and Softwares 文件夹 -->
+            <div class="folder-card">
+                <div class="card-icon">
+                    <i class="fas fa-folder"></i>
+                </div>
+                <h3 class="card-title">Apps and Softwares
+                    <span class="shared-badge">2个项目</span>
+                </h3>
+                <p class="card-desc">应用程序和软件资源。包含2个项目，包括安装文件和文档。</p>
+                <div class="card-meta">
+                    <i class="fas fa-folder-open"></i> 文件夹
+                </div>
+                <button class="access-btn" onclick="getFolderLink('apps_software')">
+                    <i class="fas fa-external-link-alt"></i> 打开文件夹
+                </button>
+                <div id="loading-apps_software" class="loading">
+                    <i class="fas fa-spinner fa-spin"></i> 正在生成永久链接...
+                </div>
+            </div>
+            
+            <!-- ENJOY AI 共享文件夹 -->
+            <div class="folder-card">
+                <div class="card-icon">
+                    <i class="fas fa-share-alt"></i>
+                </div>
+                <h3 class="card-title">ENJOY AI
+                    <span class="shared-badge">共享 • 5个项目</span>
+                </h3>
+                <p class="card-desc">ENJOY AI项目的共享文件夹。包含5个项目，包括项目文件、数据集和资源。</p>
+                <div class="card-meta">
+                    <i class="fas fa-users"></i> 共享文件夹
+                </div>
+                <button class="access-btn" onclick="getFolderLink('enjoy_ai')">
+                    <i class="fas fa-external-link-alt"></i> 打开文件夹
+                </button>
+                <div id="loading-enjoy_ai" class="loading">
+                    <i class="fas fa-spinner fa-spin"></i> 正在生成永久链接...
+                </div>
+            </div>
+            
+            <!-- WhalesBot 共享文件夹 -->
+            <div class="folder-card">
+                <div class="card-icon">
+                    <i class="fas fa-robot"></i>
+                </div>
+                <h3 class="card-title">WhalesBot
+                    <span class="shared-badge">共享 • 14个项目</span>
+                </h3>
+                <p class="card-desc">WhalesBot项目的共享文件夹。包含14个项目，包括代码、资源和项目文件。</p>
+                <div class="card-meta">
+                    <i class="fas fa-users"></i> 共享文件夹
+                </div>
+                <button class="access-btn" onclick="getFolderLink('whalesbot')">
+                    <i class="fas fa-external-link-alt"></i> 打开文件夹
+                </button>
+                <div id="loading-whalesbot" class="loading">
+                    <i class="fas fa-spinner fa-spin"></i> 正在生成永久链接...
+                </div>
+            </div>
+            
+            <!-- air headshot 视频文件 -->
+            <div class="folder-card">
+                <div class="card-icon">
+                    <i class="fas fa-video"></i>
+                </div>
+                <h3 class="card-title">air headshot
+                    <span class="shared-badge">视频 • 0:01</span>
+                </h3>
+                <p class="card-desc">MP4视频文件，1秒时长。点击直接播放或从Dropbox下载。</p>
+                <div class="card-meta">
+                    <i class="fas fa-file-video"></i> MP4视频 • 1秒
+                </div>
+                <button class="access-btn" onclick="getFolderLink('air_headshot')">
+                    <i class="fas fa-play-circle"></i> 播放视频
+                </button>
+                <div id="loading-air_headshot" class="loading">
+                    <i class="fas fa-spinner fa-spin"></i> 正在生成永久链接...
+                </div>
+            </div>
+        </main>
+        <footer>
+            <p>© 2024 Dropbox永久链接服务 | 云端部署版本</p>
+            <p>所有链接均为永久链接，即使Dropbox中文件更新也不会失效。</p>
+        </footer>
+    </div>
+    <script>
+        // 自动检测当前域名，无需手动配置
+        const API_BASE_URL = window.location.origin;
+        
+        async function getFolderLink(folderId) {
+            const button = event.target;
+            const loadingEl = document.getElementById(`loading-${folderId}`);
+            
+            // 显示加载状态
+            button.disabled = true;
+            button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 处理中...';
+            loadingEl.style.display = 'block';
+            
+            try {
+                // 调用后端API获取动态链接
+                const response = await fetch(`${API_BASE_URL}/api/link/${folderId}`);
+                const data = await response.json();
+                
+                if (response.ok && data.url) {
+                    // 成功获取链接，在新标签页打开
+                    window.open(data.url, '_blank');
+                    
+                    // 更新按钮状态显示成功
+                    button.innerHTML = '<i class="fas fa-check"></i> 链接已生成!';
+                    setTimeout(() => {
+                        button.innerHTML = folderId === 'air_headshot' 
+                            ? '<i class="fas fa-play-circle"></i> 播放视频' 
+                            : '<i class="fas fa-external-link-alt"></i> 打开文件夹';
+                        button.disabled = false;
+                    }, 1500);
+                } else {
+                    // 处理错误
+                    alert(`错误: ${data.error || '获取链接失败'}`);
+                    button.innerHTML = folderId === 'air_headshot' 
+                        ? '<i class="fas fa-play-circle"></i> 重试' 
+                        : '<i class="fas fa-external-link-alt"></i> 重试';
+                    button.disabled = false;
+                }
+            } catch (error) {
+                console.error('获取链接时出错:', error);
+                alert('网络错误。请检查后端服务是否正在运行。');
+                button.innerHTML = folderId === 'air_headshot' 
+                    ? '<i class="fas fa-play-circle"></i> 重试' 
+                    : '<i class="fas fa-external-link-alt"></i> 重试';
+                button.disabled = false;
+            } finally {
+                loadingEl.style.display = 'none';
+            }
+        }
+        
+        // 页面加载时检查后端连接状态
+        window.addEventListener('load', async () => {
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/health`);
+                if (response.ok) {
+                    const data = await response.json();
+                    document.getElementById('status-text').textContent = '所有系统运行正常';
+                    document.getElementById('service-status').textContent = '运行中';
+                    document.getElementById('deploy-info').style.display = 'block';
+                    
+                    // 显示服务信息
+                    console.log('服务信息:', data);
+                } else {
+                    document.getElementById('status-text').textContent = '后端连接问题';
+                    document.getElementById('service-status').textContent = '连接失败';
+                    document.querySelector('.status-indicator').style.backgroundColor = '#f56565';
+                }
+            } catch (error) {
+                document.getElementById('status-text').textContent = '无法连接到后端服务';
+                document.getElementById('service-status').textContent = '离线';
+                document.querySelector('.status-indicator').style.backgroundColor = '#f56565';
+            }
+        });
+        
+        // 显示当前域名（用于调试）
+        console.log('当前域名:', window.location.origin);
+        console.log('API基础URL:', API_BASE_URL);
+    </script>
+</body>
+</html>

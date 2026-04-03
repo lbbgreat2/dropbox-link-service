@@ -1,0 +1,47 @@
+# 依赖目录
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# 环境变量
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# 系统文件
+.DS_Store
+Thumbs.db
+
+# IDE文件
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# 日志
+*.log
+logs/
+
+# 临时文件
+tmp/
+temp/
+
+# 操作系统文件
+ehthumbs.db
+Desktop.ini
+
+# 备份文件
+*.backup
+*.bak
+
+# 测试覆盖率
+coverage/
+.nyc_output
+
+# 密钥文件
+*.pem
+*.key
+*.crt
