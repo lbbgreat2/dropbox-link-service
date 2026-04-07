@@ -1,16 +1,35 @@
 {
-  "name": "dropbox-link-service",
+  "name": "dropbox-permanent-link-service",
   "version": "1.0.0",
+  "description": "永久有效的Dropbox文件分享服务，解决Dropbox链接失效问题",
   "main": "server.js",
   "scripts": {
-    "start": "node server.js"
+    "start": "node server.js",
+    "build": "npm install",
+    "dev": "nodemon server.js",
+    "test": "echo \"No test specified\" && exit 0"
   },
+  "keywords": [
+    "dropbox",
+    "file-sharing",
+    "permanent-links"
+  ],
+  "author": "lbbgreat2",
+  "license": "MIT",
   "dependencies": {
     "express": "^4.18.2",
     "cors": "^2.8.5",
-    "dotenv": "^16.0.3"
+    "dotenv": "^16.0.3",
+    "axios": "^1.6.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.1"
   },
   "engines": {
-    "node": "18"
+    "node": ">=18.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/lbbgreat2/dropbox-link-service.git"
   }
 }
