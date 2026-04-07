@@ -370,7 +370,42 @@
             const errorEl = document.getElementById('error-message');
             errorEl.textContent = '⚠️ ' + message;
             errorEl.style.display = 'block';
-            setTimeout(() => errorEl.style.display = 'none', 5000);
+            
+            setTimeout(() => {
+                errorEl.style.display = 'none';
+            }, 5000);
+        }
+        
+        function updateStatus(folderId, data) {
+            const button = document.querySelector(`[data-folder-id="${folderId}"] .access-btn`);
+            const statusEl = document.getElementById(`status-${folderId}`);
+            
+            if (!data) {
+                statusEl.textContent = '❌ Check failed';
+                statusEl.className = 'status-text status-invalid';
+                button.disabled = false;
+                return;
+            }
+            
+            if (data.valid) {
+                button.disabled = false;
+                statusEl.textContent = '✅ Link Valid';
+                statusEl.className = 'status-text status-valid';
+                button.title = 'Click to open';
+            } else {
+                button.disabled = true;
+                
+                if (data.reason === 'CONTENT_DELETED') {
+                    statusEl.textContent = '🗑️ Item Deleted';
+                } else if (data.reason === 'TIMEOUT') {
+                    statusEl.textContent = '⏱️ Timeout';
+                } else {
+                    statusEl.textContent = '❌ Link Invalid';
+                }
+                
+                statusEl.className = 'status-text status-invalid';
+                button.title = data.message || 'Link is not accessible';
+            }
         }
         
         async function handleFolderClick(folderId) {
@@ -383,86 +418,163 @@
             
             try {
                 const response = await fetch(`${API_BASE_URL}/api/link/${folderId}`);
+                
+                if (!response.ok) {
+                    if (response.status === 503) {
+                        const data = await response.json();
+                        showError(`Cannot open: ${data.details}`);
+                        
+                        statusEl.textContent = '❌ ' + (data.reason === 'CONTENT_DELETED' ? 'Item Deleted' : 'Link Invalid');
+                        statusEl.className = 'status-text status-invalid';
+                        
+                        btnText.textContent = 'Open Folder';
+                        return;
+                    }
+                    throw new Error(`Server error: ${response.status}`);
+                }
+                
                 const data = await response.json();
                 
-                if (data.status && data.status.valid) {
+                if (data && data.url) {
                     window.open(data.url, '_blank');
+                    
                     statusEl.textContent = '✅ Link Valid';
                     statusEl.className = 'status-text status-valid';
+                    
+                    btnText.textContent = folderId === 'test' ? 'Open Test Folder' : 'Open Folder';
+                    
+                    setTimeout(() => {
+                        button.disabled = false;
+                    }, 1000);
                 } else {
-                    showError(`Cannot open: ${data.status?.message || 'Link invalid'}`);
-                    statusEl.textContent = '❌ ' + (data.status?.reason === 'DELETED' ? 'Item Deleted' : 'Link Invalid');
-                    statusEl.className = 'status-text status-invalid';
+                    throw new Error('Invalid response format');
                 }
             } catch (error) {
-                showError(`Error: ${error.message}`);
-                statusEl.textContent = '❌ Check Failed';
+                console.error('Failed to open link:', error);
+                
+                statusEl.textContent = '❌ Error';
                 statusEl.className = 'status-text status-invalid';
-            } finally {
-                setTimeout(() => {
-                    button.disabled = false;
-                    btnText.textContent = folderId === 'test' ? 'Open Test Folder' : 'Open Folder';
-                }, 1000);
+                
+                showError(`Cannot open file: ${error.message}`);
+                btnText.textContent = 'Open Folder';
+                button.disabled = false;
             }
         }
         
         async function checkAllLinks() {
-            const btn = document.getElementById('refresh-btn');
-            const originalText = btn.innerHTML;
+            const refreshBtn = document.getElementById('refresh-btn');
+            const originalText = refreshBtn.innerHTML;
             
-            btn.disabled = true;
-            btn.innerHTML = '<span class="loading-spinner"></span> Checking...';
+            refreshBtn.disabled = true;
+            refreshBtn.innerHTML = '<span class="loading-spinner"></span> Checking...';
+            document.getElementById('status-text').textContent = 'Checking link status...';
             
             FOLDER_IDS.forEach(id => {
-                const el = document.getElementById(`status-${id}`);
-                el.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Checking...';
-                el.className = 'status-text status-checking';
+                const statusEl = document.getElementById(`status-${id}`);
+                statusEl.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Checking...';
+                statusEl.className = 'status-text status-checking';
             });
             
             try {
                 const response = await fetch(`${API_BASE_URL}/api/links/status`);
+                
+                if (!response.ok) {
+                    throw new Error(`Status check failed: ${response.status}`);
+                }
+                
                 const data = await response.json();
                 
-                if (data.success) {
-                    let allValid = true;
+                if (data.success && data.data) {
+                    let validCount = 0;
+                    let invalidCount = 0;
                     
-                    FOLDER_IDS.forEach(id => {
-                        const status = data.data[id];
-                        const button = document.querySelector(`[data-folder-id="${id}"] .access-btn`);
-                        const statusEl = document.getElementById(`status-${id}`);
+                    FOLDER_IDS.forEach(folderId => {
+                        const status = data.data[folderId];
+                        updateStatus(folderId, status);
                         
                         if (status && status.valid) {
-                            button.disabled = false;
-                            statusEl.textContent = '✅ Link Valid';
-                            statusEl.className = 'status-text status-valid';
+                            validCount++;
                         } else {
-                            allValid = false;
-                            button.disabled = true;
-                            statusEl.textContent = '❌ ' + (status?.reason === 'DELETED' ? 'Item Deleted' : 'Link Invalid');
-                            statusEl.className = 'status-text status-invalid';
+                            invalidCount++;
                         }
                     });
                     
-                    document.getElementById('status-text').textContent = 
-                        allValid ? 'All links are valid' : 'Some links need attention';
-                    document.querySelector('.status-indicator').style.backgroundColor = 
-                        allValid ? '#48bb78' : '#f56565';
+                    if (validCount === FOLDER_IDS.length) {
+                        document.getElementById('status-text').textContent = 'All links are valid';
+                        document.querySelector('.status-indicator').style.backgroundColor = '#48bb78';
+                    } else if (invalidCount === FOLDER_IDS.length) {
+                        document.getElementById('status-text').textContent = 'All links are invalid';
+                        document.querySelector('.status-indicator').style.backgroundColor = '#f56565';
+                    } else {
+                        document.getElementById('status-text').textContent = `${validCount} valid, ${invalidCount} invalid`;
+                        document.querySelector('.status-indicator').style.backgroundColor = '#f6ad55';
+                    }
                 }
             } catch (error) {
-                showError('Failed to check links');
+                console.error('Failed to check all links:', error);
+                showError(`Check failed: ${error.message}`);
+                document.getElementById('status-text').textContent = 'Check failed';
+                document.querySelector('.status-indicator').style.backgroundColor = '#f56565';
+                
+                // 降级模式：允许直接访问
+                FOLDER_IDS.forEach(folderId => {
+                    const button = document.querySelector(`[data-folder-id="${folderId}"] .access-btn`);
+                    const statusEl = document.getElementById(`status-${folderId}`);
+                    
+                    button.disabled = false;
+                    statusEl.textContent = '⚠️ Direct Access';
+                    statusEl.className = 'status-text status-checking';
+                });
             } finally {
                 setTimeout(() => {
-                    btn.innerHTML = originalText;
-                    btn.disabled = false;
+                    refreshBtn.innerHTML = originalText;
+                    refreshBtn.disabled = false;
                 }, 1000);
             }
         }
         
-        // Initialize
-        document.addEventListener('DOMContentLoaded', () => {
-            checkAllLinks();
-            setInterval(checkAllLinks, 300000); // Check every 5 minutes
+        // 健康检查
+        async function checkHealth() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/health`);
+                if (response.ok) {
+                    const data = await response.json();
+                    document.querySelector('.status-indicator').style.backgroundColor = '#48bb78';
+                    document.getElementById('status-text').textContent = 'Service is healthy';
+                    
+                    // 自动检查链接状态
+                    setTimeout(() => checkAllLinks(), 1000);
+                    
+                    return true;
+                }
+            } catch (error) {
+                console.log('Health check failed:', error);
+            }
+            
+            document.getElementById('status-text').textContent = 'Service connection error';
+            document.querySelector('.status-indicator').style.backgroundColor = '#f56565';
+            return false;
+        }
+        
+        // 页面初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            // 初始状态
+            FOLDER_IDS.forEach(folderId => {
+                const statusEl = document.getElementById(`status-${folderId}`);
+                statusEl.textContent = '⏳ Initializing...';
+                statusEl.className = 'status-text status-checking';
+            });
+            
+            // 执行健康检查
+            checkHealth();
+            
+            console.log('Page initialized. Available folders:', FOLDER_IDS);
         });
+        
+        // 定期检查链接状态（每3分钟）
+        setInterval(() => {
+            checkAllLinks();
+        }, 3 * 60 * 1000);
     </script>
 </body>
 </html>
