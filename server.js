@@ -9,7 +9,6 @@ const PORT = process.env.PORT || 3000;
 // 中间件
 app.use(cors());
 app.use(express.json());
-app.use(express.static(path.join(__dirname, 'public')));
 
 // 手动配置的Dropbox永久分享链接
 const MANUAL_SHARE_LINKS = {
@@ -104,6 +103,9 @@ app.get('/api/folders', (req, res) => {
   });
 });
 
+// 静态文件服务 - 放在所有API路由之后
+app.use(express.static(path.join(__dirname, 'public')));
+
 // 重定向根路径到前端页面
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
@@ -120,6 +122,20 @@ function getFolderName(folderId) {
   return names[folderId] || folderId;
 }
 
+// 处理未匹配的路由
+app.use((req, res) => {
+  res.status(404).json({
+    error: '端点不存在',
+    availableEndpoints: {
+      health: '/api/health',
+      getLink: '/api/link/:folderId',
+      linksStatus: '/api/links/status',
+      listFolders: '/api/folders',
+      frontend: '/ (前端页面)'
+    }
+  });
+});
+
 // 启动服务器
 app.listen(PORT, () => {
   console.log(`=========================================`);
@@ -134,18 +150,4 @@ app.listen(PORT, () => {
   console.log(`链接状态: http://localhost:${PORT}/api/links/status`);
   console.log(`测试链接: http://localhost:${PORT}/api/link/apps_software`);
   console.log(`=========================================`);
-});
-
-// 处理未匹配的路由
-app.use((req, res) => {
-  res.status(404).json({
-    error: '端点不存在',
-    availableEndpoints: {
-      health: '/api/health',
-      getLink: '/api/link/:folderId',
-      linksStatus: '/api/links/status',
-      listFolders: '/api/folders',
-      frontend: '/ (前端页面)'
-    }
-  });
 });

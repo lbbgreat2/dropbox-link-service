@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
-    <title>Dropbox文件中心 | 简化稳定版</title>
+    <title>Dropbox文件中心 | 稳定版</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         * {
@@ -25,7 +25,6 @@
             margin: 0 auto;
         }
         
-        /* 头部样式 */
         header {
             text-align: center;
             margin-bottom: 40px;
@@ -54,7 +53,6 @@
             margin-right: 8px;
         }
         
-        /* 卡片网格 */
         .card-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
@@ -71,7 +69,6 @@
             }
         }
         
-        /* 卡片样式 */
         .folder-card {
             background: white;
             border-radius: 16px;
@@ -87,7 +84,6 @@
             box-shadow: 0 15px 35px rgba(0,0,0,0.2);
         }
         
-        /* 卡片内容 */
         .card-icon {
             background: linear-gradient(135deg, #0061ff, #60efff);
             width: 60px;
@@ -130,7 +126,6 @@
             margin-right: 8px;
         }
         
-        /* 按钮样式 */
         .access-btn {
             background: linear-gradient(135deg, #0061ff, #60efff);
             color: white;
@@ -164,7 +159,6 @@
             margin-right: 10px;
         }
         
-        /* 加载动画 */
         .loading {
             display: none;
             font-size: 0.9rem;
@@ -188,7 +182,6 @@
             to { transform: rotate(360deg); }
         }
         
-        /* 链接状态指示器 */
         .link-status {
             margin-top: 10px;
             font-size: 12px;
@@ -217,7 +210,6 @@
             color: #d32f2f;
         }
         
-        /* 手动刷新按钮 */
         .refresh-btn {
             display: block;
             margin: 20px auto;
@@ -240,7 +232,6 @@
             cursor: not-allowed;
         }
         
-        /* 错误信息 */
         .error-message {
             display: none;
             background: #fed7d7;
@@ -251,7 +242,6 @@
             font-size: 0.9rem;
         }
         
-        /* 页脚 */
         footer {
             text-align: center;
             margin-top: 50px;
@@ -260,7 +250,6 @@
             font-size: 0.9rem;
         }
         
-        /* 徽章 */
         .shared-badge {
             background-color: #e8f4ff;
             color: #0061ff;
@@ -286,7 +275,6 @@
         </header>
         
         <main id="card-container" class="card-grid">
-            <!-- Apps and Softwares 文件夹 -->
             <div class="folder-card" data-folder-id="apps_software">
                 <div class="card-icon">
                     <i class="fas fa-folder"></i>
@@ -311,7 +299,6 @@
                 </div>
             </div>
             
-            <!-- ENJOY AI 共享文件夹 -->
             <div class="folder-card" data-folder-id="enjoy_ai">
                 <div class="card-icon">
                     <i class="fas fa-share-alt"></i>
@@ -336,7 +323,6 @@
                 </div>
             </div>
             
-            <!-- WhalesBot 共享文件夹 -->
             <div class="folder-card" data-folder-id="whalesbot">
                 <div class="card-icon">
                     <i class="fas fa-robot"></i>
@@ -361,7 +347,6 @@
                 </div>
             </div>
             
-            <!-- air headshot 视频文件 -->
             <div class="folder-card" data-folder-id="air_headshot">
                 <div class="card-icon">
                     <i class="fas fa-video"></i>
@@ -392,17 +377,15 @@
         </button>
         
         <footer>
-            <p>© 2024 Dropbox永久链接服务 | 稳定简化版</p>
+            <p>© 2024 Dropbox永久链接服务 | 稳定版</p>
             <p>系统自动检测链接状态，失效链接将被禁用并提示。</p>
         </footer>
     </div>
     
     <script>
-        // 全局配置
         const API_BASE_URL = window.location.origin;
         let linkStatusCache = {};
         
-        // 显示错误信息
         function showError(message) {
             const errorEl = document.getElementById('error-message');
             errorEl.textContent = '⚠️ ' + message;
@@ -413,14 +396,12 @@
             }, 5000);
         }
         
-        // 处理文件夹点击
         async function handleFolderClick(folderId) {
             const button = document.querySelector(`[data-folder-id="${folderId}"] .access-btn`);
             const btnText = button.querySelector('.btn-text');
             const loadingEl = document.getElementById(`loading-${folderId}`);
             const statusEl = document.getElementById(`status-${folderId}`);
             
-            // 显示加载状态
             button.disabled = true;
             btnText.innerHTML = '<span class="loading-spinner"></span>处理中...';
             if (loadingEl) loadingEl.style.display = 'block';
@@ -439,14 +420,11 @@
                 const data = await response.json();
                 
                 if (data && data.url) {
-                    // 在新标签页打开链接
                     window.open(data.url, '_blank');
                     
-                    // 更新状态显示
                     statusEl.textContent = '✅ 链接有效';
                     statusEl.className = 'status-text status-valid';
                     
-                    // 成功反馈
                     btnText.textContent = folderId === 'air_headshot' ? '播放视频' : '打开文件夹';
                     setTimeout(() => {
                         button.disabled = false;
@@ -457,7 +435,6 @@
             } catch (error) {
                 console.error('打开链接失败:', error);
                 
-                // 更新状态显示
                 statusEl.textContent = '❌ 链接失效';
                 statusEl.className = 'status-text status-invalid';
                 
@@ -469,12 +446,10 @@
             }
         }
         
-        // 检测所有链接状态
         async function checkAllLinks() {
             const refreshBtn = document.getElementById('refresh-btn');
             const originalText = refreshBtn.innerHTML;
             
-            // 更新按钮状态
             refreshBtn.disabled = true;
             refreshBtn.innerHTML = '<span class="loading-spinner"></span>检测中...';
             
@@ -485,7 +460,6 @@
                 
                 if (!response.ok) {
                     if (response.status === 404) {
-                        // 如果状态检测接口不存在，使用降级模式
                         useFallbackMode();
                         refreshBtn.innerHTML = '<i class="fas fa-sync-alt"></i> 检测链接状态';
                         refreshBtn.disabled = false;
@@ -499,7 +473,6 @@
                 if (data.success && data.data) {
                     linkStatusCache = data.data;
                     
-                    // 更新每个链接的状态显示
                     folderIds.forEach(folderId => {
                         const button = document.querySelector(`[data-folder-id="${folderId}"] .access-btn`);
                         const statusEl = document.getElementById(`status-${folderId}`);
@@ -519,7 +492,6 @@
                 console.error('检测链接状态失败:', error);
                 useFallbackMode();
             } finally {
-                // 恢复按钮状态
                 setTimeout(() => {
                     refreshBtn.innerHTML = originalText;
                     refreshBtn.disabled = false;
@@ -527,7 +499,6 @@
             }
         }
         
-        // 降级模式：所有按钮可用，不检测状态
         function useFallbackMode() {
             const folderIds = ['apps_software', 'enjoy_ai', 'whalesbot', 'air_headshot'];
             
@@ -543,7 +514,6 @@
             console.log('使用降级模式：跳过链接状态检测');
         }
         
-        // 健康检查
         async function checkHealth() {
             try {
                 const response = await fetch(`${API_BASE_URL}/api/health`);
@@ -552,7 +522,6 @@
                     document.getElementById('status-text').textContent = '服务状态正常';
                     document.querySelector('.status-indicator').style.backgroundColor = '#48bb78';
                     
-                    // 自动检测一次链接状态
                     setTimeout(() => checkAllLinks(), 1000);
                     
                     return true;
@@ -564,23 +533,18 @@
             document.getElementById('status-text').textContent = '服务连接异常';
             document.querySelector('.status-indicator').style.backgroundColor = '#f56565';
             
-            // 健康检查失败时使用降级模式
             useFallbackMode();
             return false;
         }
         
-        // 页面初始化
         document.addEventListener('DOMContentLoaded', function() {
-            // 初始启用所有按钮
             useFallbackMode();
             
-            // 执行健康检查
             checkHealth();
             
             console.log('页面初始化完成，API地址:', API_BASE_URL);
         });
         
-        // 网络状态检测
         window.addEventListener('offline', () => {
             showError('网络连接已断开，请检查网络设置');
         });
