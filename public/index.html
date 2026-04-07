@@ -2,752 +2,118 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
-    <title>Dropbox文件中心 | 链接验证版</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dropbox文件中心</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-        
-        body {
-            background: linear-gradient(135deg, #0061ff 0%, #60efff 100%);
-            min-height: 100vh;
-            color: #333;
-            padding: 20px;
-        }
-        
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-        
-        /* 设备检测指示器 */
-        .device-indicator {
-            display: inline-block;
-            background: rgba(255, 255, 255, 0.2);
-            padding: 5px 10px;
-            border-radius: 20px;
-            font-size: 0.9rem;
-            margin-left: 10px;
-        }
-        
-        /* 头部样式 */
-        header {
-            text-align: center;
-            margin-bottom: 40px;
-            color: white;
-        }
-        
-        header h1 {
-            font-size: 2.8rem;
-            margin-bottom: 10px;
-            text-shadow: 0 2px 4px rgba(0,0,0,0.2);
-        }
-        
-        header p {
-            font-size: 1.2rem;
-            opacity: 0.9;
-            max-width: 600px;
-            margin: 0 auto 20px;
-        }
-        
-        .status-indicator {
-            display: inline-block;
-            width: 10px;
-            height: 10px;
-            border-radius: 50%;
-            background-color: #48bb78;
-            margin-right: 8px;
-        }
-        
-        /* 卡片网格 */
-        .card-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: 25px;
-            margin-bottom: 30px;
-        }
-        
-        @media (max-width: 768px) {
-            .card-grid {
-                grid-template-columns: 1fr;
-            }
-            header h1 {
-                font-size: 2.2rem;
-            }
-        }
-        
-        /* 卡片样式 */
-        .folder-card {
-            background: white;
-            border-radius: 16px;
-            padding: 25px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
-            transition: all 0.3s ease;
-            display: flex;
-            flex-direction: column;
-        }
-        
-        .desktop-optimized .folder-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 15px 35px rgba(0,0,0,0.2);
-        }
-        
-        .mobile-optimized .folder-card {
-            cursor: pointer;
-            -webkit-tap-highlight-color: transparent;
-        }
-        
-        .mobile-optimized .folder-card:active {
-            transform: scale(0.98);
-            transition: transform 0.1s;
-        }
-        
-        /* 卡片内容 */
-        .card-icon {
-            background: linear-gradient(135deg, #0061ff, #60efff);
-            width: 60px;
-            height: 60px;
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin-bottom: 20px;
-        }
-        
-        .card-icon i {
-            font-size: 1.8rem;
-            color: white;
-        }
-        
-        .card-title {
-            font-size: 1.5rem;
-            font-weight: 700;
-            margin-bottom: 10px;
-            color: #2d3748;
-        }
-        
-        .card-desc {
-            color: #718096;
-            line-height: 1.6;
-            margin-bottom: 20px;
-            flex-grow: 1;
-        }
-        
-        .card-meta {
-            font-size: 0.9rem;
-            color: #a0aec0;
-            margin-bottom: 20px;
-            display: flex;
-            align-items: center;
-        }
-        
-        .card-meta i {
-            margin-right: 8px;
-        }
-        
-        /* 按钮样式 */
-        .access-btn {
-            background: linear-gradient(135deg, #0061ff, #60efff);
-            color: white;
-            border: none;
-            padding: 14px 20px;
-            border-radius: 10px;
-            font-weight: 600;
-            font-size: 1rem;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.3s ease;
-            text-decoration: none;
-            text-align: center;
-            width: 100%;
-        }
-        
-        .access-btn:hover:not(:disabled) {
-            background: linear-gradient(135deg, #0052d4, #4fd8ff);
-            box-shadow: 0 5px 15px rgba(0, 97, 255, 0.4);
-        }
-        
-        .access-btn:disabled {
-            background: #cccccc;
-            cursor: not-allowed;
-            opacity: 0.7;
-        }
-        
-        .access-btn i {
-            margin-right: 10px;
-        }
-        
-        /* 加载动画 */
-        .loading-spinner {
-            display: inline-block;
-            width: 16px;
-            height: 16px;
-            border: 2px solid rgba(255,255,255,0.3);
-            border-radius: 50%;
-            border-top-color: #fff;
-            animation: spin 1s ease-in-out infinite;
-            margin-right: 8px;
-        }
-        
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-        
-        /* 链接状态指示器 */
-        .link-status {
-            margin-top: 10px;
-            font-size: 12px;
-            display: flex;
-            align-items: center;
-            min-height: 20px;
-        }
-        
-        .status-text {
-            padding: 3px 8px;
-            border-radius: 10px;
-            font-size: 11px;
-            display: inline-flex;
-            align-items: center;
-        }
-        
-        .status-valid {
-            background-color: rgba(76, 175, 80, 0.1);
-            color: #2e7d32;
-        }
-        
-        .status-checking {
-            background-color: rgba(33, 150, 243, 0.1);
-            color: #1565c0;
-        }
-        
-        .status-invalid {
-            background-color: rgba(244, 67, 54, 0.1);
-            color: #d32f2f;
-        }
-        
-        .status-error {
-            background-color: rgba(255, 193, 7, 0.1);
-            color: #f57c00;
-        }
-        
-        .status-icon {
-            margin-right: 4px;
-            font-size: 10px;
-        }
-        
-        /* 手动刷新按钮 */
-        .refresh-btn {
-            display: block;
-            margin: 20px auto;
-            padding: 10px 20px;
-            background-color: rgba(255, 255, 255, 0.2);
-            color: white;
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 14px;
-            transition: all 0.3s ease;
-        }
-        
-        .refresh-btn:hover:not(:disabled) {
-            background-color: rgba(255, 255, 255, 0.3);
-        }
-        
-        .refresh-btn:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-        
-        /* 错误信息 */
-        .error-message {
-            display: none;
-            background: #fed7d7;
-            color: #c53030;
-            padding: 12px 16px;
-            border-radius: 8px;
-            margin: 15px 0;
-            font-size: 0.9rem;
-        }
-        
-        /* 页脚 */
-        footer {
-            text-align: center;
-            margin-top: 50px;
-            color: white;
-            opacity: 0.8;
-            font-size: 0.9rem;
-        }
-        
-        /* 徽章 */
-        .shared-badge {
-            background-color: #e8f4ff;
-            color: #0061ff;
-            padding: 4px 10px;
-            border-radius: 20px;
-            font-size: 0.8rem;
-            display: inline-block;
-            margin-left: 10px;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background: linear-gradient(135deg, #0061ff 0%, #60efff 100%); min-height: 100vh; color: #333; padding: 20px; }
+        .container { max-width: 1200px; margin: 0 auto; }
+        header { text-align: center; margin-bottom: 40px; color: white; }
+        header h1 { font-size: 2.5rem; margin-bottom: 10px; }
+        header p { font-size: 1.1rem; opacity: 0.9; }
+        .card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 25px; margin-bottom: 30px; }
+        @media (max-width: 768px) { .card-grid { grid-template-columns: 1fr; } }
+        .folder-card { background: white; border-radius: 16px; padding: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.15); transition: transform 0.3s ease; display: flex; flex-direction: column; }
+        .folder-card:hover { transform: translateY(-5px); box-shadow: 0 15px 35px rgba(0,0,0,0.2); }
+        .card-icon { background: linear-gradient(135deg, #0061ff, #60efff); width: 60px; height: 60px; border-radius: 12px; display: flex; align-items: center; justify-content: center; margin-bottom: 20px; }
+        .card-icon i { font-size: 1.8rem; color: white; }
+        .card-title { font-size: 1.5rem; font-weight: 700; margin-bottom: 10px; color: #2d3748; }
+        .card-desc { color: #718096; line-height: 1.6; margin-bottom: 20px; flex-grow: 1; }
+        .access-btn { background: linear-gradient(135deg, #0061ff, #60efff); color: white; border: none; padding: 14px 20px; border-radius: 10px; font-weight: 600; cursor: pointer; width: 100%; transition: background 0.3s; }
+        .access-btn:hover { background: linear-gradient(135deg, #0052d4, #4fd8ff); }
+        .loading { display: none; font-size: 0.9rem; color: #0061ff; margin-top: 10px; text-align: center; }
+        .loading-spinner { display: inline-block; width: 16px; height: 16px; border: 2px solid rgba(255,255,255,0.3); border-radius: 50%; border-top-color: #fff; animation: spin 1s linear infinite; margin-right: 8px; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        footer { text-align: center; margin-top: 50px; color: white; opacity: 0.8; font-size: 0.9rem; }
     </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
     <div class="container">
         <header>
             <h1><i class="fas fa-cloud"></i> Dropbox文件中心</h1>
-            <p>通过永久链接访问您的Dropbox文件。<span id="device-optimized-text"></span></p>
-            <div style="margin-top: 10px;">
-                <span class="status-indicator"></span>
-                <span id="status-text">正在检测设备并初始化...</span>
-                <span id="device-badge" class="device-indicator"></span>
-            </div>
-            
-            <div id="error-message" class="error-message"></div>
+            <p>通过永久链接访问您的Dropbox共享文件。</p>
         </header>
         
-        <main id="card-container" class="card-grid">
-            <!-- Apps and Softwares 文件夹 -->
-            <div class="folder-card" data-folder-id="apps_software">
-                <div class="card-icon">
-                    <i class="fas fa-folder"></i>
-                </div>
-                <h3 class="card-title">Apps and Softwares
-                    <span class="shared-badge">2个项目</span>
-                </h3>
-                <p class="card-desc">应用程序和软件资源。包含2个项目，包括安装文件和文档。</p>
-                <div class="card-meta">
-                    <i class="fas fa-folder-open"></i> 文件夹
-                </div>
-                <button class="access-btn" onclick="handleFolderClick('apps_software')" disabled>
-                    <span class="btn-text">检测链接状态中...</span>
-                </button>
-                <div class="link-status">
-                    <span id="status-apps_software" class="status-text status-checking">
-                        <span class="status-icon">⏳</span> 正在检测链接状态...
-                    </span>
-                </div>
-            </div>
-            
+        <main class="card-grid">
             <!-- ENJOY AI 共享文件夹 -->
             <div class="folder-card" data-folder-id="enjoy_ai">
-                <div class="card-icon">
-                    <i class="fas fa-share-alt"></i>
-                </div>
-                <h3 class="card-title">ENJOY AI
-                    <span class="shared-badge">共享 • 5个项目</span>
-                </h3>
-                <p class="card-desc">ENJOY AI项目的共享文件夹。包含5个项目，包括项目文件、数据集和资源。</p>
-                <div class="card-meta">
-                    <i class="fas fa-users"></i> 共享文件夹
-                </div>
-                <button class="access-btn" onclick="handleFolderClick('enjoy_ai')" disabled>
-                    <span class="btn-text">检测链接状态中...</span>
+                <div class="card-icon"><i class="fas fa-share-alt"></i></div>
+                <h3 class="card-title">ENJOY AI</h3>
+                <p class="card-desc">ENJOY AI项目的共享文件夹。包含项目文件、数据集和资源。</p>
+                <button class="access-btn" onclick="handleFolderClick('enjoy_ai')">
+                    <span class="btn-text">打开文件夹</span>
                 </button>
-                <div class="link-status">
-                    <span id="status-enjoy_ai" class="status-text status-checking">
-                        <span class="status-icon">⏳</span> 正在检测链接状态...
-                    </span>
+                <div id="loading-enjoy_ai" class="loading">
+                    <i class="fas fa-spinner fa-spin"></i> 正在处理...
                 </div>
             </div>
             
             <!-- WhalesBot 共享文件夹 -->
             <div class="folder-card" data-folder-id="whalesbot">
-                <div class="card-icon">
-                    <i class="fas fa-robot"></i>
-                </div>
-                <h3 class="card-title">WhalesBot
-                    <span class="shared-badge">共享 • 14个项目</span>
-                </h3>
-                <p class="card-desc">WhalesBot项目的共享文件夹。包含14个项目，包括代码、资源和项目文件。</p>
-                <div class="card-meta">
-                    <i class="fas fa-users"></i> 共享文件夹
-                </div>
-                <button class="access-btn" onclick="handleFolderClick('whalesbot')" disabled>
-                    <span class="btn-text">检测链接状态中...</span>
+                <div class="card-icon"><i class="fas fa-robot"></i></div>
+                <h3 class="card-title">WhalesBot</h3>
+                <p class="card-desc">WhalesBot项目的共享文件夹。包含代码、资源和项目文件。</p>
+                <button class="access-btn" onclick="handleFolderClick('whalesbot')">
+                    <span class="btn-text">打开文件夹</span>
                 </button>
-                <div class="link-status">
-                    <span id="status-whalesbot" class="status-text status-checking">
-                        <span class="status-icon">⏳</span> 正在检测链接状态...
-                    </span>
-                </div>
-            </div>
-            
-            <!-- air headshot 视频文件 -->
-            <div class="folder-card" data-folder-id="air_headshot">
-                <div class="card-icon">
-                    <i class="fas fa-video"></i>
-                </div>
-                <h3 class="card-title">air headshot
-                    <span class="shared-badge">视频 • 0:01</span>
-                </h3>
-                <p class="card-desc">MP4视频文件，1秒时长。点击直接播放或从Dropbox下载。</p>
-                <div class="card-meta">
-                    <i class="fas fa-file-video"></i> MP4视频 • 1秒
-                </div>
-                <button class="access-btn" onclick="handleFolderClick('air_headshot')" disabled>
-                    <span class="btn-text">检测链接状态中...</span>
-                </button>
-                <div class="link-status">
-                    <span id="status-air_headshot" class="status-text status-checking">
-                        <span class="status-icon">⏳</span> 正在检测链接状态...
-                    </span>
+                <div id="loading-whalesbot" class="loading">
+                    <i class="fas fa-spinner fa-spin"></i> 正在处理...
                 </div>
             </div>
         </main>
         
-        <button id="refresh-btn" class="refresh-btn" onclick="refreshAllLinks()">
-            <i class="fas fa-sync-alt"></i> 重新检测所有链接状态
-        </button>
-        
         <footer>
-            <p>© 2024 Dropbox永久链接服务 | 链接验证版</p>
-            <p>系统自动检测链接状态，失效链接将被禁用并提示。</p>
+            <p>© 2024 Dropbox永久链接服务</p>
         </footer>
     </div>
-    
+
     <script>
-        // 全局配置
         const API_BASE_URL = window.location.origin;
-        let isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-        let currentDeviceConfig = null;
-        let linkStatusCache = {};
-        
-        // 设备检测和配置
-        const DeviceConfig = {
-            isMobile: isMobile,
-            isTablet: /iPad|Android(?!.*Mobile)|Tablet|Silk/i.test(navigator.userAgent),
-            isDesktop: function() { return !this.isMobile && !this.isTablet; },
-            
-            configs: {
-                mobile: {
-                    name: '手机端',
-                    bodyClass: 'mobile-optimized',
-                    openLinkMethod: 'current',
-                    cardClickable: true
-                },
-                tablet: {
-                    name: '平板端',
-                    bodyClass: 'mobile-optimized',
-                    openLinkMethod: 'newtab',
-                    cardClickable: true
-                },
-                desktop: {
-                    name: '电脑端',
-                    bodyClass: 'desktop-optimized',
-                    openLinkMethod: 'newtab',
-                    cardClickable: false
-                }
-            },
-            
-            getCurrentConfig: function() {
-                if (this.isMobile) return this.configs.mobile;
-                if (this.isTablet) return this.configs.tablet;
-                return this.configs.desktop;
-            },
-            
-            applyDeviceConfig: function() {
-                const config = this.getCurrentConfig();
-                const body = document.body;
-                
-                body.classList.remove('mobile-optimized', 'desktop-optimized');
-                body.classList.add(config.bodyClass);
-                
-                document.getElementById('device-badge').textContent = config.name;
-                document.getElementById('device-optimized-text').textContent = `已为${config.name}优化`;
-                
-                this.setupCardInteractions(config.cardClickable);
-                
-                console.log(`设备检测完成: ${config.name}`);
-                return config;
-            },
-            
-            setupCardInteractions: function(cardClickable) {
-                const cards = document.querySelectorAll('.folder-card');
-                
-                cards.forEach(card => {
-                    card.removeEventListener('click', this.handleCardClick);
-                    
-                    if (cardClickable) {
-                        card.style.cursor = 'pointer';
-                        card.addEventListener('click', this.handleCardClick);
-                    } else {
-                        card.style.cursor = 'default';
-                    }
-                });
-            },
-            
-            handleCardClick: function(event) {
-                if (event.target.tagName === 'BUTTON' || event.target.closest('button')) {
-                    return;
-                }
-                
-                const folderId = this.getAttribute('data-folder-id');
-                if (folderId) {
-                    handleFolderClick(folderId);
-                }
-            }
-        };
-        
-        // 链接状态管理器
-        class LinkStatusManager {
-            constructor() {
-                this.checkInterval = 5 * 60 * 1000; // 5分钟检测一次
-                this.retryCount = 0;
-                this.maxRetries = 3;
-            }
-            
-            // 检测所有链接状态
-            async checkAllLinks() {
-                try {
-                    console.log('开始检测所有链接状态...');
-                    this.updateRefreshButton(true, '检测中...');
-                    
-                    const response = await fetch(`${API_BASE_URL}/api/links/status`);
-                    if (!response.ok) {
-                        throw new Error(`HTTP错误: ${response.status}`);
-                    }
-                    
-                    const data = await response.json();
-                    
-                    if (data.success) {
-                        this.retryCount = 0;
-                        linkStatusCache = data.data;
-                        this.updateUI();
-                        this.saveToStorage();
-                        document.getElementById('status-text').textContent = '链接状态已更新';
-                    } else {
-                        throw new Error(data.error || '检测链接状态失败');
-                    }
-                } catch (error) {
-                    console.error('检测链接状态失败:', error);
-                    
-                    if (this.retryCount < this.maxRetries) {
-                        this.retryCount++;
-                        console.log(`第${this.retryCount}次重试...`);
-                        setTimeout(() => this.checkAllLinks(), 2000);
-                        return;
-                    }
-                    
-                    this.showError('检测链接状态失败，将使用本地缓存');
-                    this.loadFromStorage(); // 失败时尝试从缓存加载
-                } finally {
-                    this.updateRefreshButton(false, '重新检测所有链接状态');
-                }
-            }
-            
-            // 更新UI
-            updateUI() {
-                const folderIds = ['apps_software', 'enjoy_ai', 'whalesbot', 'air_headshot'];
-                
-                folderIds.forEach(folderId => {
-                    const button = document.querySelector(`[data-folder-id="${folderId}"] .access-btn`);
-                    const btnText = button.querySelector('.btn-text');
-                    const statusEl = document.getElementById(`status-${folderId}`);
-                    
-                    if (linkStatusCache[folderId]) {
-                        const status = linkStatusCache[folderId];
-                        
-                        if (status.valid) {
-                            // 链接有效
-                            button.disabled = false;
-                            btnText.textContent = this.getButtonText(folderId);
-                            statusEl.innerHTML = `
-                                <span class="status-icon">✅</span> 链接正常
-                                <span style="margin-left: 8px; font-size: 10px; opacity: 0.7;">
-                                    ${new Date(status.timestamp).toLocaleTimeString()}
-                                </span>
-                            `;
-                            statusEl.className = 'status-text status-valid';
-                        } else {
-                            // 链接失效
-                            button.disabled = true;
-                            btnText.textContent = '链接已失效';
-                            statusEl.innerHTML = `
-                                <span class="status-icon">❌</span> 链接失效
-                                <span style="margin-left: 8px; font-size: 10px; opacity: 0.7;">
-                                    ${status.error || '无法访问'}
-                                </span>
-                            `;
-                            statusEl.className = 'status-text status-invalid';
-                        }
-                    } else {
-                        // 状态未知
-                        button.disabled = true;
-                        btnText.textContent = '状态未知';
-                        statusEl.innerHTML = '<span class="status-icon">⚠️</span> 状态检测失败';
-                        statusEl.className = 'status-text status-error';
-                    }
-                });
-            }
-            
-            // 获取按钮文本
-            getButtonText(folderId) {
-                const isMobile = DeviceConfig.isMobile;
-                if (folderId === 'air_headshot') {
-                    return isMobile ? '播放视频' : '播放视频';
-                }
-                return isMobile ? '点击打开' : '打开文件夹';
-            }
-            
-            // 打开链接
-            async openLink(folderId) {
-                const button = document.querySelector(`[data-folder-id="${folderId}"] .access-btn`);
-                const btnText = button.querySelector('.btn-text');
-                const originalText = btnText.textContent;
-                
-                // 显示加载状态
-                button.disabled = true;
-                btnText.innerHTML = '<span class="loading-spinner"></span>验证中...';
-                
-                try {
-                    const response = await fetch(`${API_BASE_URL}/api/link/${folderId}`);
-                    const data = await response.json();
-                    
-                    if (data.valid) {
-                        // 根据设备配置使用不同的跳转方式
-                        if (currentDeviceConfig.openLinkMethod === 'current') {
-                            window.location.href = data.url;
-                        } else {
-                            window.open(data.url, '_blank');
-                        }
-                    } else {
-                        this.showError('链接验证失败，可能已失效');
-                        this.checkAllLinks(); // 重新检测状态
-                    }
-                } catch (error) {
-                    console.error('打开链接失败:', error);
-                    this.showError('无法访问文件，请检查网络');
-                } finally {
-                    // 恢复按钮状态
-                    setTimeout(() => {
-                        button.disabled = false;
-                        btnText.textContent = originalText;
-                    }, 1000);
-                }
-            }
-            
-            // 本地存储
-            saveToStorage() {
-                localStorage.setItem('linkStatusCache', JSON.stringify({
-                    data: linkStatusCache,
-                    timestamp: Date.now()
-                }));
-            }
-            
-            // 从存储加载
-            loadFromStorage() {
-                try {
-                    const saved = localStorage.getItem('linkStatusCache');
-                    if (saved) {
-                        const { data, timestamp } = JSON.parse(saved);
-                        // 如果存储的数据在1小时内，使用它
-                        if (Date.now() - timestamp < 60 * 60 * 1000) {
-                            linkStatusCache = data;
-                            this.updateUI();
-                            return true;
-                        }
-                    }
-                } catch (error) {
-                    console.error('加载缓存失败:', error);
-                }
-                return false;
-            }
-            
-            // 更新刷新按钮状态
-            updateRefreshButton(disabled, text) {
-                const button = document.getElementById('refresh-btn');
-                if (button) {
-                    button.disabled = disabled;
-                    button.innerHTML = disabled 
-                        ? '<span class="loading-spinner"></span>' + text
-                        : '<i class="fas fa-sync-alt"></i> ' + text;
-                }
-            }
-        }
-        
-        // 全局函数
+        // 当前可用的文件夹ID列表，与 server.js 配置完全一致
+        const CURRENT_FOLDER_IDS = ['enjoy_ai', 'whalesbot'];
+
         async function handleFolderClick(folderId) {
-            const statusManager = window.linkStatusManager;
-            if (statusManager) {
-                await statusManager.openLink(folderId);
+            const button = document.querySelector(`[data-folder-id="${folderId}"] .access-btn`);
+            const btnText = button.querySelector('.btn-text');
+            const loadingEl = document.getElementById(`loading-${folderId}`);
+
+            button.disabled = true;
+            btnText.innerHTML = '<span class="loading-spinner"></span>处理中...';
+            if (loadingEl) loadingEl.style.display = 'block';
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/link/${folderId}`);
+                if (!response.ok) throw new Error(`请求失败: ${response.status}`);
+                const data = await response.json();
+                if (data && data.url) {
+                    window.open(data.url, '_blank'); // 在新标签页打开Dropbox链接
+                } else {
+                    throw new Error('未收到有效链接');
+                }
+            } catch (error) {
+                console.error('打开链接失败:', error);
+                alert('无法访问文件，请稍后重试。');
+            } finally {
+                setTimeout(() => {
+                    button.disabled = false;
+                    btnText.textContent = '打开文件夹';
+                    if (loadingEl) loadingEl.style.display = 'none';
+                }, 1000);
             }
         }
-        
-        async function refreshAllLinks() {
-            const statusManager = window.linkStatusManager;
-            if (statusManager) {
-                await statusManager.checkAllLinks();
-            }
-        }
-        
-        function showError(message) {
-            const errorEl = document.getElementById('error-message');
-            errorEl.textContent = '⚠️ ' + message;
-            errorEl.style.display = 'block';
-            
-            setTimeout(() => {
-                errorEl.style.display = 'none';
-            }, 5000);
-        }
-        
-        async function checkHealth() {
+
+        // 页面加载时，可选的健康检查（用于调试）
+        window.addEventListener('load', async () => {
             try {
                 const response = await fetch(`${API_BASE_URL}/api/health`);
                 if (response.ok) {
-                    document.querySelector('.status-indicator').style.backgroundColor = '#48bb78';
-                    return true;
+                    const data = await response.json();
+                    console.log('服务状态正常，可用文件夹:', data.available_folders);
                 }
             } catch (error) {
-                console.log('健康检查失败:', error);
+                console.log('服务健康检查失败（可能不影响使用）:', error);
             }
-            document.querySelector('.status-indicator').style.backgroundColor = '#f56565';
-            return false;
-        }
-        
-        // 页面初始化
-        document.addEventListener('DOMContentLoaded', async function() {
-            // 设备检测和配置
-            currentDeviceConfig = DeviceConfig.applyDeviceConfig();
-            
-            // 健康检查
-            await checkHealth();
-            
-            // 初始化链接状态管理器
-            window.linkStatusManager = new LinkStatusManager();
-            
-            // 先尝试从本地存储加载
-            if (!window.linkStatusManager.loadFromStorage()) {
-                // 存储中没有或已过期，从服务器检测
-                await window.linkStatusManager.checkAllLinks();
-            }
-            
-            // 定期检测
-            setInterval(() => {
-                window.linkStatusManager.checkAllLinks();
-            }, window.linkStatusManager.checkInterval);
-            
-            // 调试信息
-            console.log('设备信息:', {
-                设备类型: currentDeviceConfig.name,
-                用户代理: navigator.userAgent,
-                屏幕尺寸: `${window.innerWidth} × ${window.innerHeight}`,
-                API地址: API_BASE_URL
-            });
-        });
-        
-        // 网络状态检测
-        window.addEventListener('offline', () => {
-            showError('网络连接已断开，请检查网络设置');
-        });
-        
-        window.addEventListener('online', () => {
-            document.getElementById('error-message').style.display = 'none';
         });
     </script>
 </body>
