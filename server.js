@@ -10,10 +10,11 @@ const PORT = process.env.PORT || 3000;
 app.use(cors());
 app.use(express.json());
 
-// 手动配置的Dropbox永久分享链接
+// 手动配置的Dropbox永久分享链接 (已移除apps_software和air_headshot)
 const MANUAL_SHARE_LINKS = {
   'enjoy_ai': 'https://www.dropbox.com/scl/fo/xhuafhd7lvzct5qou5exc/APsv0VSGbS0sL2h5q86sxrE?rlkey=wulgqtxyjifm67ymdhj881u66&st=h5z3paub&dl=0',
   'whalesbot': 'https://www.dropbox.com/scl/fo/dm9mk69c56v8o554r11wv/AGjzYhC_2KXZ6xXkLc88k_g?rlkey=67t99jd9gms79e2ato24ee727&st=rhn2cwhy&dl=0',
+};
 
 // 健康检查端点
 app.get('/api/health', (req, res) => {
@@ -108,13 +109,11 @@ app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
-// 辅助函数：获取文件夹友好名称
+// 辅助函数：获取文件夹友好名称 (已清理下架条目)
 function getFolderName(folderId) {
   const names = {
-    'apps_software': 'Apps and Softwares',
     'enjoy_ai': 'ENJOY AI',
-    'whalesbot': 'WhalesBot',
-    'air_headshot': 'air headshot.mp4'
+    'whalesbot': 'WhalesBot'
   };
   return names[folderId] || folderId;
 }
@@ -145,6 +144,6 @@ app.listen(PORT, () => {
   console.log(`前端页面: http://localhost:${PORT}`);
   console.log(`健康检查: http://localhost:${PORT}/api/health`);
   console.log(`链接状态: http://localhost:${PORT}/api/links/status`);
-  console.log(`测试链接: http://localhost:${PORT}/api/link/apps_software`);
+  console.log(`测试链接: http://localhost:${PORT}/api/link/enjoy_ai`);
   console.log(`=========================================`);
 });

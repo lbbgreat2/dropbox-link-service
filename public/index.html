@@ -275,6 +275,7 @@
         </header>
         
         <main id="card-container" class="card-grid">            
+            <!-- ENJOY AI 共享文件夹 -->
             <div class="folder-card" data-folder-id="enjoy_ai">
                 <div class="card-icon">
                     <i class="fas fa-share-alt"></i>
@@ -299,6 +300,7 @@
                 </div>
             </div>
             
+            <!-- WhalesBot 共享文件夹 -->
             <div class="folder-card" data-folder-id="whalesbot">
                 <div class="card-icon">
                     <i class="fas fa-robot"></i>
@@ -322,7 +324,7 @@
                     <i class="fas fa-spinner fa-spin"></i> 正在处理...
                 </div>
             </div>
-                   </main>
+        </main>
         
         <button id="refresh-btn" class="refresh-btn" onclick="checkAllLinks()">
             <i class="fas fa-sync-alt"></i> 检测链接状态
@@ -337,6 +339,9 @@
     <script>
         const API_BASE_URL = window.location.origin;
         let linkStatusCache = {};
+        
+        // 当前可用的文件夹ID列表 (已更新，仅包含enjoy_ai和whalesbot)
+        const CURRENT_FOLDER_IDS = ['enjoy_ai', 'whalesbot'];
         
         function showError(message) {
             const errorEl = document.getElementById('error-message');
@@ -377,7 +382,8 @@
                     statusEl.textContent = '✅ 链接有效';
                     statusEl.className = 'status-text status-valid';
                     
-                    btnText.textContent = folderId === 'air_headshot' ? '播放视频' : '打开文件夹';
+                    // 简化：现在只有文件夹，没有单独的视频文件
+                    btnText.textContent = '打开文件夹';
                     setTimeout(() => {
                         button.disabled = false;
                     }, 1000);
@@ -391,7 +397,7 @@
                 statusEl.className = 'status-text status-invalid';
                 
                 showError(`无法访问文件: ${error.message}`);
-                btnText.textContent = folderId === 'air_headshot' ? '播放视频' : '打开文件夹';
+                btnText.textContent = '打开文件夹'; // 统一恢复为"打开文件夹"
                 button.disabled = false;
             } finally {
                 if (loadingEl) loadingEl.style.display = 'none';
@@ -404,8 +410,6 @@
             
             refreshBtn.disabled = true;
             refreshBtn.innerHTML = '<span class="loading-spinner"></span>检测中...';
-            
-            const folderIds = ['apps_software', 'enjoy_ai', 'whalesbot', 'air_headshot'];
             
             try {
                 const response = await fetch(`${API_BASE_URL}/api/links/status`);
@@ -425,7 +429,8 @@
                 if (data.success && data.data) {
                     linkStatusCache = data.data;
                     
-                    folderIds.forEach(folderId => {
+                    // 只处理当前存在的文件夹
+                    CURRENT_FOLDER_IDS.forEach(folderId => {
                         const button = document.querySelector(`[data-folder-id="${folderId}"] .access-btn`);
                         const statusEl = document.getElementById(`status-${folderId}`);
                         
@@ -452,15 +457,16 @@
         }
         
         function useFallbackMode() {
-            const folderIds = ['apps_software', 'enjoy_ai', 'whalesbot', 'air_headshot'];
-            
-            folderIds.forEach(folderId => {
+            // 只对当前存在的文件夹启用降级模式
+            CURRENT_FOLDER_IDS.forEach(folderId => {
                 const button = document.querySelector(`[data-folder-id="${folderId}"] .access-btn`);
                 const statusEl = document.getElementById(`status-${folderId}`);
                 
-                button.disabled = false;
-                statusEl.textContent = '⚠️ 直接访问';
-                statusEl.className = 'status-text status-checking';
+                if (button && statusEl) {
+                    button.disabled = false;
+                    statusEl.textContent = '⚠️ 直接访问';
+                    statusEl.className = 'status-text status-checking';
+                }
             });
             
             console.log('使用降级模式：跳过链接状态检测');
@@ -495,6 +501,7 @@
             checkHealth();
             
             console.log('页面初始化完成，API地址:', API_BASE_URL);
+            console.log('当前可用文件夹:', CURRENT_FOLDER_IDS);
         });
         
         window.addEventListener('offline', () => {
