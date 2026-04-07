@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
-    <title>Dropbox File Center | Universal Link Validator</title>
+    <title>Dropbox File Center | No-JS Detection</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         * {
@@ -159,14 +159,6 @@
             margin-right: 10px;
         }
         
-        .loading {
-            display: none;
-            font-size: 0.9rem;
-            color: #0061ff;
-            margin-top: 10px;
-            text-align: center;
-        }
-        
         .loading-spinner {
             display: inline-block;
             width: 16px;
@@ -275,10 +267,10 @@
     <div class="container">
         <header>
             <h1><i class="fas fa-cloud"></i> Dropbox File Center</h1>
-            <p>Access your Dropbox files through permanent links. Invalid links are automatically detected and flagged.</p>
+            <p>Advanced link validation using no-JavaScript detection for accurate results.</p>
             <div style="margin-top: 10px;">
                 <span class="status-indicator"></span>
-                <span id="status-text">Initializing universal validator...</span>
+                <span id="status-text">Initializing no-JS detection...</span>
             </div>
             
             <div id="error-message" class="error-message"></div>
@@ -335,9 +327,9 @@
                     <i class="fas fa-vial"></i>
                 </div>
                 <h3 class="card-title">Test Folder
-                    <span class="test-badge">Test • 0 items</span>
+                    <span class="test-badge">Test • Detection</span>
                 </h3>
-                <p class="card-desc">Test folder for validating the link detection system. You can disable the Dropbox share link to test the detection feature.</p>
+                <p class="card-desc">Test folder for validating the no-JS detection system. The system checks the &noscript=1 version for accurate results.</p>
                 <div class="card-meta">
                     <i class="fas fa-flask"></i> Test Folder
                 </div>
@@ -353,12 +345,12 @@
         </main>
         
         <button id="refresh-btn" class="refresh-btn" onclick="checkAllLinks()">
-            <i class="fas fa-sync-alt"></i> Check All Link Status
+            <i class="fas fa-sync-alt"></i> Re-check All Links
         </button>
         
         <footer>
-            <p>© 2024 Dropbox Permanent Link Service | Universal Validation</p>
-            <p>All links are validated with the same robust, signal-based logic.</p>
+            <p>© 2024 Dropbox Permanent Link Service | No-JS Detection v2</p>
+            <p>System checks the &noscript=1 version for reliable link validation.</p>
         </footer>
     </div>
     
@@ -376,99 +368,89 @@
             }, 5000);
         }
         
-        function updateStatus(folderId, data) {
+        function updateFolderStatus(folderId, data) {
             const button = document.getElementById(`btn-${folderId}`);
             const statusEl = document.getElementById(`status-${folderId}`);
             
             if (!data) {
                 statusEl.textContent = '❌ Check failed';
                 statusEl.className = 'status-text status-invalid';
-                button.disabled = false; // Allow manual attempt if check fails
+                button.disabled = true;
                 return;
             }
             
-            if (data.valid) {
-                button.disabled = false;
-                if (data.reason === 'ACCESSIBLE_NO_RED_FLAGS') {
-                    statusEl.textContent = '✅ Accessible';
-                } else {
-                    statusEl.textContent = '✅ Link Valid';
+            const isValid = data.valid;
+            const reason = data.reason || 'UNKNOWN';
+            
+            // 更新按钮
+            button.disabled = !isValid;
+            button.title = isValid ? 'Click to open folder' : `Cannot open: ${data.message || 'Link invalid'}`;
+            
+            // 更新状态显示
+            if (isValid) {
+                let displayText = '✅ Link Valid';
+                let statusClass = 'status-valid';
+                
+                if (reason.includes('NOSCRIPT')) {
+                    displayText = '✅ Verified (no-JS)';
+                } else if (reason.includes('UNVERIFIED')) {
+                    displayText = '⚠️ Accessible';
+                    statusClass = 'status-checking';
                 }
-                statusEl.className = 'status-text status-valid';
-                button.title = 'Click to open folder';
+                
+                statusEl.innerHTML = `<i class="fas fa-check-circle"></i> ${displayText}`;
+                statusEl.className = `status-text ${statusClass}`;
             } else {
-                button.disabled = true;
+                let displayText = '❌ Link Invalid';
+                let icon = 'fa-times-circle';
                 
-                if (data.reason === 'CONTENT_DELETED') {
-                    statusEl.textContent = '🗑️ Item Deleted';
-                } else if (data.reason === 'NO_PERMISSION') {
-                    statusEl.textContent = '🔒 No Permission';
-                } else if (data.reason === 'NOT_FOUND') {
-                    statusEl.textContent = '🔍 Not Found';
-                } else if (data.reason === 'TIMEOUT') {
-                    statusEl.textContent = '⏱️ Timeout';
-                } else if (data.reason.startsWith('HTTP_4') || data.reason.startsWith('HTTP_5')) {
-                    const code = data.reason.replace('HTTP_', '');
-                    statusEl.textContent = `⚠️ Error ${code}`;
-                } else {
-                    statusEl.textContent = '❌ Link Invalid';
+                if (reason.includes('DELETED')) {
+                    displayText = '🗑️ Item Deleted';
+                    icon = 'fa-trash-alt';
+                } else if (reason === 'TIMEOUT') {
+                    displayText = '⏱️ Timeout';
+                    icon = 'fa-clock';
+                } else if (reason.startsWith('HTTP_4') || reason.startsWith('HTTP_5')) {
+                    const code = reason.replace('HTTP_', '');
+                    displayText = `⚠️ Error ${code}`;
+                    icon = 'fa-exclamation-triangle';
                 }
                 
+                statusEl.innerHTML = `<i class="fas ${icon}"></i> ${displayText}`;
                 statusEl.className = 'status-text status-invalid';
-                button.title = data.message || 'Link is not accessible';
             }
         }
         
         async function handleFolderClick(folderId) {
             const button = document.getElementById(`btn-${folderId}`);
             const btnText = button.querySelector('.btn-text');
-            const statusEl = document.getElementById(`status-${folderId}`);
+            const originalText = btnText.textContent;
             
+            // 视觉反馈
             button.disabled = true;
-            btnText.innerHTML = '<span class="loading-spinner"></span> Checking...';
+            btnText.innerHTML = '<span class="loading-spinner"></span> Opening...';
             
             try {
                 const response = await fetch(`${API_BASE_URL}/api/link/${folderId}`);
-                
-                if (!response.ok) {
-                    if (response.status === 503) {
-                        const data = await response.json();
-                        showError(`Cannot open: ${data.details || data.message}`);
-                        
-                        statusEl.textContent = '❌ ' + (data.reason === 'CONTENT_DELETED' ? 'Item Deleted' : 'Link Invalid');
-                        statusEl.className = 'status-text status-invalid';
-                        
-                        btnText.textContent = folderId === 'test' ? 'Open Test Folder' : 'Open Folder';
-                        return;
-                    }
-                    throw new Error(`Server error: ${response.status}`);
-                }
-                
                 const data = await response.json();
                 
-                if (data.validity && data.validity.valid) {
+                if (data.status_check && data.status_check.valid) {
+                    // 链接有效，打开它
                     window.open(data.url, '_blank');
-                    
-                    statusEl.textContent = '✅ Link Valid';
-                    statusEl.className = 'status-text status-valid';
-                    
-                    btnText.textContent = folderId === 'test' ? 'Open Test Folder' : 'Open Folder';
-                    
-                    setTimeout(() => {
-                        button.disabled = false;
-                    }, 1000);
                 } else {
-                    throw new Error(data.validity?.message || 'Link invalid');
+                    // 链接无效，显示错误
+                    const msg = data.status_check?.message || 'The link is not accessible.';
+                    showError(`Cannot open: ${msg}`);
                 }
             } catch (error) {
                 console.error('Failed to open link:', error);
-                
-                statusEl.textContent = '❌ Error';
-                statusEl.className = 'status-text status-invalid';
-                
-                showError(`Cannot open file: ${error.message}`);
-                btnText.textContent = folderId === 'test' ? 'Open Test Folder' : 'Open Folder';
-                button.disabled = false;
+                showError('Failed to open the link. Please try again.');
+            } finally {
+                // 短暂延迟后重置按钮
+                setTimeout(() => {
+                    button.disabled = false;
+                    btnText.textContent = originalText;
+                }, 1000);
             }
         }
         
@@ -478,11 +460,13 @@
             const statusIndicator = document.querySelector('.status-indicator');
             const statusText = document.getElementById('status-text');
             
+            // 禁用按钮并显示加载状态
             refreshBtn.disabled = true;
             refreshBtn.innerHTML = '<span class="loading-spinner"></span> Checking...';
-            statusText.textContent = 'Checking link status...';
+            statusText.textContent = 'Checking link status (no-JS detection)...';
             statusIndicator.style.backgroundColor = '#f6ad55';
             
+            // 将所有状态设置为"检查中"
             FOLDER_IDS.forEach(id => {
                 const statusEl = document.getElementById(`status-${id}`);
                 statusEl.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Checking...';
@@ -493,51 +477,55 @@
                 const response = await fetch(`${API_BASE_URL}/api/links/status`);
                 
                 if (!response.ok) {
-                    throw new Error(`Status check failed: ${response.status}`);
+                    throw new Error(`API returned ${response.status}`);
                 }
                 
                 const data = await response.json();
                 
                 if (data.success) {
                     let validCount = 0;
-                    let totalCount = FOLDER_IDS.length;
                     
                     FOLDER_IDS.forEach(folderId => {
                         const status = data.data[folderId];
-                        updateStatus(folderId, status);
+                        updateFolderStatus(folderId, status);
                         
                         if (status && status.valid) {
                             validCount++;
                         }
                     });
                     
-                    if (validCount === totalCount) {
+                    // 更新系统状态
+                    if (validCount === FOLDER_IDS.length) {
                         statusText.textContent = `All ${validCount} links are valid`;
                         statusIndicator.style.backgroundColor = '#48bb78';
                     } else if (validCount === 0) {
                         statusText.textContent = 'All links are invalid';
                         statusIndicator.style.backgroundColor = '#f56565';
                     } else {
-                        statusText.textContent = `${validCount}/${totalCount} links are valid`;
+                        statusText.textContent = `${validCount}/${FOLDER_IDS.length} links are valid`;
                         statusIndicator.style.backgroundColor = '#f6ad55';
                     }
+                } else {
+                    throw new Error(data.error || 'Failed to check links');
                 }
+                
             } catch (error) {
                 console.error('Failed to check all links:', error);
                 showError(`Check failed: ${error.message}`);
                 statusText.textContent = 'Check failed';
                 statusIndicator.style.backgroundColor = '#f56565';
                 
-                // Fallback: allow manual access if check fails
+                // 降级模式：如果检查失败，允许手动访问
                 FOLDER_IDS.forEach(folderId => {
                     const button = document.getElementById(`btn-${folderId}`);
                     const statusEl = document.getElementById(`status-${folderId}`);
                     
                     button.disabled = false;
-                    statusEl.textContent = '⚠️ Check Failed';
+                    statusEl.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Check failed';
                     statusEl.className = 'status-text status-checking';
                 });
             } finally {
+                // 重新启用按钮
                 setTimeout(() => {
                     refreshBtn.innerHTML = originalText;
                     refreshBtn.disabled = false;
@@ -545,7 +533,7 @@
             }
         }
         
-        // Health check
+        // 健康检查
         async function checkHealth() {
             try {
                 const response = await fetch(`${API_BASE_URL}/api/health`);
@@ -554,7 +542,7 @@
                     document.querySelector('.status-indicator').style.backgroundColor = '#48bb78';
                     document.getElementById('status-text').textContent = 'Service is healthy';
                     
-                    // Auto-check links after health check
+                    // 健康检查后自动检查链接
                     setTimeout(() => checkAllLinks(), 1000);
                     
                     return true;
@@ -568,38 +556,26 @@
             return false;
         }
         
-        // Page initialization
+        // 页面初始化
         document.addEventListener('DOMContentLoaded', function() {
-            // Initial state
+            console.log('Dropbox File Center initialized.');
+            console.log('API Base URL:', API_BASE_URL);
+            console.log('Detection method: No-JavaScript version checking');
+            
+            // 初始状态
             FOLDER_IDS.forEach(folderId => {
                 const statusEl = document.getElementById(`status-${folderId}`);
                 statusEl.textContent = '⏳ Initializing...';
                 statusEl.className = 'status-text status-checking';
             });
             
-            // Perform health check
+            // 执行健康检查
             checkHealth();
             
-            console.log('Dropbox File Center initialized.');
-            console.log('API Base URL:', API_BASE_URL);
-            console.log('Monitoring folders:', FOLDER_IDS);
-            
-            // Auto-check every 5 minutes
+            // 每5分钟自动检查一次
             setInterval(() => {
                 checkAllLinks();
             }, 5 * 60 * 1000);
-        });
-        
-        // Network status detection
-        window.addEventListener('offline', () => {
-            showError('Network connection lost. Please check your network settings.');
-        });
-        
-        window.addEventListener('online', () => {
-            const errorEl = document.getElementById('error-message');
-            if (errorEl) errorEl.style.display = 'none';
-            // Re-check when coming back online
-            checkAllLinks();
         });
     </script>
 </body>
