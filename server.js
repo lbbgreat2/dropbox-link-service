@@ -20,193 +20,111 @@ const MANUAL_SHARE_LINKS = {
 
 // Link Status Cache
 let linkStatusCache = {};
-const CACHE_DURATION = 3 * 60 * 1000; // 3 minutes cache for faster testing
 
-/**
- * ULTIMATE Dropbox Link Validity Checker
- * Uses a multi-signal approach to determine link state.
- * 1. Checks HTTP response status and headers.
- * 2. Analyzes HTML content for failure/success indicators.
- * 3. Makes a final decision based on combined evidence.
- */
+// SIMPLE & DIRECT: Check if Dropbox link shows deletion page
 async function checkLinkValidity(url) {
-  const startTime = Date.now();
-  let response;
-
   try {
-    // Step 1: Attempt to fetch the page with a realistic browser header
-    response = await axios.get(url, {
-      timeout: 15000,
-      maxRedirects: 5,
-      // We accept most statuses; we'll decide validity based on content
-      validateStatus: function (status) {
-        return status < 500; // Don't fail on client errors (4xx)
-      },
+    console.log(`[Simple Check] Testing: ${url}`);
+    
+    const response = await axios.get(url, {
+      timeout: 10000,
       headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-        'Accept-Language': 'en-US,en;q=0.9',
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
       }
     });
 
     const html = response.data;
     const lowerHtml = html.toLowerCase();
-    const checkDuration = Date.now() - startTime;
-
-    console.log(`[Link Check] ${url} -> Status: ${response.status}, Size: ${html.length} chars, Time: ${checkDuration}ms`);
-
-    // Step 2: Collect signals from the response
-    const signals = {
-      // Strong negative signals (link is broken/deleted)
-      isDeleted: [
-        'this item was deleted',
-        'this file was deleted',
-        'couldn\'t find this item',
-        'the file you’re looking for couldn’t be found',
-        'item is no longer available',
-        'has been deleted',
-        'was deleted',
-        'deleted files',
-        'this folder was deleted',
-        'this shared file or folder'
-      ].some(term => lowerHtml.includes(term.toLowerCase())),
-
-      hasNoPermission: [
-        'don’t have permission',
-        'don\'t have permission',
-        'you need access',
-        'ask for access',
-        'shared link has been disabled',
-        'link is disabled',
-        'no longer has access',
-        'access denied'
-      ].some(term => lowerHtml.includes(term.toLowerCase())),
-
-      isNotFoundPage: [
-        'error 404',
-        'page not found',
-        'not found',
-        'doesn’t exist',
-        'doesn\'t exist'
-      ].some(term => lowerHtml.includes(term.toLowerCase())),
-
-      // Strong positive signals (link is working)
-      hasFileList: html.includes('folder_contents') || html.includes('files_list') || html.includes('file_list'),
-      hasDownloadButton: html.includes('download_button') || html.includes('download-button') || (html.includes('download') && html.includes('data-reactid')),
-      hasDropboxViewer: html.includes('data-reactid') && (html.includes('file_viewer') || html.includes('folder_viewer')),
-
-      // HTTP Status signal
-      httpStatus: response.status
+    
+    // 关键检测1: 直接查找删除文字 (根据您的截图)
+    const hasDeletedText = 
+      lowerHtml.includes('this item was deleted') ||
+      lowerHtml.includes('this file was deleted') ||
+      lowerHtml.includes('was deleted') ||
+      lowerHtml.includes('deleted files') ||
+      lowerHtml.includes('item is no longer available');
+    
+    // 关键检测2: 查找垃圾桶图标的常见HTML表示
+    // Dropbox删除页面的垃圾桶通常有特定SVG路径或CSS类
+    const hasTrashIcon = 
+      html.includes('M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12z') || // 常见垃圾桶SVG路径
+      html.includes('trash-can') ||
+      html.includes('trash_icon') ||
+      html.includes('icon-trash') ||
+      html.includes('deleted-illustration');
+    
+    // 关键检测3: 查找删除页面的其他特征
+    const hasDeletePageMarkers = 
+      lowerHtml.includes('you might be able to find it in your deleted files') ||
+      lowerHtml.includes('ask the person who shared it with you') ||
+      lowerHtml.includes('check deleted files');
+    
+    // 如果是删除页面
+    if (hasDeletedText || hasTrashIcon || hasDeletePageMarkers) {
+      console.log(`[Simple Check] DETECTED AS DELETED - Reason: ${hasDeletedText ? 'Deleted text' : ''} ${hasTrashIcon ? 'Trash icon' : ''} ${hasDeletePageMarkers ? 'Delete markers' : ''}`);
+      return {
+        valid: false,
+        status: response.status,
+        timestamp: new Date().toISOString(),
+        message: 'This item has been deleted on Dropbox',
+        reason: 'DELETED',
+        confidence: 'HIGH'
+      };
+    }
+    
+    // 检查是否是有效的内容页面
+    // 有效的Dropbox分享页面通常有这些元素
+    const hasValidContent =
+      html.includes('file_viewer') ||
+      html.includes('folder_viewer') ||
+      html.includes('download_button') ||
+      (html.includes('viewing') && html.includes('dropbox.com')) ||
+      (html.includes('shared with you') && html.includes('dropbox.com'));
+    
+    if (hasValidContent) {
+      console.log(`[Simple Check] DETECTED AS VALID - Has content markers`);
+      return {
+        valid: true,
+        status: response.status,
+        timestamp: new Date().toISOString(),
+        message: 'Link is valid and accessible',
+        reason: 'VALID',
+        confidence: 'HIGH'
+      };
+    }
+    
+    // 默认情况：如果没有明确信号，我们假设有效但记录警告
+    console.log(`[Simple Check] UNCLEAR - No strong signals detected`);
+    return {
+      valid: true, // 保守假设：没有删除迹象就是有效
+      status: response.status,
+      timestamp: new Date().toISOString(),
+      message: 'Link accessible, but content state unclear',
+      reason: 'UNCLEAR_BUT_ACCESSIBLE',
+      confidence: 'LOW'
     };
 
-    // Debug log of collected signals
-    console.log(`[Signals] Deleted:${signals.isDeleted}, NoPerm:${signals.hasNoPermission}, NotFnd:${signals.isNotFoundPage}, Files:${signals.hasFileList}, DnldBtn:${signals.hasDownloadButton}, Viewer:${signals.hasDropboxViewer}, HTTP:${signals.httpStatus}`);
-
-    // Step 3: Decision Logic - Prioritize negative signals
-    if (signals.isDeleted) {
-      return {
-        valid: false,
-        status: response.status,
-        timestamp: new Date().toISOString(),
-        message: 'The shared item has been deleted on Dropbox.',
-        reason: 'CONTENT_DELETED',
-        checkDuration: checkDuration
-      };
-    }
-
-    if (signals.hasNoPermission) {
-      return {
-        valid: false,
-        status: response.status,
-        timestamp: new Date().toISOString(),
-        message: 'You do not have permission to access this item.',
-        reason: 'NO_PERMISSION',
-        checkDuration: checkDuration
-      };
-    }
-
-    if (signals.isNotFoundPage && response.status === 404) {
-      return {
-        valid: false,
-        status: response.status,
-        timestamp: new Date().toISOString(),
-        message: 'The shared link points to a non-existent page (404).',
-        reason: 'NOT_FOUND',
-        checkDuration: checkDuration
-      };
-    }
-
-    // Step 4: Check for positive signals of a working page
-    // A working Dropbox share page typically has React markers and/or file list
-    if (signals.hasDropboxViewer || signals.hasFileList || signals.hasDownloadButton) {
-      return {
-        valid: true,
-        status: response.status,
-        timestamp: new Date().toISOString(),
-        message: 'Link is valid and the shared content appears accessible.',
-        reason: 'CONTENT_VALID',
-        checkDuration: checkDuration
-      };
-    }
-
-    // Step 5: Ambiguous case - No clear signals
-    // If we got a 2xx status but no clear indicators, we need to be cautious.
-    // Could be a loading page, a captcha, or a page we don't recognize.
-    console.log(`[Warning] Ambiguous page for ${url}. No clear validity signals detected.`);
-    if (response.status >= 200 && response.status < 300) {
-      // 2xx status but unclear content - tentatively mark as valid but with note
-      return {
-        valid: true,
-        status: response.status,
-        timestamp: new Date().toISOString(),
-        message: 'Link is accessible, but content state could not be definitively verified.',
-        reason: 'ACCESSIBLE_BUT_UNVERIFIED',
-        checkDuration: checkDuration
-      };
-    } else {
-      // 4xx status (e.g., 403, 404) without clear messages
-      return {
-        valid: false,
-        status: response.status,
-        timestamp: new Date().toISOString(),
-        message: `Link returned status ${response.status} and no recognizable content.`,
-        reason: `HTTP_${response.status}`,
-        checkDuration: checkDuration
-      };
-    }
-
   } catch (error) {
-    const checkDuration = Date.now() - startTime;
-    console.error(`[Link Check Error] ${url}:`, error.message);
-
-    let reason = 'NETWORK_ERROR';
-    let message = 'Network request failed.';
-
-    if (error.code === 'ECONNABORTED') {
-      reason = 'TIMEOUT';
-      message = 'Request timed out.';
-    } else if (error.response) {
-      reason = `HTTP_${error.response.status}`;
-      message = `Server returned error: ${error.response.status}`;
-    }
-
+    console.error(`[Simple Check] ERROR: ${url}`, error.message);
+    
     return {
       valid: false,
       error: error.message,
       status: error.response?.status || 0,
       timestamp: new Date().toISOString(),
-      message: message,
-      reason: reason,
-      checkDuration: checkDuration
+      message: 'Cannot access link',
+      reason: error.code === 'ECONNABORTED' ? 'TIMEOUT' : 'NETWORK_ERROR',
+      confidence: 'HIGH'
     };
   }
 }
 
-// Get link status (with caching and force refresh option)
-async function getLinkStatus(folderId, forceRefresh = false) {
+// Get link status
+async function getLinkStatus(folderId) {
   const url = MANUAL_SHARE_LINKS[folderId];
   if (!url) {
-    return {
-      valid: false,
+    return { 
+      valid: false, 
       error: 'Link not configured',
       timestamp: new Date().toISOString(),
       reason: 'NOT_CONFIGURED'
@@ -215,197 +133,84 @@ async function getLinkStatus(folderId, forceRefresh = false) {
 
   const cacheKey = folderId;
   const now = Date.now();
+  const CACHE_TIME = 2 * 60 * 1000; // 2分钟缓存，便于测试
 
-  // Allow shorter cache for 'test' folder to facilitate testing
-  const cacheTime = folderId === 'test' ? 60000 : CACHE_DURATION; // 1 min for test, 3 min for others
-
-  if (!forceRefresh && linkStatusCache[cacheKey] &&
-    now - linkStatusCache[cacheKey].timestamp < cacheTime) {
-    console.log(`[Cache] Using cached status for "${folderId}" (${Math.round((now - linkStatusCache[cacheKey].timestamp)/1000)}s old)`);
+  if (linkStatusCache[cacheKey] && 
+      now - linkStatusCache[cacheKey].timestamp < CACHE_TIME) {
     return linkStatusCache[cacheKey];
   }
 
-  console.log(`[Cache] Fetching fresh status for "${folderId}"`);
   const status = await checkLinkValidity(url);
   linkStatusCache[cacheKey] = status;
   return status;
 }
 
-// Health Check Endpoint
+// 健康检查端点
 app.get('/api/health', (req, res) => {
   res.json({
     status: 'healthy',
-    service: 'dropbox-permanent-link-service',
-    mode: 'enhanced_multi_signal_validation',
+    service: 'dropbox-link-detector',
+    mode: 'simple_deletion_detector',
     timestamp: new Date().toISOString(),
-    available_folders: Object.keys(MANUAL_SHARE_LINKS),
-    note: 'Uses multi-signal analysis for better accuracy.'
+    available_folders: Object.keys(MANUAL_SHARE_LINKS)
   });
 });
 
-// Main API to get a file/folder link
+// 获取链接
 app.get('/api/link/:folderId', async (req, res) => {
   const folderId = req.params.folderId;
-  const force = req.query.force === 'true'; // Optional force refresh parameter
-
-  console.log(`Link requested: ${folderId} (IP: ${req.ip})`);
-
+  
   if (!MANUAL_SHARE_LINKS[folderId]) {
-    return res.status(404).json({
+    return res.status(404).json({ 
       error: 'Folder not found',
-      message: `Unconfigured folder ID: '${folderId}'`,
       available_ids: Object.keys(MANUAL_SHARE_LINKS)
     });
   }
-
-  const validity = await getLinkStatus(folderId, force);
-
-  if (!validity.valid) {
-    return res.status(503).json({
-      error: 'Link is not accessible',
-      code: 'LINK_INVALID',
-      status: validity.status,
-      details: validity.message,
-      reason: validity.reason,
-      timestamp: new Date().toISOString()
-    });
-  }
-
-  const dropboxLink = MANUAL_SHARE_LINKS[folderId];
-
+  
+  const validity = await getLinkStatus(folderId);
+  
   res.json({
     folderId,
-    url: dropboxLink,
-    source: 'manual_preconfigured',
-    status_check: {
-      valid: validity.valid,
-      reason: validity.reason,
-      check_duration_ms: validity.checkDuration
-    },
+    url: MANUAL_SHARE_LINKS[folderId],
+    status: validity.valid ? 'valid' : 'invalid',
+    reason: validity.reason,
+    message: validity.message,
     timestamp: new Date().toISOString()
   });
 });
 
-// Get status of all configured links
+// 获取所有链接状态
 app.get('/api/links/status', async (req, res) => {
-  const force = req.query.force === 'true';
   try {
     const linkStatus = {};
-
-    const promises = Object.keys(MANUAL_SHARE_LINKS).map(async (key) => {
-      linkStatus[key] = await getLinkStatus(key, force);
-    });
-
-    await Promise.all(promises);
-
+    
+    for (const key of Object.keys(MANUAL_SHARE_LINKS)) {
+      linkStatus[key] = await getLinkStatus(key);
+    }
+    
     res.json({
       success: true,
       data: linkStatus,
-      timestamp: new Date().toISOString(),
-      force_refreshed: force
-    });
-  } catch (error) {
-    console.error('Error checking link status:', error);
-    res.status(500).json({
-      success: false,
-      error: 'Error checking link status',
-      details: error.message,
       timestamp: new Date().toISOString()
     });
-  }
-});
-
-// Force immediate re-check of a specific link (bypasses cache)
-app.get('/api/links/check/:folderId', async (req, res) => {
-  const folderId = req.params.folderId;
-
-  if (!MANUAL_SHARE_LINKS[folderId]) {
-    return res.status(404).json({
-      success: false,
-      error: 'Folder not found',
-      available_ids: Object.keys(MANUAL_SHARE_LINKS)
-    });
-  }
-
-  try {
-    const status = await getLinkStatus(folderId, true); // Force refresh
-    res.json({
-      success: true,
-      data: status,
-      timestamp: new Date().toISOString(),
-      note: 'Forced fresh check performed.'
-    });
   } catch (error) {
-    console.error(`Force check failed for ${folderId}:`, error);
+    console.error('Error checking links:', error);
     res.status(500).json({
       success: false,
-      error: 'Forced check failed',
-      details: error.message
+      error: 'Error checking links'
     });
   }
 });
 
-// List all available folders
-app.get('/api/folders', (req, res) => {
-  const folderInfo = Object.keys(MANUAL_SHARE_LINKS).map(folderId => ({
-    id: folderId,
-    name: getFolderName(folderId),
-    url: `/api/link/${folderId}`,
-    configured: true
-  }));
-
-  res.json({
-    folders: folderInfo,
-    count: folderInfo.length,
-    timestamp: new Date().toISOString()
-  });
-});
-
-// Static file service - Placed AFTER all API route definitions
+// 静态文件服务
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Root path redirects to frontend
-app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'index.html'));
-});
-
-// Helper: Get friendly folder name
-function getFolderName(folderId) {
-  const names = {
-    'enjoy_ai': 'ENJOY AI',
-    'whalesbot': 'WhalesBot',
-    'test': 'Test Folder'
-  };
-  return names[folderId] || folderId;
-}
-
-// Handle unmatched routes
-app.use((req, res) => {
-  res.status(404).json({
-    error: 'Endpoint not found',
-    availableEndpoints: {
-      health: '/api/health',
-      getLink: '/api/link/:folderId',
-      linksStatus: '/api/links/status',
-      forceCheck: '/api/links/check/:folderId',
-      listFolders: '/api/folders',
-      frontend: '/ (Frontend Page)'
-    }
-  });
-});
-
-// Start Server
+// 启动服务器
 app.listen(PORT, () => {
-  console.log(`=========================================`);
-  console.log(`🚀 Dropbox Permanent Link Service Started`);
-  console.log(`📡 Port: ${PORT}`);
-  console.log(`🌍 Environment: ${process.env.NODE_ENV || 'development'}`);
-  console.log(`🔗 Configured ${Object.keys(MANUAL_SHARE_LINKS).length} permanent links`);
-  console.log(`🔍 Link Validation: ULTIMATE (Multi-Signal Analysis)`);
-  console.log(`=========================================`);
-  console.log(`Frontend Page: http://localhost:${PORT}`);
-  console.log(`Health Check: http://localhost:${PORT}/api/health`);
-  console.log(`Links Status: http://localhost:${PORT}/api/links/status`);
-  console.log(`Test Link: http://localhost:${PORT}/api/link/test`);
-  console.log(`=========================================`);
+  console.log(`=====================================`);
+  console.log(`✅ Dropbox Link Checker Started`);
+  console.log(`📍 Port: ${PORT}`);
+  console.log(`🔍 Mode: Simple Deletion Detector`);
+  console.log(`📁 Links: ${Object.keys(MANUAL_SHARE_LINKS).length}`);
+  console.log(`=====================================`);
 });
