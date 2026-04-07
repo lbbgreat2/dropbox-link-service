@@ -1,7 +1,7 @@
 {
-  "name": "dropbox-permanent-link-service",
-  "version": "2.0.0",
-  "description": "Permanent Dropbox file sharing service with enhanced link validation",
+  "name": "dropbox-file-center-noscript",
+  "version": "3.0.0",
+  "description": "Dropbox File Center with reliable no-JavaScript link detection",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
@@ -10,7 +10,8 @@
   "keywords": [
     "dropbox",
     "file-sharing",
-    "permanent-links"
+    "link-validation",
+    "noscript-detection"
   ],
   "author": "",
   "license": "MIT",
