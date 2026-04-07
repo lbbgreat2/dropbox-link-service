@@ -3,10 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
-    <title>Dropbox文件中心 | 全设备优化</title>
+    <title>Dropbox文件中心 | 链接验证版</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        /* 基础样式 - 电脑和手机共用 */
         * {
             margin: 0;
             padding: 0;
@@ -18,50 +17,84 @@
             background: linear-gradient(135deg, #0061ff 0%, #60efff 100%);
             min-height: 100vh;
             color: #333;
+            padding: 20px;
         }
         
         .container {
             max-width: 1200px;
             margin: 0 auto;
-            padding: 20px;
         }
         
-        /* 电脑端优化样式 */
-        .desktop-optimized .card-grid {
+        /* 设备检测指示器 */
+        .device-indicator {
+            display: inline-block;
+            background: rgba(255, 255, 255, 0.2);
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            margin-left: 10px;
+        }
+        
+        /* 头部样式 */
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+            color: white;
+        }
+        
+        header h1 {
+            font-size: 2.8rem;
+            margin-bottom: 10px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+        
+        header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            max-width: 600px;
+            margin: 0 auto 20px;
+        }
+        
+        .status-indicator {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background-color: #48bb78;
+            margin-right: 8px;
+        }
+        
+        /* 卡片网格 */
+        .card-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
             gap: 25px;
+            margin-bottom: 30px;
         }
         
-        .desktop-optimized .folder-card {
+        @media (max-width: 768px) {
+            .card-grid {
+                grid-template-columns: 1fr;
+            }
+            header h1 {
+                font-size: 2.2rem;
+            }
+        }
+        
+        /* 卡片样式 */
+        .folder-card {
+            background: white;
+            border-radius: 16px;
             padding: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
         }
         
-        .desktop-optimized header h1 {
-            font-size: 2.8rem;
-        }
-        
-        .desktop-optimized .access-btn {
-            padding: 14px 20px;
-        }
-        
-        /* 移动端优化样式 */
-        .mobile-optimized .card-grid {
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 20px;
-        }
-        
-        .mobile-optimized .folder-card {
-            padding: 20px;
-        }
-        
-        .mobile-optimized header h1 {
-            font-size: 1.8rem;
-        }
-        
-        .mobile-optimized .access-btn {
-            padding: 12px 16px;
+        .desktop-optimized .folder-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.2);
         }
         
         .mobile-optimized .folder-card {
@@ -74,52 +107,7 @@
             transition: transform 0.1s;
         }
         
-        /* 共用组件样式 */
-        header {
-            text-align: center;
-            margin-bottom: 40px;
-            color: white;
-        }
-        
-        header h1 {
-            margin-bottom: 10px;
-            text-shadow: 0 2px 4px rgba(0,0,0,0.2);
-        }
-        
-        header p {
-            font-size: 1.2rem;
-            opacity: 0.9;
-            max-width: 600px;
-            margin: 0 auto 20px;
-        }
-        
-        .device-indicator {
-            display: inline-block;
-            background: rgba(255, 255, 255, 0.2);
-            padding: 5px 10px;
-            border-radius: 20px;
-            font-size: 0.9rem;
-            margin-left: 10px;
-        }
-        
-        .card-grid {
-            margin-bottom: 20px;
-        }
-        
-        .folder-card {
-            background: white;
-            border-radius: 16px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
-            transition: all 0.3s ease;
-            display: flex;
-            flex-direction: column;
-        }
-        
-        .desktop-optimized .folder-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 15px 35px rgba(0,0,0,0.2);
-        }
-        
+        /* 卡片内容 */
         .card-icon {
             background: linear-gradient(135deg, #0061ff, #60efff);
             width: 60px;
@@ -162,10 +150,12 @@
             margin-right: 8px;
         }
         
+        /* 按钮样式 */
         .access-btn {
             background: linear-gradient(135deg, #0061ff, #60efff);
             color: white;
             border: none;
+            padding: 14px 20px;
             border-radius: 10px;
             font-weight: 600;
             font-size: 1rem;
@@ -176,35 +166,117 @@
             transition: all 0.3s ease;
             text-decoration: none;
             text-align: center;
+            width: 100%;
         }
         
-        .access-btn:hover {
+        .access-btn:hover:not(:disabled) {
             background: linear-gradient(135deg, #0052d4, #4fd8ff);
             box-shadow: 0 5px 15px rgba(0, 97, 255, 0.4);
+        }
+        
+        .access-btn:disabled {
+            background: #cccccc;
+            cursor: not-allowed;
+            opacity: 0.7;
         }
         
         .access-btn i {
             margin-right: 10px;
         }
         
-        .loading {
-            display: none;
-            font-size: 0.9rem;
-            color: #0061ff;
-            margin-top: 10px;
-            text-align: center;
-        }
-        
-        .shared-badge {
-            background-color: #e8f4ff;
-            color: #0061ff;
-            padding: 4px 10px;
-            border-radius: 20px;
-            font-size: 0.8rem;
+        /* 加载动画 */
+        .loading-spinner {
             display: inline-block;
-            margin-left: 10px;
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 1s ease-in-out infinite;
+            margin-right: 8px;
         }
         
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        /* 链接状态指示器 */
+        .link-status {
+            margin-top: 10px;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            min-height: 20px;
+        }
+        
+        .status-text {
+            padding: 3px 8px;
+            border-radius: 10px;
+            font-size: 11px;
+            display: inline-flex;
+            align-items: center;
+        }
+        
+        .status-valid {
+            background-color: rgba(76, 175, 80, 0.1);
+            color: #2e7d32;
+        }
+        
+        .status-checking {
+            background-color: rgba(33, 150, 243, 0.1);
+            color: #1565c0;
+        }
+        
+        .status-invalid {
+            background-color: rgba(244, 67, 54, 0.1);
+            color: #d32f2f;
+        }
+        
+        .status-error {
+            background-color: rgba(255, 193, 7, 0.1);
+            color: #f57c00;
+        }
+        
+        .status-icon {
+            margin-right: 4px;
+            font-size: 10px;
+        }
+        
+        /* 手动刷新按钮 */
+        .refresh-btn {
+            display: block;
+            margin: 20px auto;
+            padding: 10px 20px;
+            background-color: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+        
+        .refresh-btn:hover:not(:disabled) {
+            background-color: rgba(255, 255, 255, 0.3);
+        }
+        
+        .refresh-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        /* 错误信息 */
+        .error-message {
+            display: none;
+            background: #fed7d7;
+            color: #c53030;
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin: 15px 0;
+            font-size: 0.9rem;
+        }
+        
+        /* 页脚 */
         footer {
             text-align: center;
             margin-top: 50px;
@@ -213,30 +285,15 @@
             font-size: 0.9rem;
         }
         
-        .status-indicator {
+        /* 徽章 */
+        .shared-badge {
+            background-color: #e8f4ff;
+            color: #0061ff;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.8rem;
             display: inline-block;
-            width: 10px;
-            height: 10px;
-            border-radius: 50%;
-            background-color: #48bb78;
-            margin-right: 8px;
-        }
-        
-        .error-message {
-            display: none;
-            background: #fed7d7;
-            color: #c53030;
-            padding: 10px 15px;
-            border-radius: 8px;
-            margin: 10px 0;
-            font-size: 0.9rem;
-        }
-        
-        /* 响应式调整 */
-        @media (min-width: 768px) {
-            .mobile-optimized .card-grid {
-                grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-            }
+            margin-left: 10px;
         }
     </style>
 </head>
@@ -267,11 +324,13 @@
                 <div class="card-meta">
                     <i class="fas fa-folder-open"></i> 文件夹
                 </div>
-                <button class="access-btn" onclick="handleFolderClick('apps_software')">
-                    <i class="fas fa-external-link-alt"></i> 打开文件夹
+                <button class="access-btn" onclick="handleFolderClick('apps_software')" disabled>
+                    <span class="btn-text">检测链接状态中...</span>
                 </button>
-                <div id="loading-apps_software" class="loading">
-                    <i class="fas fa-spinner fa-spin"></i> 正在生成永久链接...
+                <div class="link-status">
+                    <span id="status-apps_software" class="status-text status-checking">
+                        <span class="status-icon">⏳</span> 正在检测链接状态...
+                    </span>
                 </div>
             </div>
             
@@ -287,11 +346,13 @@
                 <div class="card-meta">
                     <i class="fas fa-users"></i> 共享文件夹
                 </div>
-                <button class="access-btn" onclick="handleFolderClick('enjoy_ai')">
-                    <i class="fas fa-external-link-alt"></i> 打开文件夹
+                <button class="access-btn" onclick="handleFolderClick('enjoy_ai')" disabled>
+                    <span class="btn-text">检测链接状态中...</span>
                 </button>
-                <div id="loading-enjoy_ai" class="loading">
-                    <i class="fas fa-spinner fa-spin"></i> 正在生成永久链接...
+                <div class="link-status">
+                    <span id="status-enjoy_ai" class="status-text status-checking">
+                        <span class="status-icon">⏳</span> 正在检测链接状态...
+                    </span>
                 </div>
             </div>
             
@@ -307,11 +368,13 @@
                 <div class="card-meta">
                     <i class="fas fa-users"></i> 共享文件夹
                 </div>
-                <button class="access-btn" onclick="handleFolderClick('whalesbot')">
-                    <i class="fas fa-external-link-alt"></i> 打开文件夹
+                <button class="access-btn" onclick="handleFolderClick('whalesbot')" disabled>
+                    <span class="btn-text">检测链接状态中...</span>
                 </button>
-                <div id="loading-whalesbot" class="loading">
-                    <i class="fas fa-spinner fa-spin"></i> 正在生成永久链接...
+                <div class="link-status">
+                    <span id="status-whalesbot" class="status-text status-checking">
+                        <span class="status-icon">⏳</span> 正在检测链接状态...
+                    </span>
                 </div>
             </div>
             
@@ -327,103 +390,99 @@
                 <div class="card-meta">
                     <i class="fas fa-file-video"></i> MP4视频 • 1秒
                 </div>
-                <button class="access-btn" onclick="handleFolderClick('air_headshot')">
-                    <i class="fas fa-play-circle"></i> 播放视频
+                <button class="access-btn" onclick="handleFolderClick('air_headshot')" disabled>
+                    <span class="btn-text">检测链接状态中...</span>
                 </button>
-                <div id="loading-air_headshot" class="loading">
-                    <i class="fas fa-spinner fa-spin"></i> 正在生成永久链接...
+                <div class="link-status">
+                    <span id="status-air_headshot" class="status-text status-checking">
+                        <span class="status-icon">⏳</span> 正在检测链接状态...
+                    </span>
                 </div>
             </div>
         </main>
         
+        <button id="refresh-btn" class="refresh-btn" onclick="refreshAllLinks()">
+            <i class="fas fa-sync-alt"></i> 重新检测所有链接状态
+        </button>
+        
         <footer>
-            <p>© 2024 Dropbox永久链接服务 | 全设备自适应版本</p>
-            <p>系统已自动为您的设备优化交互体验，所有链接永久有效。</p>
+            <p>© 2024 Dropbox永久链接服务 | 链接验证版</p>
+            <p>系统自动检测链接状态，失效链接将被禁用并提示。</p>
         </footer>
     </div>
     
     <script>
-        // 设备检测和自适应配置
+        // 全局配置
+        const API_BASE_URL = window.location.origin;
+        let isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+        let currentDeviceConfig = null;
+        let linkStatusCache = {};
+        
+        // 设备检测和配置
         const DeviceConfig = {
-            isMobile: /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent),
+            isMobile: isMobile,
             isTablet: /iPad|Android(?!.*Mobile)|Tablet|Silk/i.test(navigator.userAgent),
             isDesktop: function() { return !this.isMobile && !this.isTablet; },
             
-            // 设备特定配置
             configs: {
                 mobile: {
                     name: '手机端',
                     bodyClass: 'mobile-optimized',
-                    openLinkMethod: 'current', // current: 当前窗口, newtab: 新标签
-                    cardClickable: true,      // 整个卡片可点击
-                    hoverEffects: false       // 禁用悬停效果
+                    openLinkMethod: 'current',
+                    cardClickable: true
                 },
                 tablet: {
                     name: '平板端',
                     bodyClass: 'mobile-optimized',
                     openLinkMethod: 'newtab',
-                    cardClickable: true,
-                    hoverEffects: false
+                    cardClickable: true
                 },
                 desktop: {
                     name: '电脑端',
                     bodyClass: 'desktop-optimized',
                     openLinkMethod: 'newtab',
-                    cardClickable: false,     // 仅按钮可点击
-                    hoverEffects: true        // 启用悬停效果
+                    cardClickable: false
                 }
             },
             
-            // 获取当前设备配置
             getCurrentConfig: function() {
                 if (this.isMobile) return this.configs.mobile;
                 if (this.isTablet) return this.configs.tablet;
                 return this.configs.desktop;
             },
             
-            // 应用设备特定配置
             applyDeviceConfig: function() {
                 const config = this.getCurrentConfig();
                 const body = document.body;
                 
-                // 清除可能存在的旧设备类
                 body.classList.remove('mobile-optimized', 'desktop-optimized');
-                // 添加新设备类
                 body.classList.add(config.bodyClass);
                 
-                // 更新UI显示
                 document.getElementById('device-badge').textContent = config.name;
                 document.getElementById('device-optimized-text').textContent = `已为${config.name}优化`;
                 
-                // 设置卡片点击行为
                 this.setupCardInteractions(config.cardClickable);
                 
-                console.log(`设备检测完成: ${config.name}, 配置已应用`);
+                console.log(`设备检测完成: ${config.name}`);
                 return config;
             },
             
-            // 设置卡片交互方式
             setupCardInteractions: function(cardClickable) {
                 const cards = document.querySelectorAll('.folder-card');
                 
                 cards.forEach(card => {
-                    // 移除之前的事件监听器
                     card.removeEventListener('click', this.handleCardClick);
                     
                     if (cardClickable) {
-                        // 移动端/平板：整个卡片可点击
                         card.style.cursor = 'pointer';
                         card.addEventListener('click', this.handleCardClick);
                     } else {
-                        // 电脑端：仅按钮可点击
                         card.style.cursor = 'default';
                     }
                 });
             },
             
-            // 卡片点击处理
             handleCardClick: function(event) {
-                // 如果点击的是按钮，不处理（按钮有自己的点击事件）
                 if (event.target.tagName === 'BUTTON' || event.target.closest('button')) {
                     return;
                 }
@@ -435,77 +494,198 @@
             }
         };
         
-        // 全局配置
-        const API_BASE_URL = window.location.origin;
-        let currentDeviceConfig = null;
-        
-        // 设备初始化
-        function initializeDevice() {
-            currentDeviceConfig = DeviceConfig.applyDeviceConfig();
-            document.getElementById('status-text').textContent = `${currentDeviceConfig.name}优化模式就绪`;
-        }
-        
-        // 统一的文件夹点击处理
-        async function handleFolderClick(folderId) {
-            const button = document.querySelector(`[data-folder-id="${folderId}"] button`);
-            const loadingEl = document.getElementById(`loading-${folderId}`);
-            const errorEl = document.getElementById('error-message');
+        // 链接状态管理器
+        class LinkStatusManager {
+            constructor() {
+                this.checkInterval = 5 * 60 * 1000; // 5分钟检测一次
+                this.retryCount = 0;
+                this.maxRetries = 3;
+            }
             
-            // 清除错误信息
-            errorEl.style.display = 'none';
-            
-            // 显示加载状态
-            if (button) {
-                const originalText = button.innerHTML;
-                button.disabled = true;
-                button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 处理中...';
-                
-                if (loadingEl) loadingEl.style.display = 'block';
-                
+            // 检测所有链接状态
+            async checkAllLinks() {
                 try {
-                    // 调用API获取链接
-                    console.log(`[${currentDeviceConfig.name}] 请求文件夹: ${folderId}`);
-                    const response = await fetch(`${API_BASE_URL}/api/link/${folderId}`);
+                    console.log('开始检测所有链接状态...');
+                    this.updateRefreshButton(true, '检测中...');
                     
+                    const response = await fetch(`${API_BASE_URL}/api/links/status`);
                     if (!response.ok) {
                         throw new Error(`HTTP错误: ${response.status}`);
                     }
                     
                     const data = await response.json();
                     
-                    if (data && data.url) {
-                        console.log(`链接获取成功: ${data.url.substring(0, 50)}...`);
-                        
-                        // 根据设备配置使用不同的跳转方式
-                        if (currentDeviceConfig.openLinkMethod === 'current') {
-                            // 移动端：当前窗口跳转
-                            window.location.href = data.url;
-                        } else {
-                            // 电脑端/平板：新标签页打开
-                            window.open(data.url, '_blank');
-                        }
-                        
-                        // 成功反馈
-                        button.innerHTML = '<i class="fas fa-check"></i> 成功!';
-                        setTimeout(() => {
-                            button.innerHTML = originalText;
-                            button.disabled = false;
-                        }, 1500);
+                    if (data.success) {
+                        this.retryCount = 0;
+                        linkStatusCache = data.data;
+                        this.updateUI();
+                        this.saveToStorage();
+                        document.getElementById('status-text').textContent = '链接状态已更新';
                     } else {
-                        throw new Error('服务器返回数据格式不正确');
+                        throw new Error(data.error || '检测链接状态失败');
                     }
                 } catch (error) {
-                    console.error('获取链接失败:', error);
-                    showError(`获取链接失败: ${error.message}`);
-                    button.innerHTML = originalText;
-                    button.disabled = false;
+                    console.error('检测链接状态失败:', error);
+                    
+                    if (this.retryCount < this.maxRetries) {
+                        this.retryCount++;
+                        console.log(`第${this.retryCount}次重试...`);
+                        setTimeout(() => this.checkAllLinks(), 2000);
+                        return;
+                    }
+                    
+                    this.showError('检测链接状态失败，将使用本地缓存');
+                    this.loadFromStorage(); // 失败时尝试从缓存加载
                 } finally {
-                    if (loadingEl) loadingEl.style.display = 'none';
+                    this.updateRefreshButton(false, '重新检测所有链接状态');
+                }
+            }
+            
+            // 更新UI
+            updateUI() {
+                const folderIds = ['apps_software', 'enjoy_ai', 'whalesbot', 'air_headshot'];
+                
+                folderIds.forEach(folderId => {
+                    const button = document.querySelector(`[data-folder-id="${folderId}"] .access-btn`);
+                    const btnText = button.querySelector('.btn-text');
+                    const statusEl = document.getElementById(`status-${folderId}`);
+                    
+                    if (linkStatusCache[folderId]) {
+                        const status = linkStatusCache[folderId];
+                        
+                        if (status.valid) {
+                            // 链接有效
+                            button.disabled = false;
+                            btnText.textContent = this.getButtonText(folderId);
+                            statusEl.innerHTML = `
+                                <span class="status-icon">✅</span> 链接正常
+                                <span style="margin-left: 8px; font-size: 10px; opacity: 0.7;">
+                                    ${new Date(status.timestamp).toLocaleTimeString()}
+                                </span>
+                            `;
+                            statusEl.className = 'status-text status-valid';
+                        } else {
+                            // 链接失效
+                            button.disabled = true;
+                            btnText.textContent = '链接已失效';
+                            statusEl.innerHTML = `
+                                <span class="status-icon">❌</span> 链接失效
+                                <span style="margin-left: 8px; font-size: 10px; opacity: 0.7;">
+                                    ${status.error || '无法访问'}
+                                </span>
+                            `;
+                            statusEl.className = 'status-text status-invalid';
+                        }
+                    } else {
+                        // 状态未知
+                        button.disabled = true;
+                        btnText.textContent = '状态未知';
+                        statusEl.innerHTML = '<span class="status-icon">⚠️</span> 状态检测失败';
+                        statusEl.className = 'status-text status-error';
+                    }
+                });
+            }
+            
+            // 获取按钮文本
+            getButtonText(folderId) {
+                const isMobile = DeviceConfig.isMobile;
+                if (folderId === 'air_headshot') {
+                    return isMobile ? '播放视频' : '播放视频';
+                }
+                return isMobile ? '点击打开' : '打开文件夹';
+            }
+            
+            // 打开链接
+            async openLink(folderId) {
+                const button = document.querySelector(`[data-folder-id="${folderId}"] .access-btn`);
+                const btnText = button.querySelector('.btn-text');
+                const originalText = btnText.textContent;
+                
+                // 显示加载状态
+                button.disabled = true;
+                btnText.innerHTML = '<span class="loading-spinner"></span>验证中...';
+                
+                try {
+                    const response = await fetch(`${API_BASE_URL}/api/link/${folderId}`);
+                    const data = await response.json();
+                    
+                    if (data.valid) {
+                        // 根据设备配置使用不同的跳转方式
+                        if (currentDeviceConfig.openLinkMethod === 'current') {
+                            window.location.href = data.url;
+                        } else {
+                            window.open(data.url, '_blank');
+                        }
+                    } else {
+                        this.showError('链接验证失败，可能已失效');
+                        this.checkAllLinks(); // 重新检测状态
+                    }
+                } catch (error) {
+                    console.error('打开链接失败:', error);
+                    this.showError('无法访问文件，请检查网络');
+                } finally {
+                    // 恢复按钮状态
+                    setTimeout(() => {
+                        button.disabled = false;
+                        btnText.textContent = originalText;
+                    }, 1000);
+                }
+            }
+            
+            // 本地存储
+            saveToStorage() {
+                localStorage.setItem('linkStatusCache', JSON.stringify({
+                    data: linkStatusCache,
+                    timestamp: Date.now()
+                }));
+            }
+            
+            // 从存储加载
+            loadFromStorage() {
+                try {
+                    const saved = localStorage.getItem('linkStatusCache');
+                    if (saved) {
+                        const { data, timestamp } = JSON.parse(saved);
+                        // 如果存储的数据在1小时内，使用它
+                        if (Date.now() - timestamp < 60 * 60 * 1000) {
+                            linkStatusCache = data;
+                            this.updateUI();
+                            return true;
+                        }
+                    }
+                } catch (error) {
+                    console.error('加载缓存失败:', error);
+                }
+                return false;
+            }
+            
+            // 更新刷新按钮状态
+            updateRefreshButton(disabled, text) {
+                const button = document.getElementById('refresh-btn');
+                if (button) {
+                    button.disabled = disabled;
+                    button.innerHTML = disabled 
+                        ? '<span class="loading-spinner"></span>' + text
+                        : '<i class="fas fa-sync-alt"></i> ' + text;
                 }
             }
         }
         
-        // 显示错误信息
+        // 全局函数
+        async function handleFolderClick(folderId) {
+            const statusManager = window.linkStatusManager;
+            if (statusManager) {
+                await statusManager.openLink(folderId);
+            }
+        }
+        
+        async function refreshAllLinks() {
+            const statusManager = window.linkStatusManager;
+            if (statusManager) {
+                await statusManager.checkAllLinks();
+            }
+        }
+        
         function showError(message) {
             const errorEl = document.getElementById('error-message');
             errorEl.textContent = '⚠️ ' + message;
@@ -516,49 +696,48 @@
             }, 5000);
         }
         
-        // 健康检查
         async function checkHealth() {
             try {
                 const response = await fetch(`${API_BASE_URL}/api/health`);
                 if (response.ok) {
                     document.querySelector('.status-indicator').style.backgroundColor = '#48bb78';
-                } else {
-                    document.querySelector('.status-indicator').style.backgroundColor = '#f56565';
+                    return true;
                 }
             } catch (error) {
                 console.log('健康检查失败:', error);
-                document.querySelector('.status-indicator').style.backgroundColor = '#f56565';
             }
+            document.querySelector('.status-indicator').style.backgroundColor = '#f56565';
+            return false;
         }
         
         // 页面初始化
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', async function() {
             // 设备检测和配置
-            initializeDevice();
+            currentDeviceConfig = DeviceConfig.applyDeviceConfig();
             
             // 健康检查
-            checkHealth();
+            await checkHealth();
             
-            // 窗口大小变化时重新检测（针对可转换设备）
-            let resizeTimeout;
-            window.addEventListener('resize', function() {
-                clearTimeout(resizeTimeout);
-                resizeTimeout = setTimeout(() => {
-                    const newIsMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-                    if (newIsMobile !== DeviceConfig.isMobile) {
-                        location.reload(); // 设备类型变化时重新加载
-                    }
-                }, 250);
-            });
+            // 初始化链接状态管理器
+            window.linkStatusManager = new LinkStatusManager();
+            
+            // 先尝试从本地存储加载
+            if (!window.linkStatusManager.loadFromStorage()) {
+                // 存储中没有或已过期，从服务器检测
+                await window.linkStatusManager.checkAllLinks();
+            }
+            
+            // 定期检测
+            setInterval(() => {
+                window.linkStatusManager.checkAllLinks();
+            }, window.linkStatusManager.checkInterval);
             
             // 调试信息
             console.log('设备信息:', {
                 设备类型: currentDeviceConfig.name,
                 用户代理: navigator.userAgent,
                 屏幕尺寸: `${window.innerWidth} × ${window.innerHeight}`,
-                API地址: API_BASE_URL,
-                跳转方式: currentDeviceConfig.openLinkMethod,
-                卡片点击: currentDeviceConfig.cardClickable ? '启用' : '禁用'
+                API地址: API_BASE_URL
             });
         });
         
