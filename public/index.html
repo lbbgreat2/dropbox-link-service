@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
-    <title>Dropbox File Center | No-JS Detection</title>
+    <title>Dropbox File Center | Icon-Based Detection</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         * {
@@ -267,10 +267,10 @@
     <div class="container">
         <header>
             <h1><i class="fas fa-cloud"></i> Dropbox File Center</h1>
-            <p>Advanced link validation using no-JavaScript detection for accurate results.</p>
+            <p>Icon-based detection for accurate link validation. System checks for trash can icons and deletion text.</p>
             <div style="margin-top: 10px;">
                 <span class="status-indicator"></span>
-                <span id="status-text">Initializing no-JS detection...</span>
+                <span id="status-text">Initializing icon-based detection...</span>
             </div>
             
             <div id="error-message" class="error-message"></div>
@@ -327,9 +327,9 @@
                     <i class="fas fa-vial"></i>
                 </div>
                 <h3 class="card-title">Test Folder
-                    <span class="test-badge">Test • Detection</span>
+                    <span class="test-badge">Test • Trash Detection</span>
                 </h3>
-                <p class="card-desc">Test folder for validating the no-JS detection system. The system checks the &noscript=1 version for accurate results.</p>
+                <p class="card-desc">Test folder for validating the icon-based detection system. The system checks for trash can icons in the no-JS version.</p>
                 <div class="card-meta">
                     <i class="fas fa-flask"></i> Test Folder
                 </div>
@@ -345,12 +345,12 @@
         </main>
         
         <button id="refresh-btn" class="refresh-btn" onclick="checkAllLinks()">
-            <i class="fas fa-sync-alt"></i> Re-check All Links
+            <i class="fas fa-sync-alt"></i> Check All Link Status
         </button>
         
         <footer>
-            <p>© 2024 Dropbox Permanent Link Service | No-JS Detection v2</p>
-            <p>System checks the &noscript=1 version for reliable link validation.</p>
+            <p>© 2024 Dropbox Permanent Link Service | Icon-Based Detection v4</p>
+            <p>System detects deleted pages by looking for trash can icons in the &noscript=1 version.</p>
         </footer>
     </div>
     
@@ -391,9 +391,7 @@
                 let displayText = '✅ Link Valid';
                 let statusClass = 'status-valid';
                 
-                if (reason.includes('NOSCRIPT')) {
-                    displayText = '✅ Verified (no-JS)';
-                } else if (reason.includes('UNVERIFIED')) {
+                if (reason === 'ACCESSIBLE_NO_MARKERS') {
                     displayText = '⚠️ Accessible';
                     statusClass = 'status-checking';
                 }
@@ -401,22 +399,20 @@
                 statusEl.innerHTML = `<i class="fas fa-check-circle"></i> ${displayText}`;
                 statusEl.className = `status-text ${statusClass}`;
             } else {
-                let displayText = '❌ Link Invalid';
-                let icon = 'fa-times-circle';
+                button.disabled = true;
                 
                 if (reason.includes('DELETED')) {
                     displayText = '🗑️ Item Deleted';
-                    icon = 'fa-trash-alt';
                 } else if (reason === 'TIMEOUT') {
                     displayText = '⏱️ Timeout';
-                    icon = 'fa-clock';
                 } else if (reason.startsWith('HTTP_4') || reason.startsWith('HTTP_5')) {
                     const code = reason.replace('HTTP_', '');
                     displayText = `⚠️ Error ${code}`;
-                    icon = 'fa-exclamation-triangle';
+                } else {
+                    displayText = '❌ Link Invalid';
                 }
                 
-                statusEl.innerHTML = `<i class="fas ${icon}"></i> ${displayText}`;
+                statusEl.innerHTML = `<i class="fas fa-trash-alt"></i> ${displayText}`;
                 statusEl.className = 'status-text status-invalid';
             }
         }
@@ -426,7 +422,6 @@
             const btnText = button.querySelector('.btn-text');
             const originalText = btnText.textContent;
             
-            // 视觉反馈
             button.disabled = true;
             btnText.innerHTML = '<span class="loading-spinner"></span> Opening...';
             
@@ -435,10 +430,8 @@
                 const data = await response.json();
                 
                 if (data.status_check && data.status_check.valid) {
-                    // 链接有效，打开它
                     window.open(data.url, '_blank');
                 } else {
-                    // 链接无效，显示错误
                     const msg = data.status_check?.message || 'The link is not accessible.';
                     showError(`Cannot open: ${msg}`);
                 }
@@ -446,7 +439,6 @@
                 console.error('Failed to open link:', error);
                 showError('Failed to open the link. Please try again.');
             } finally {
-                // 短暂延迟后重置按钮
                 setTimeout(() => {
                     button.disabled = false;
                     btnText.textContent = originalText;
@@ -460,13 +452,11 @@
             const statusIndicator = document.querySelector('.status-indicator');
             const statusText = document.getElementById('status-text');
             
-            // 禁用按钮并显示加载状态
             refreshBtn.disabled = true;
             refreshBtn.innerHTML = '<span class="loading-spinner"></span> Checking...';
-            statusText.textContent = 'Checking link status (no-JS detection)...';
+            statusText.textContent = 'Checking links (icon-based detection)...';
             statusIndicator.style.backgroundColor = '#f6ad55';
             
-            // 将所有状态设置为"检查中"
             FOLDER_IDS.forEach(id => {
                 const statusEl = document.getElementById(`status-${id}`);
                 statusEl.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Checking...';
@@ -515,7 +505,7 @@
                 statusText.textContent = 'Check failed';
                 statusIndicator.style.backgroundColor = '#f56565';
                 
-                // 降级模式：如果检查失败，允许手动访问
+                // 降级模式
                 FOLDER_IDS.forEach(folderId => {
                     const button = document.getElementById(`btn-${folderId}`);
                     const statusEl = document.getElementById(`status-${folderId}`);
@@ -525,7 +515,6 @@
                     statusEl.className = 'status-text status-checking';
                 });
             } finally {
-                // 重新启用按钮
                 setTimeout(() => {
                     refreshBtn.innerHTML = originalText;
                     refreshBtn.disabled = false;
@@ -533,49 +522,23 @@
             }
         }
         
-        // 健康检查
-        async function checkHealth() {
-            try {
-                const response = await fetch(`${API_BASE_URL}/api/health`);
-                if (response.ok) {
-                    const data = await response.json();
-                    document.querySelector('.status-indicator').style.backgroundColor = '#48bb78';
-                    document.getElementById('status-text').textContent = 'Service is healthy';
-                    
-                    // 健康检查后自动检查链接
-                    setTimeout(() => checkAllLinks(), 1000);
-                    
-                    return true;
-                }
-            } catch (error) {
-                console.log('Health check failed:', error);
-            }
-            
-            document.getElementById('status-text').textContent = 'Service connection error';
-            document.querySelector('.status-indicator').style.backgroundColor = '#f56565';
-            return false;
-        }
-        
-        // 页面初始化
+        // 初始化
         document.addEventListener('DOMContentLoaded', function() {
-            console.log('Dropbox File Center initialized.');
-            console.log('API Base URL:', API_BASE_URL);
-            console.log('Detection method: No-JavaScript version checking');
+            console.log('Dropbox File Center initialized with icon-based detection.');
             
-            // 初始状态
             FOLDER_IDS.forEach(folderId => {
                 const statusEl = document.getElementById(`status-${folderId}`);
                 statusEl.textContent = '⏳ Initializing...';
                 statusEl.className = 'status-text status-checking';
             });
             
-            // 执行健康检查
-            checkHealth();
+            // 初始检查
+            checkAllLinks();
             
-            // 每5分钟自动检查一次
+            // 每3分钟自动检查
             setInterval(() => {
                 checkAllLinks();
-            }, 5 * 60 * 1000);
+            }, 3 * 60 * 1000);
         });
     </script>
 </body>
