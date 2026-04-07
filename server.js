@@ -22,30 +22,113 @@ const MANUAL_SHARE_LINKS = {
 let linkStatusCache = {};
 const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes cache
 
-// Function to check if a single link is valid
+// Enhanced Function to check link validity by analyzing page content
 async function checkLinkValidity(url) {
   try {
-    const response = await axios.head(url, {
+    // Send GET request to fetch the page HTML for analysis
+    const response = await axios.get(url, {
       timeout: 10000, // 10 second timeout
       maxRedirects: 5,
+      // Accept all status codes; we will check the content
       validateStatus: function (status) {
-        return status >= 200 && status < 400;
+        return status < 500; // Don't reject on 404, 403 etc.
       }
     });
+
+    const htmlContent = response.data;
+    const isDropboxPage = htmlContent.includes('dropbox.com') || htmlContent.includes('Dropbox');
+
+    if (!isDropboxPage) {
+      // If it's not a Dropbox page at all, it's invalid
+      return {
+        valid: false,
+        status: response.status,
+        timestamp: new Date().toISOString(),
+        message: 'Link does not point to a valid Dropbox page.',
+        reason: 'NOT_DROPBOX_PAGE'
+      };
+    }
+
+    // *** CORE DETECTION LOGIC ***
+    // Check for keywords indicating the file/folder is deleted (based on your screenshot)
+    const deletionKeywords = [
+      'This item was deleted',
+      'was deleted',
+      'deleted files',
+      'item is no longer available',
+      'couldn\'t find this item',
+      'The file you\'re looking for couldn\'t be found',
+      'The folder you\'re looking for couldn\'t be found'
+    ];
+
+    const isContentDeleted = deletionKeywords.some(keyword =>
+      htmlContent.includes(keyword)
+    );
+
+    if (isContentDeleted) {
+      return {
+        valid: false,
+        status: response.status,
+        timestamp: new Date().toISOString(),
+        message: 'The shared item has been deleted on Dropbox.',
+        reason: 'CONTENT_DELETED'
+      };
+    }
+
+    // Check for keywords indicating permission issues
+    const permissionKeywords = [
+      'don\'t have permission',
+      'You need access',
+      'Ask for access',
+      'This link is disabled',
+      'shared link has been disabled'
+    ];
+
+    const hasPermissionIssue = permissionKeywords.some(keyword =>
+      htmlContent.includes(keyword)
+    );
+
+    if (hasPermissionIssue) {
+      return {
+        valid: false,
+        status: response.status,
+        timestamp: new Date().toISOString(),
+        message: 'You do not have permission to access this item.',
+        reason: 'NO_PERMISSION'
+      };
+    }
+
+    // If none of the failure conditions are met, assume the link is valid
+    // (It shows the actual file/folder content)
     return {
       valid: true,
       status: response.status,
       timestamp: new Date().toISOString(),
-      message: 'Link is accessible'
+      message: 'Link is valid and content is accessible.',
+      reason: 'CONTENT_ACCESSIBLE'
     };
+
   } catch (error) {
     console.error(`Link check failed: ${url}`, error.message);
+    // Determine error type
+    let reason = 'NETWORK_ERROR';
+    let message = 'Network request failed.';
+
+    if (error.code === 'ECONNABORTED') {
+      reason = 'TIMEOUT';
+      message = 'Request timed out.';
+    } else if (error.response) {
+      reason = `HTTP_${error.response.status}`;
+      message = `Server returned error: ${error.response.status}`;
+    }
+
     return {
       valid: false,
       error: error.message,
       status: error.response?.status || 0,
       timestamp: new Date().toISOString(),
-      message: 'Link may be invalid or unreachable'
+      message: message,
+      reason: reason
     };
   }
 }
@@ -54,15 +137,20 @@ async function checkLinkValidity(url) {
 async function getLinkStatus(folderId) {
   const url = MANUAL_SHARE_LINKS[folderId];
   if (!url) {
-    return { valid: false, error: 'Link not configured', timestamp: new Date().toISOString() };
+    return {
+      valid: false,
+      error: 'Link not configured',
+      timestamp: new Date().toISOString(),
+      reason: 'NOT_CONFIGURED'
+    };
   }
 
   const cacheKey = folderId;
   const now = Date.now();
-  
+
   // Check cache
-  if (linkStatusCache[cacheKey] && 
-      now - linkStatusCache[cacheKey].timestamp < CACHE_DURATION) {
+  if (linkStatusCache[cacheKey] &&
+    now - linkStatusCache[cacheKey].timestamp < CACHE_DURATION) {
     return linkStatusCache[cacheKey];
   }
 
@@ -77,7 +165,7 @@ app.get('/api/health', (req, res) => {
   res.json({
     status: 'healthy',
     service: 'dropbox-permanent-link-service',
-    mode: 'manual_links_with_validation',
+    mode: 'enhanced_content_validation',
     timestamp: new Date().toISOString(),
     available_folders: Object.keys(MANUAL_SHARE_LINKS)
   });
@@ -86,19 +174,19 @@ app.get('/api/health', (req, res) => {
 // Main API to get a file/folder link
 app.get('/api/link/:folderId', async (req, res) => {
   const folderId = req.params.folderId;
-  
+
   console.log(`Link requested: ${folderId} (IP: ${req.ip})`);
-  
+
   if (!MANUAL_SHARE_LINKS[folderId]) {
-    return res.status(404).json({ 
+    return res.status(404).json({
       error: 'Folder not found',
       message: `Unconfigured folder ID: '${folderId}'`,
       available_ids: Object.keys(MANUAL_SHARE_LINKS)
     });
   }
-  
+
   const dropboxLink = MANUAL_SHARE_LINKS[folderId];
-  
+
   res.json({
     folderId,
     url: dropboxLink,
@@ -112,13 +200,13 @@ app.get('/api/link/:folderId', async (req, res) => {
 app.get('/api/links/status', async (req, res) => {
   try {
     const linkStatus = {};
-    
+
     const promises = Object.keys(MANUAL_SHARE_LINKS).map(async (key) => {
       linkStatus[key] = await getLinkStatus(key);
     });
-    
+
     await Promise.all(promises);
-    
+
     res.json({
       success: true,
       data: linkStatus,
@@ -143,7 +231,7 @@ app.get('/api/folders', (req, res) => {
     url: `/api/link/${folderId}`,
     configured: true
   }));
-  
+
   res.json({
     folders: folderInfo,
     count: folderInfo.length,
@@ -189,9 +277,8 @@ app.listen(PORT, () => {
   console.log(`=========================================`);
   console.log(`🚀 Dropbox Permanent Link Service Started`);
   console.log(`📡 Port: ${PORT}`);
-  console.log(`🌍 Environment: ${process.env.NODE_ENV || 'development'}`);
   console.log(`🔗 Configured ${Object.keys(MANUAL_SHARE_LINKS).length} permanent links`);
-  console.log(`🔍 Link Validation: Simple Mode (Format Check)`);
+  console.log(`🔍 Link Validation: ENHANCED (Content Analysis)`);
   console.log(`=========================================`);
   console.log(`Frontend Page: http://localhost:${PORT}`);
   console.log(`Health Check: http://localhost:${PORT}/api/health`);
