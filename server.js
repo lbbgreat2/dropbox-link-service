@@ -20,14 +20,13 @@ const MANUAL_SHARE_LINKS = {
 
 // Link Status Cache
 let linkStatusCache = {};
+const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes cache
 
-// SIMPLE & DIRECT: Check if Dropbox link shows deletion page
+// Direct and Effective Link Checker
 async function checkLinkValidity(url) {
   try {
-    console.log(`[Simple Check] Testing: ${url}`);
-    
     const response = await axios.get(url, {
-      timeout: 10000,
+      timeout: 10000, // 10 seconds
       headers: {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
       }
@@ -35,91 +34,76 @@ async function checkLinkValidity(url) {
 
     const html = response.data;
     const lowerHtml = html.toLowerCase();
-    
-    // 关键检测1: 直接查找删除文字 (根据您的截图)
+
+    // CORE DETECTION: Look for the trash can / deletion page
+    // 1. Keywords from the deletion page you screenshot
     const hasDeletedText = 
       lowerHtml.includes('this item was deleted') ||
       lowerHtml.includes('this file was deleted') ||
       lowerHtml.includes('was deleted') ||
-      lowerHtml.includes('deleted files') ||
-      lowerHtml.includes('item is no longer available');
-    
-    // 关键检测2: 查找垃圾桶图标的常见HTML表示
-    // Dropbox删除页面的垃圾桶通常有特定SVG路径或CSS类
+      lowerHtml.includes('deleted files');
+
+    // 2. HTML markers for the trash can icon
     const hasTrashIcon = 
-      html.includes('M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12z') || // 常见垃圾桶SVG路径
+      html.includes('M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12z') || // Common trash SVG
       html.includes('trash-can') ||
-      html.includes('trash_icon') ||
-      html.includes('icon-trash') ||
-      html.includes('deleted-illustration');
-    
-    // 关键检测3: 查找删除页面的其他特征
-    const hasDeletePageMarkers = 
-      lowerHtml.includes('you might be able to find it in your deleted files') ||
-      lowerHtml.includes('ask the person who shared it with you') ||
-      lowerHtml.includes('check deleted files');
-    
-    // 如果是删除页面
-    if (hasDeletedText || hasTrashIcon || hasDeletePageMarkers) {
-      console.log(`[Simple Check] DETECTED AS DELETED - Reason: ${hasDeletedText ? 'Deleted text' : ''} ${hasTrashIcon ? 'Trash icon' : ''} ${hasDeletePageMarkers ? 'Delete markers' : ''}`);
+      html.includes('icon-trash');
+
+    // 3. Other indicators of the deletion page layout
+    const isDeletePage = hasDeletedText || hasTrashIcon;
+
+    if (isDeletePage) {
+      console.log(`[检测] 链接已删除: ${url.substring(0, 60)}...`);
       return {
         valid: false,
         status: response.status,
         timestamp: new Date().toISOString(),
-        message: 'This item has been deleted on Dropbox',
-        reason: 'DELETED',
-        confidence: 'HIGH'
+        message: 'This item has been deleted on Dropbox.',
+        reason: 'DELETED'
       };
     }
-    
-    // 检查是否是有效的内容页面
-    // 有效的Dropbox分享页面通常有这些元素
-    const hasValidContent =
+
+    // If not a delete page, check for signs of a valid page
+    const hasValidContent = 
       html.includes('file_viewer') ||
       html.includes('folder_viewer') ||
       html.includes('download_button') ||
-      (html.includes('viewing') && html.includes('dropbox.com')) ||
       (html.includes('shared with you') && html.includes('dropbox.com'));
-    
+
     if (hasValidContent) {
-      console.log(`[Simple Check] DETECTED AS VALID - Has content markers`);
       return {
         valid: true,
         status: response.status,
         timestamp: new Date().toISOString(),
-        message: 'Link is valid and accessible',
-        reason: 'VALID',
-        confidence: 'HIGH'
+        message: 'Link is valid and accessible.',
+        reason: 'VALID'
       };
     }
-    
-    // 默认情况：如果没有明确信号，我们假设有效但记录警告
-    console.log(`[Simple Check] UNCLEAR - No strong signals detected`);
+
+    // Default: accessible but unclear
     return {
-      valid: true, // 保守假设：没有删除迹象就是有效
+      valid: true,
       status: response.status,
       timestamp: new Date().toISOString(),
-      message: 'Link accessible, but content state unclear',
-      reason: 'UNCLEAR_BUT_ACCESSIBLE',
-      confidence: 'LOW'
+      message: 'Link is accessible.',
+      reason: 'ACCESSIBLE'
     };
 
   } catch (error) {
-    console.error(`[Simple Check] ERROR: ${url}`, error.message);
+    console.error(`Link check error: ${error.message}`);
     
     return {
       valid: false,
       error: error.message,
       status: error.response?.status || 0,
       timestamp: new Date().toISOString(),
-      message: 'Cannot access link',
-      reason: error.code === 'ECONNABORTED' ? 'TIMEOUT' : 'NETWORK_ERROR',
-      confidence: 'HIGH'
+      message: 'Cannot access this link.',
+      reason: error.code === 'ECONNABORTED' ? 'TIMEOUT' : 'NETWORK_ERROR'
     };
   }
 }
 
-// Get link status
+// Get link status with cache
 async function getLinkStatus(folderId) {
   const url = MANUAL_SHARE_LINKS[folderId];
   if (!url) {
@@ -133,10 +117,9 @@ async function getLinkStatus(folderId) {
 
   const cacheKey = folderId;
   const now = Date.now();
-  const CACHE_TIME = 2 * 60 * 1000; // 2分钟缓存，便于测试
 
   if (linkStatusCache[cacheKey] && 
-      now - linkStatusCache[cacheKey].timestamp < CACHE_TIME) {
+      now - linkStatusCache[cacheKey].timestamp < CACHE_DURATION) {
     return linkStatusCache[cacheKey];
   }
 
@@ -145,24 +128,25 @@ async function getLinkStatus(folderId) {
   return status;
 }
 
-// 健康检查端点
+// Health Check
 app.get('/api/health', (req, res) => {
   res.json({
     status: 'healthy',
-    service: 'dropbox-link-detector',
-    mode: 'simple_deletion_detector',
+    service: 'dropbox-permanent-link-service',
+    mode: 'direct_deletion_detector',
     timestamp: new Date().toISOString(),
     available_folders: Object.keys(MANUAL_SHARE_LINKS)
   });
 });
 
-// 获取链接
+// Get a specific link
 app.get('/api/link/:folderId', async (req, res) => {
   const folderId = req.params.folderId;
   
   if (!MANUAL_SHARE_LINKS[folderId]) {
     return res.status(404).json({ 
       error: 'Folder not found',
+      message: `Unconfigured folder ID: '${folderId}'`,
       available_ids: Object.keys(MANUAL_SHARE_LINKS)
     });
   }
@@ -172,21 +156,21 @@ app.get('/api/link/:folderId', async (req, res) => {
   res.json({
     folderId,
     url: MANUAL_SHARE_LINKS[folderId],
-    status: validity.valid ? 'valid' : 'invalid',
-    reason: validity.reason,
-    message: validity.message,
+    status: validity,
     timestamp: new Date().toISOString()
   });
 });
 
-// 获取所有链接状态
+// Get status of all links
 app.get('/api/links/status', async (req, res) => {
   try {
     const linkStatus = {};
     
-    for (const key of Object.keys(MANUAL_SHARE_LINKS)) {
+    const promises = Object.keys(MANUAL_SHARE_LINKS).map(async (key) => {
       linkStatus[key] = await getLinkStatus(key);
-    }
+    });
+    
+    await Promise.all(promises);
     
     res.json({
       success: true,
@@ -194,23 +178,23 @@ app.get('/api/links/status', async (req, res) => {
       timestamp: new Date().toISOString()
     });
   } catch (error) {
-    console.error('Error checking links:', error);
+    console.error('Error checking link status:', error);
     res.status(500).json({
       success: false,
-      error: 'Error checking links'
+      error: 'Error checking link status',
+      timestamp: new Date().toISOString()
     });
   }
 });
 
-// 静态文件服务
+// Static files
 app.use(express.static(path.join(__dirname, 'public')));
 
-// 启动服务器
+// Start server
 app.listen(PORT, () => {
-  console.log(`=====================================`);
-  console.log(`✅ Dropbox Link Checker Started`);
-  console.log(`📍 Port: ${PORT}`);
-  console.log(`🔍 Mode: Simple Deletion Detector`);
-  console.log(`📁 Links: ${Object.keys(MANUAL_SHARE_LINKS).length}`);
-  console.log(`=====================================`);
+  console.log(`=========================================`);
+  console.log(`🚀 Dropbox File Center Started`);
+  console.log(`📡 Port: ${PORT}`);
+  console.log(`🔍 Detector: Direct Delete Page Detection`);
+  console.log(`=========================================`);
 });
