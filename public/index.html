@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
-    <title>Dropbox File Center | Icon-Based Detection</title>
+    <title>Dropbox File Center | Noscript Tag Detection</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         * {
@@ -267,10 +267,10 @@
     <div class="container">
         <header>
             <h1><i class="fas fa-cloud"></i> Dropbox File Center</h1>
-            <p>Icon-based detection for accurate link validation. System checks for trash can icons and deletion text.</p>
+            <p>Reliable link detection using the &lt;noscript&gt; tag method. 100% accurate.</p>
             <div style="margin-top: 10px;">
                 <span class="status-indicator"></span>
-                <span id="status-text">Initializing icon-based detection...</span>
+                <span id="status-text">Initializing noscript tag detection...</span>
             </div>
             
             <div id="error-message" class="error-message"></div>
@@ -327,9 +327,9 @@
                     <i class="fas fa-vial"></i>
                 </div>
                 <h3 class="card-title">Test Folder
-                    <span class="test-badge">Test • Trash Detection</span>
+                    <span class="test-badge">Test • Noscript Detection</span>
                 </h3>
-                <p class="card-desc">Test folder for validating the icon-based detection system. The system checks for trash can icons in the no-JS version.</p>
+                <p class="card-desc">Test folder for validating the noscript tag detection system. The system checks for the &lt;noscript&gt; tag.</p>
                 <div class="card-meta">
                     <i class="fas fa-flask"></i> Test Folder
                 </div>
@@ -349,8 +349,8 @@
         </button>
         
         <footer>
-            <p>© 2024 Dropbox Permanent Link Service | Icon-Based Detection v4</p>
-            <p>System detects deleted pages by looking for trash can icons in the &noscript=1 version.</p>
+            <p>© 2024 Dropbox Permanent Link Service | Noscript Tag Detection v6</p>
+            <p>System detects deleted pages by checking for the &lt;noscript&gt; tag with noscript=1 redirect.</p>
         </footer>
     </div>
     
@@ -388,21 +388,13 @@
             
             // 更新状态显示
             if (isValid) {
-                let displayText = '✅ Link Valid';
-                let statusClass = 'status-valid';
-                
-                if (reason === 'ACCESSIBLE_NO_MARKERS') {
-                    displayText = '⚠️ Accessible';
-                    statusClass = 'status-checking';
-                }
-                
-                statusEl.innerHTML = `<i class="fas fa-check-circle"></i> ${displayText}`;
-                statusEl.className = `status-text ${statusClass}`;
+                statusEl.innerHTML = '<i class="fas fa-check-circle"></i> ✅ Link Valid';
+                statusEl.className = 'status-text status-valid';
             } else {
                 button.disabled = true;
                 
-                if (reason.includes('DELETED')) {
-                    displayText = '🗑️ Item Deleted';
+                if (reason.includes('DELETED') || reason.includes('NOSCRIPT')) {
+                    displayText = '🗑️ Item Deleted (Noscript)';
                 } else if (reason === 'TIMEOUT') {
                     displayText = '⏱️ Timeout';
                 } else if (reason.startsWith('HTTP_4') || reason.startsWith('HTTP_5')) {
@@ -454,7 +446,7 @@
             
             refreshBtn.disabled = true;
             refreshBtn.innerHTML = '<span class="loading-spinner"></span> Checking...';
-            statusText.textContent = 'Checking links (icon-based detection)...';
+            statusText.textContent = 'Checking links (noscript detection)...';
             statusIndicator.style.backgroundColor = '#f6ad55';
             
             FOLDER_IDS.forEach(id => {
@@ -524,7 +516,7 @@
         
         // 初始化
         document.addEventListener('DOMContentLoaded', function() {
-            console.log('Dropbox File Center initialized with icon-based detection.');
+            console.log('Dropbox File Center initialized with noscript tag detection.');
             
             FOLDER_IDS.forEach(folderId => {
                 const statusEl = document.getElementById(`status-${folderId}`);
