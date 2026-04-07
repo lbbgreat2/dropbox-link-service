@@ -23,165 +23,122 @@ let linkStatusCache = {};
 const CACHE_DURATION = 5 * 60 * 1000; // 5分钟缓存
 
 /**
- * 终极解决方案：通过检查"无JavaScript"版本来探测真实状态
+ * 终极精确检测器 - 基于无JS页面特征
+ * 策略：直接检查 &noscript=1 版本的页面内容
  */
 async function checkLinkValidity(url) {
   const startTime = Date.now();
   try {
-    console.log(`[检测器] 开始检查: ${url.substring(0, 60)}...`);
+    console.log(`[精确检测] 检查: ${url.substring(0, 50)}...`);
 
-    // 1. 首先，正常获取页面（用户浏览器看到的内容）
-    const response = await axios.get(url, {
-      timeout: 10000,
-      headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
-      }
-    });
-
-    const html = response.data;
-    const responseTime = Date.now() - startTime;
-    
-    console.log(`[检测器] 原始页面: 状态 ${response.status}, 大小 ${html.length} 字符`);
-
-    // 2. 检查这是否是Dropbox的JavaScript动态渲染页面
-    // 关键特征：包含"edison"和"require"相关代码
-    const isDynamicPage = html.includes('edisonReactPageModule') || 
-                          html.includes('require(') ||
-                          html.includes('atlas/file_viewer');
-
-    if (!isDynamicPage) {
-      // 如果不是动态页面，回退到原有的文本检查逻辑
-      console.log(`[检测器] 非动态页面，使用文本检查。`);
-      if (html.includes('This item was deleted') || html.includes('此项目已删除')) {
-        return {
-          valid: false,
-          status: response.status,
-          timestamp: new Date().toISOString(),
-          message: 'This item has been deleted.',
-          reason: 'CONTENT_DELETED'
-        };
-      }
-      return {
-        valid: true,
-        status: response.status,
-        timestamp: new Date().toISOString(),
-        message: 'Link appears valid.',
-        reason: 'STATIC_PAGE_VALID'
-      };
-    }
-
-    // 3. 重要：这是一个动态页面，我们需要检查它的"无JavaScript"版本
-    console.log(`[检测器] 检测到动态页面，正在检查无JS版本...`);
-    
-    // 构建"无JavaScript"版本的URL
+    // 1. 首先，尝试获取无JavaScript版本
     const noscriptUrl = url.includes('?') ? 
                        `${url}&noscript=1` : 
                        `${url}?noscript=1`;
     
-    try {
-      const noscriptResponse = await axios.get(noscriptUrl, {
-        timeout: 8000,
-        headers: {
-          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
-          'Accept': 'text/html'
-        }
-      });
-      
-      const noscriptHtml = noscriptResponse.data;
-      const totalTime = Date.now() - startTime;
-      
-      console.log(`[检测器] 无JS页面: 状态 ${noscriptResponse.status}, 大小 ${noscriptHtml.length} 字符, 总耗时 ${totalTime}ms`);
-      
-      // 4. 在"无JavaScript"页面中搜索删除证据
-      // 同时检查中英文版本的删除提示
-      const deletionEvidence = 
-        noscriptHtml.includes('This item was deleted') ||
-        noscriptHtml.includes('此项目已删除') ||
-        noscriptHtml.includes('deleted files') ||
-        noscriptHtml.includes('已删除的文件') ||
-        noscriptHtml.includes('couldn\'t find this item') ||
-        noscriptHtml.includes('找不到此项目');
-      
-      if (deletionEvidence) {
-        console.log(`[检测器-结论] 在无JS页面中发现删除证据，链接已失效。`);
-        return {
-          valid: false,
-          status: noscriptResponse.status,
-          timestamp: new Date().toISOString(),
-          message: 'This item has been deleted (checked no-JS version).',
-          reason: 'CONTENT_DELETED_NOSCRIPT',
-          debug: { checkedNoscript: true }
-        };
+    console.log(`[精确检测] 获取无JS版本: ${noscriptUrl.substring(0, 60)}...`);
+    
+    const noscriptResponse = await axios.get(noscriptUrl, {
+      timeout: 8000,
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+        'Accept': 'text/html'
       }
-      
-      // 5. 如果没有删除证据，检查是否有正常内容
-      const hasValidContent = 
-        noscriptHtml.includes('file_viewer') ||
-        noscriptHtml.includes('folder_contents') ||
-        noscriptHtml.includes('shared with you') ||
-        noscriptHtml.includes('查看文件夹');
-      
-      if (hasValidContent) {
-        console.log(`[检测器-结论] 无JS页面显示有效内容，链接有效。`);
-        return {
-          valid: true,
-          status: noscriptResponse.status,
-          timestamp: new Date().toISOString(),
-          message: 'Link is valid (no-JS version shows content).',
-          reason: 'CONTENT_VALID_NOSCRIPT',
-          debug: { checkedNoscript: true }
-        };
-      }
-      
-      // 6. 如果无JS页面也看不出什么，但原始页面可访问，保守地认为有效
-      console.log(`[检测器-结论] 无法从无JS页面确定状态，但原始页面可访问，设为有效。`);
-      return {
-        valid: true,
-        status: response.status,
-        timestamp: new Date().toISOString(),
-        message: 'Link is accessible, but could not verify content via no-JS method.',
-        reason: 'ACCESSIBLE_BUT_UNVERIFIED',
-        note: 'No-JS page did not show clear deletion or valid content markers.'
-      };
-      
-    } catch (noscriptError) {
-      // 无JS版本请求失败，回退到原始页面检查
-      console.log(`[检测器] 无JS版本检查失败: ${noscriptError.message}`);
-      
-      // 在原始页面中做最后的关键词检查
-      if (html.includes('This item was deleted') || html.includes('此项目已删除')) {
-        return {
-          valid: false,
-          status: response.status,
-          timestamp: new Date().toISOString(),
-          message: 'This item has been deleted.',
-          reason: 'CONTENT_DELETED'
-        };
-      }
-      
-      // 如果原始页面也没有删除标记，但可访问，则视为有效
-      if (response.status >= 200 && response.status < 300) {
-        return {
-          valid: true,
-          status: response.status,
-          timestamp: new Date().toISOString(),
-          message: 'Link is accessible, but no-JS check failed.',
-          reason: 'ACCESSIBLE_NOJS_FAILED',
-          debug: { noscriptError: noscriptError.message }
-        };
-      }
-      
+    });
+    
+    const noscriptHtml = noscriptResponse.data;
+    const responseTime = Date.now() - startTime;
+    
+    console.log(`[精确检测] 无JS页面: 状态 ${noscriptResponse.status}, 大小 ${noscriptHtml.length} 字符, 耗时 ${responseTime}ms`);
+
+    // 2. 检查删除页面的确切特征
+    // 特征1: 包含垃圾桶图标相关的SVG路径
+    const hasTrashIcon = 
+      /M6 19c0 1\.1\.9 2 2 2h8c1\.1 0 2-\.9 2-2V7H6v12z/.test(noscriptHtml) || // 常见垃圾桶SVG路径
+      /d="M6 19c0 1\.1\.9 2 2 2h8c1\.1 0 2-\.9 2-2V7H6v12z"/.test(noscriptHtml) ||
+      /<svg[^>]*trash[^>]*>/.test(noscriptHtml) ||
+      /class="[^"]*trash[^"]*"/i.test(noscriptHtml) ||
+      /class="[^"]*delete[^"]*"/i.test(noscriptHtml);
+    
+    // 特征2: 删除页面标题和描述文本
+    const hasDeletionText = 
+      /此项目已删除/.test(noscriptHtml) || // 中文删除文本
+      /This item was deleted/i.test(noscriptHtml) || // 英文删除文本
+      /deleted files/i.test(noscriptHtml) ||
+      /已删除的文件/.test(noscriptHtml) ||
+      /找不到此项目/.test(noscriptHtml) ||
+      /couldn['\u2019]t find this item/i.test(noscriptHtml);
+    
+    // 特征3: 删除页面的按钮文本
+    const hasDeletionButton = 
+      /查看已删除的文件/.test(noscriptHtml) ||
+      /Check deleted files/i.test(noscriptHtml) ||
+      /You might be able to find it/i.test(noscriptHtml);
+    
+    console.log(`[精确检测-特征] 垃圾桶图标:${hasTrashIcon}, 删除文本:${hasDeletionText}, 删除按钮:${hasDeletionButton}`);
+    
+    // 3. 如果发现任何删除特征，判定为已删除
+    if (hasTrashIcon || hasDeletionText || hasDeletionButton) {
+      console.log(`[精确检测-结论] 已确认: 链接已删除`);
       return {
         valid: false,
-        status: response.status,
+        status: noscriptResponse.status,
         timestamp: new Date().toISOString(),
-        message: `Link returned error status ${response.status}`,
-        reason: `HTTP_${response.status}`
+        message: 'This item has been deleted on Dropbox.',
+        reason: 'CONTENT_DELETED',
+        debug: {
+          hasTrashIcon,
+          hasDeletionText,
+          hasDeletionButton
+        }
       };
     }
+    
+    // 4. 检查正常页面的特征
+    const hasNormalContent = 
+      /file_viewer|folder_viewer/i.test(noscriptHtml) ||
+      /shared with you|shared by/i.test(noscriptHtml) ||
+      /download-?button/i.test(noscriptHtml) ||
+      /file-?list|folder-?contents/i.test(noscriptHtml);
+    
+    if (hasNormalContent) {
+      console.log(`[精确检测-结论] 已确认: 链接有效`);
+      return {
+        valid: true,
+        status: noscriptResponse.status,
+        timestamp: new Date().toISOString(),
+        message: 'Link is valid and accessible.',
+        reason: 'CONTENT_VALID',
+        debug: { hasNormalContent: true }
+      };
+    }
+    
+    // 5. 如果没有明确特征，记录部分HTML用于调试
+    const sample = noscriptHtml.substring(0, Math.min(300, noscriptHtml.length)).replace(/\s+/g, ' ');
+    console.log(`[精确检测-警告] 无明确特征，HTML样本: ${sample}...`);
+    
+    // 如果HTTP状态是2xx，保守地设为有效
+    if (noscriptResponse.status >= 200 && noscriptResponse.status < 300) {
+      return {
+        valid: true,
+        status: noscriptResponse.status,
+        timestamp: new Date().toISOString(),
+        message: 'Link is accessible, but no clear content markers found.',
+        reason: 'ACCESSIBLE_NO_MARKERS',
+        debug: { sample }
+      };
+    }
+    
+    return {
+      valid: false,
+      status: noscriptResponse.status,
+      timestamp: new Date().toISOString(),
+      message: `Link returned error status ${noscriptResponse.status}`,
+      reason: `HTTP_${noscriptResponse.status}`
+    };
 
   } catch (error) {
-    console.error(`[检测器-错误] ${error.message}`);
+    console.error(`[精确检测-错误] ${error.message}`);
     
     let reason = 'NETWORK_ERROR';
     let message = 'Network request failed.';
@@ -231,18 +188,16 @@ async function getLinkStatus(folderId) {
 }
 
 // ----- API 端点 -----
-// 健康检查端点
 app.get('/api/health', (req, res) => {
   res.json({
     status: 'healthy',
     service: 'dropbox-file-center',
-    mode: 'noscript_detection_v2',
+    mode: 'icon_based_detection_v4',
     timestamp: new Date().toISOString(),
     available_folders: Object.keys(MANUAL_SHARE_LINKS)
   });
 });
 
-// 获取单个链接
 app.get('/api/link/:folderId', async (req, res) => {
   const folderId = req.params.folderId;
   
@@ -264,7 +219,6 @@ app.get('/api/link/:folderId', async (req, res) => {
   });
 });
 
-// 获取所有链接状态
 app.get('/api/links/status', async (req, res) => {
   try {
     const linkStatus = {};
@@ -296,8 +250,8 @@ app.use(express.static(path.join(__dirname, 'public')));
 // 启动服务器
 app.listen(PORT, () => {
   console.log('='.repeat(50));
-  console.log('🚀 Dropbox 文件中心 - 无JavaScript检测版');
+  console.log('🚀 Dropbox 文件中心 - 图标特征检测版');
   console.log(`📡 端口: ${PORT}`);
-  console.log(`🔍 模式: 通过检查 &noscript=1 版本进行精确检测`);
+  console.log(`🔍 模式: 基于垃圾桶图标和文本的精确检测`);
   console.log('='.repeat(50));
 });
