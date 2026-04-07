@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
-    <title>Dropbox File Center | Link Validator</title>
+    <title>Dropbox File Center | Advanced Link Validator</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         * {
@@ -44,18 +44,53 @@
             margin: 0 auto 20px;
         }
         
+        .system-status-panel {
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 12px;
+            padding: 20px;
+            margin-top: 20px;
+            text-align: left;
+            display: inline-block;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
         .status-indicator {
             display: inline-block;
-            width: 10px;
-            height: 10px;
+            width: 12px;
+            height: 12px;
             border-radius: 50%;
             background-color: #48bb78;
-            margin-right: 8px;
+            margin-right: 10px;
+            vertical-align: middle;
+        }
+        
+        .system-stats {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 15px;
+            font-size: 0.9rem;
+        }
+        
+        .stat-box {
+            text-align: center;
+            padding: 0 15px;
+        }
+        
+        .stat-value {
+            font-size: 1.8rem;
+            font-weight: bold;
+            display: block;
+        }
+        
+        .stat-label {
+            font-size: 0.8rem;
+            opacity: 0.9;
         }
         
         .card-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
             gap: 25px;
             margin-bottom: 30px;
         }
@@ -159,12 +194,25 @@
             margin-right: 10px;
         }
         
-        .loading {
-            display: none;
-            font-size: 0.9rem;
-            color: #0061ff;
+        .btn-group {
+            display: flex;
+            gap: 10px;
             margin-top: 10px;
-            text-align: center;
+        }
+        
+        .secondary-btn {
+            background: rgba(0, 97, 255, 0.1);
+            color: #0061ff;
+            border: 1px solid rgba(0, 97, 255, 0.3);
+            padding: 8px 15px;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            flex: 1;
+        }
+        
+        .secondary-btn:hover {
+            background: rgba(0, 97, 255, 0.2);
         }
         
         .loading-spinner {
@@ -189,45 +237,66 @@
         }
         
         .status-text {
-            padding: 3px 8px;
-            border-radius: 10px;
-            font-size: 11px;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 0.75rem;
             display: inline-block;
+            font-weight: 500;
         }
         
         .status-valid {
-            background-color: rgba(76, 175, 80, 0.1);
+            background-color: rgba(76, 175, 80, 0.15);
             color: #2e7d32;
+            border: 1px solid rgba(76, 175, 80, 0.3);
         }
         
         .status-checking {
-            background-color: rgba(33, 150, 243, 0.1);
+            background-color: rgba(33, 150, 243, 0.15);
             color: #1565c0;
+            border: 1px solid rgba(33, 150, 243, 0.3);
         }
         
         .status-invalid {
-            background-color: rgba(244, 67, 54, 0.1);
+            background-color: rgba(244, 67, 54, 0.15);
             color: #d32f2f;
+            border: 1px solid rgba(244, 67, 54, 0.3);
         }
         
-        .refresh-btn {
-            display: block;
-            margin: 20px auto;
-            padding: 10px 20px;
+        .status-warning {
+            background-color: rgba(255, 193, 7, 0.15);
+            color: #ff8f00;
+            border: 1px solid rgba(255, 193, 7, 0.3);
+        }
+        
+        .action-bar {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin: 30px 0;
+            flex-wrap: wrap;
+        }
+        
+        .action-btn {
+            padding: 12px 25px;
             background-color: rgba(255, 255, 255, 0.2);
             color: white;
             border: 1px solid rgba(255, 255, 255, 0.3);
-            border-radius: 8px;
+            border-radius: 10px;
             cursor: pointer;
-            font-size: 14px;
+            font-size: 1rem;
+            font-weight: 600;
             transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
         
-        .refresh-btn:hover:not(:disabled) {
+        .action-btn:hover:not(:disabled) {
             background-color: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
         }
         
-        .refresh-btn:disabled {
+        .action-btn:disabled {
             opacity: 0.5;
             cursor: not-allowed;
         }
@@ -236,6 +305,16 @@
             display: none;
             background: #fed7d7;
             color: #c53030;
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin: 15px 0;
+            font-size: 0.9rem;
+        }
+        
+        .success-message {
+            display: none;
+            background: #c6f6d5;
+            color: #22543d;
             padding: 12px 16px;
             border-radius: 8px;
             margin: 15px 0;
@@ -269,19 +348,45 @@
             display: inline-block;
             margin-left: 10px;
         }
+        
+        .last-checked {
+            font-size: 0.8rem;
+            color: rgba(255, 255, 255, 0.7);
+            margin-top: 5px;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <header>
             <h1><i class="fas fa-cloud"></i> Dropbox File Center</h1>
-            <p>Access your Dropbox files through permanent links. Invalid links are automatically detected and flagged.</p>
-            <div style="margin-top: 10px;">
-                <span class="status-indicator"></span>
-                <span id="status-text">Initializing...</span>
+            <p>Access your Dropbox files through permanent links. Advanced validation detects deleted or inaccessible content.</p>
+            
+            <div class="system-status-panel">
+                <div>
+                    <span class="status-indicator" id="system-status-indicator"></span>
+                    <span id="status-text">Initializing system...</span>
+                </div>
+                <div id="last-checked-time" class="last-checked">Last checked: --:--:--</div>
+                
+                <div class="system-stats">
+                    <div class="stat-box">
+                        <span class="stat-value" id="stat-total">0</span>
+                        <span class="stat-label">Total Links</span>
+                    </div>
+                    <div class="stat-box">
+                        <span class="stat-value" id="stat-valid">0</span>
+                        <span class="stat-label">Valid</span>
+                    </div>
+                    <div class="stat-box">
+                        <span class="stat-value" id="stat-invalid">0</span>
+                        <span class="stat-label">Invalid</span>
+                    </div>
+                </div>
             </div>
             
             <div id="error-message" class="error-message"></div>
+            <div id="success-message" class="success-message"></div>
         </header>
         
         <main id="card-container" class="card-grid">
@@ -300,13 +405,15 @@
                 <button class="access-btn" onclick="handleFolderClick('enjoy_ai')">
                     <span class="btn-text">Open Folder</span>
                 </button>
+                <div class="btn-group">
+                    <button class="secondary-btn" onclick="forceCheckLink('enjoy_ai')">
+                        <i class="fas fa-redo"></i> Re-check
+                    </button>
+                </div>
                 <div class="link-status">
                     <span id="status-enjoy_ai" class="status-text status-checking">
-                        Ready
+                        <i class="fas fa-spinner fa-spin"></i> Checking...
                     </span>
-                </div>
-                <div id="loading-enjoy_ai" class="loading">
-                    <i class="fas fa-spinner fa-spin"></i> Processing...
                 </div>
             </div>
             
@@ -325,23 +432,25 @@
                 <button class="access-btn" onclick="handleFolderClick('whalesbot')">
                     <span class="btn-text">Open Folder</span>
                 </button>
+                <div class="btn-group">
+                    <button class="secondary-btn" onclick="forceCheckLink('whalesbot')">
+                        <i class="fas fa-redo"></i> Re-check
+                    </button>
+                </div>
                 <div class="link-status">
                     <span id="status-whalesbot" class="status-text status-checking">
-                        Ready
+                        <i class="fas fa-spinner fa-spin"></i> Checking...
                     </span>
-                </div>
-                <div id="loading-whalesbot" class="loading">
-                    <i class="fas fa-spinner fa-spin"></i> Processing...
                 </div>
             </div>
             
             <!-- Test Folder -->
             <div class="folder-card" data-folder-id="test">
                 <div class="card-icon">
-                    <i class="fas fa-video"></i>
+                    <i class="fas fa-vial"></i>
                 </div>
                 <h3 class="card-title">Test Folder
-                    <span class="test-badge">Test • 0 items</span>
+                    <span class="test-badge">Test • Validation</span>
                 </h3>
                 <p class="card-desc">Test folder for validating the link detection system. You can disable the Dropbox share link to test the detection feature.</p>
                 <div class="card-meta">
@@ -350,201 +459,336 @@
                 <button class="access-btn" onclick="handleFolderClick('test')">
                     <span class="btn-text">Open Test Folder</span>
                 </button>
+                <div class="btn-group">
+                    <button class="secondary-btn" onclick="forceCheckLink('test')">
+                        <i class="fas fa-redo"></i> Force Re-check
+                    </button>
+                </div>
                 <div class="link-status">
                     <span id="status-test" class="status-text status-checking">
-                        Ready
+                        <i class="fas fa-spinner fa-spin"></i> Checking...
                     </span>
-                </div>
-                <div id="loading-test" class="loading">
-                    <i class="fas fa-spinner fa-spin"></i> Processing...
                 </div>
             </div>
         </main>
         
-        <button id="refresh-btn" class="refresh-btn" onclick="checkAllLinks()">
-            <i class="fas fa-sync-alt"></i> Check All Link Status
-        </button>
+        <div class="action-bar">
+            <button class="action-btn" onclick="checkAllLinks(false)">
+                <i class="fas fa-sync-alt"></i> Check All Links
+            </button>
+            <button class="action-btn" onclick="checkAllLinks(true)">
+                <i class="fas fa-bolt"></i> Force Re-check All
+            </button>
+            <button class="action-btn" onclick="checkSystemHealth()">
+                <i class="fas fa-heartbeat"></i> System Health
+            </button>
+        </div>
         
         <footer>
-            <p>© 2024 Dropbox Permanent Link Service | English Version</p>
-            <p>System automatically checks link status. Invalid links are disabled and flagged.</p>
+            <p>© 2024 Dropbox Permanent Link Service | Advanced Validation Engine</p>
+            <p>System uses multi-signal analysis to detect deleted or inaccessible Dropbox content.</p>
         </footer>
     </div>
     
     <script>
         const API_BASE_URL = window.location.origin;
-        let linkStatusCache = {};
-        
-        // Current available folder ID list (updated, includes only enjoy_ai, whalesbot, test)
         const CURRENT_FOLDER_IDS = ['enjoy_ai', 'whalesbot', 'test'];
-        
-        function showError(message) {
-            const errorEl = document.getElementById('error-message');
-            errorEl.textContent = '⚠️ ' + message;
-            errorEl.style.display = 'block';
-            
-            setTimeout(() => {
-                errorEl.style.display = 'none';
-            }, 5000);
+        let systemStatus = {
+            total: CURRENT_FOLDER_IDS.length,
+            valid: 0,
+            invalid: 0,
+            lastCheck: null
+        };
+
+        // UI Helper Functions
+        function showMessage(elementId, message, duration = 5000) {
+            const el = document.getElementById(elementId);
+            if (el) {
+                el.textContent = message;
+                el.style.display = 'block';
+                setTimeout(() => el.style.display = 'none', duration);
+            }
         }
-        
+
+        function showError(message) {
+            showMessage('error-message', `⚠️ ${message}`);
+        }
+
+        function showSuccess(message) {
+            showMessage('success-message', `✅ ${message}`, 3000);
+        }
+
+        function updateSystemStats() {
+            document.getElementById('stat-total').textContent = systemStatus.total;
+            document.getElementById('stat-valid').textContent = systemStatus.valid;
+            document.getElementById('stat-invalid').textContent = systemStatus.invalid;
+            
+            const indicator = document.getElementById('system-status-indicator');
+            const statusText = document.getElementById('status-text');
+            
+            if (systemStatus.valid === systemStatus.total) {
+                indicator.style.backgroundColor = '#48bb78';
+                statusText.textContent = 'All links are valid';
+            } else if (systemStatus.invalid === systemStatus.total) {
+                indicator.style.backgroundColor = '#f56565';
+                statusText.textContent = 'All links are invalid';
+            } else if (systemStatus.invalid > 0) {
+                indicator.style.backgroundColor = '#f6ad55';
+                statusText.textContent = `${systemStatus.invalid} link(s) need attention`;
+            } else {
+                indicator.style.backgroundColor = '#a0aec0';
+                statusText.textContent = 'Status unknown';
+            }
+            
+            if (systemStatus.lastCheck) {
+                const timeStr = new Date(systemStatus.lastCheck).toLocaleTimeString('en-US', {hour12: false});
+                document.getElementById('last-checked-time').textContent = `Last checked: ${timeStr}`;
+            }
+        }
+
+        function updateFolderStatus(folderId, statusData) {
+            const button = document.querySelector(`[data-folder-id="${folderId}"] .access-btn`);
+            const statusEl = document.getElementById(`status-${folderId}`);
+            
+            if (!statusData) {
+                statusEl.innerHTML = '<i class="fas fa-question-circle"></i> Status unknown';
+                statusEl.className = 'status-text status-checking';
+                button.disabled = true;
+                button.title = 'Status could not be determined';
+                return;
+            }
+            
+            const isValid = statusData.valid;
+            const reason = statusData.reason || 'UNKNOWN';
+            const message = statusData.message || '';
+            
+            // Update button state
+            button.disabled = !isValid;
+            button.title = isValid ? 'Click to open' : `Cannot open: ${message}`;
+            
+            // Update status display
+            if (isValid) {
+                let displayText = '✅ Link valid';
+                let statusClass = 'status-valid';
+                
+                if (reason === 'ACCESSIBLE_BUT_UNVERIFIED') {
+                    displayText = '⚠️ Accessible (unverified)';
+                    statusClass = 'status-warning';
+                }
+                
+                statusEl.innerHTML = `<i class="fas fa-check-circle"></i> ${displayText}`;
+                statusEl.className = `status-text ${statusClass}`;
+            } else {
+                let displayText = '❌ Link invalid';
+                
+                if (reason === 'CONTENT_DELETED') {
+                    displayText = '🗑️ Content deleted';
+                } else if (reason === 'NO_PERMISSION') {
+                    displayText = '🔒 No permission';
+                } else if (reason === 'NOT_FOUND') {
+                    displayText = '🔍 Not found (404)';
+                } else if (reason.startsWith('HTTP_')) {
+                    displayText = `⚠️ Error ${reason.replace('HTTP_', '')}`;
+                }
+                
+                statusEl.innerHTML = `<i class="fas fa-times-circle"></i> ${displayText}`;
+                statusEl.className = 'status-text status-invalid';
+            }
+        }
+
+        // Core Functions
         async function handleFolderClick(folderId) {
             const button = document.querySelector(`[data-folder-id="${folderId}"] .access-btn`);
             const btnText = button.querySelector('.btn-text');
-            const loadingEl = document.getElementById(`loading-${folderId}`);
-            const statusEl = document.getElementById(`status-${folderId}`);
+            const originalText = btnText.textContent;
             
             button.disabled = true;
-            btnText.innerHTML = '<span class="loading-spinner"></span>Processing...';
-            if (loadingEl) loadingEl.style.display = 'block';
+            btnText.innerHTML = '<span class="loading-spinner"></span> Verifying...';
             
             try {
-                const response = await fetch(`${API_BASE_URL}/api/link/${folderId}`);
+                const response = await fetch(`${API_BASE_URL}/api/link/${folderId}?force=true`);
                 
                 if (!response.ok) {
-                    if (response.status === 404) {
-                        throw new Error('Link does not exist or is invalid');
-                    } else {
-                        throw new Error(`Server error: ${response.status}`);
+                    if (response.status === 503) {
+                        const data = await response.json();
+                        showError(`Cannot open: ${data.details || data.error}`);
+                        // The status will be updated by the periodic check
+                        return;
                     }
+                    throw new Error(`Server error: ${response.status}`);
                 }
                 
                 const data = await response.json();
-                
                 if (data && data.url) {
                     window.open(data.url, '_blank');
-                    
-                    statusEl.textContent = '✅ Link Valid';
-                    statusEl.className = 'status-text status-valid';
-                    
-                    // Simplified: now only folders, no separate video files
-                    btnText.textContent = 'Open Folder';
-                    setTimeout(() => {
-                        button.disabled = false;
-                    }, 1000);
-                } else {
-                    throw new Error('Link data format error');
+                    showSuccess('Link opened in new tab');
                 }
             } catch (error) {
                 console.error('Failed to open link:', error);
-                
-                statusEl.textContent = '❌ Link Invalid';
-                statusEl.className = 'status-text status-invalid';
-                
-                showError(`Cannot access file: ${error.message}`);
-                btnText.textContent = 'Open Folder'; // Uniformly revert to "Open Folder"
-                button.disabled = false;
+                showError(`Cannot open file: ${error.message}`);
             } finally {
-                if (loadingEl) loadingEl.style.display = 'none';
+                setTimeout(() => {
+                    btnText.textContent = originalText;
+                    button.disabled = false;
+                }, 1000);
             }
         }
-        
-        async function checkAllLinks() {
-            const refreshBtn = document.getElementById('refresh-btn');
-            const originalText = refreshBtn.innerHTML;
-            
-            refreshBtn.disabled = true;
-            refreshBtn.innerHTML = '<span class="loading-spinner"></span>Checking...';
+
+        async function forceCheckLink(folderId) {
+            const statusEl = document.getElementById(`status-${folderId}`);
+            statusEl.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Force checking...';
+            statusEl.className = 'status-text status-checking';
             
             try {
-                const response = await fetch(`${API_BASE_URL}/api/links/status`);
+                const response = await fetch(`${API_BASE_URL}/api/links/check/${folderId}`);
+                if (!response.ok) throw new Error(`Force check failed: ${response.status}`);
+                
+                const data = await response.json();
+                if (data.success) {
+                    updateFolderStatus(folderId, data.data);
+                    showSuccess(`Forced re-check completed for "${getFolderDisplayName(folderId)}"`);
+                }
+            } catch (error) {
+                console.error(`Force check failed for ${folderId}:`, error);
+                showError(`Force check failed: ${error.message}`);
+                statusEl.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Check failed';
+                statusEl.className = 'status-text status-invalid';
+            }
+        }
+
+        async function checkAllLinks(forceRefresh = false) {
+            const checkBtn = document.getElementById('check-all-btn');
+            const originalBtns = document.querySelectorAll('.action-btn');
+            originalBtns.forEach(btn => btn.disabled = true);
+            
+            // Update all status to "checking"
+            CURRENT_FOLDER_IDS.forEach(folderId => {
+                const statusEl = document.getElementById(`status-${folderId}`);
+                if (statusEl) {
+                    statusEl.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Checking...';
+                    statusEl.className = 'status-text status-checking';
+                }
+            });
+            
+            try {
+                const url = `${API_BASE_URL}/api/links/status${forceRefresh ? '?force=true' : ''}`;
+                const response = await fetch(url);
                 
                 if (!response.ok) {
-                    if (response.status === 404) {
-                        useFallbackMode();
-                        refreshBtn.innerHTML = '<i class="fas fa-sync-alt"></i> Check All Link Status';
-                        refreshBtn.disabled = false;
-                        return;
-                    }
                     throw new Error(`Status check failed: ${response.status}`);
                 }
                 
                 const data = await response.json();
-                
                 if (data.success && data.data) {
-                    linkStatusCache = data.data;
+                    // Reset counters
+                    systemStatus.valid = 0;
+                    systemStatus.invalid = 0;
+                    systemStatus.lastCheck = new Date().toISOString();
                     
-                    // Only process currently existing folders
+                    // Update each folder's status
                     CURRENT_FOLDER_IDS.forEach(folderId => {
-                        const button = document.querySelector(`[data-folder-id="${folderId}"] .access-btn`);
-                        const statusEl = document.getElementById(`status-${folderId}`);
+                        const status = data.data[folderId];
+                        updateFolderStatus(folderId, status);
                         
-                        if (linkStatusCache[folderId] && linkStatusCache[folderId].valid) {
-                            button.disabled = false;
-                            statusEl.textContent = '✅ Link OK';
-                            statusEl.className = 'status-text status-valid';
+                        if (status && status.valid) {
+                            systemStatus.valid++;
                         } else {
-                            button.disabled = true;
-                            statusEl.textContent = '❌ Link Invalid';
-                            statusEl.className = 'status-text status-invalid';
+                            systemStatus.invalid++;
                         }
                     });
+                    
+                    updateSystemStats();
+                    showSuccess(`Links checked. ${systemStatus.valid} valid, ${systemStatus.invalid} invalid.`);
                 }
             } catch (error) {
-                console.error('Failed to check link status:', error);
+                console.error('Failed to check all links:', error);
+                showError(`Check failed: ${error.message}`);
                 useFallbackMode();
             } finally {
                 setTimeout(() => {
-                    refreshBtn.innerHTML = originalText;
-                    refreshBtn.disabled = false;
+                    originalBtns.forEach(btn => btn.disabled = false);
                 }, 1000);
             }
         }
-        
+
+        async function checkSystemHealth() {
+            const statusEl = document.getElementById('system-status-indicator');
+            const originalColor = statusEl.style.backgroundColor;
+            
+            statusEl.style.backgroundColor = '#f6ad55';
+            document.getElementById('status-text').textContent = 'Checking system health...';
+            
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/health`);
+                if (!response.ok) throw new Error(`Health check failed: ${response.status}`);
+                
+                const data = await response.json();
+                showSuccess(`System healthy. Mode: ${data.mode}. ${data.available_folders.length} links configured.`);
+                
+                // Trigger a link check after health check
+                setTimeout(() => checkAllLinks(false), 500);
+            } catch (error) {
+                console.error('Health check failed:', error);
+                showError(`System health check failed: ${error.message}`);
+                statusEl.style.backgroundColor = '#f56565';
+                document.getElementById('status-text').textContent = 'Health check failed';
+            }
+        }
+
         function useFallbackMode() {
-            // Only enable fallback mode for currently existing folders
             CURRENT_FOLDER_IDS.forEach(folderId => {
                 const button = document.querySelector(`[data-folder-id="${folderId}"] .access-btn`);
                 const statusEl = document.getElementById(`status-${folderId}`);
                 
                 if (button && statusEl) {
                     button.disabled = false;
-                    statusEl.textContent = '⚠️ Direct Access';
-                    statusEl.className = 'status-text status-checking';
+                    statusEl.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Direct access (fallback)';
+                    statusEl.className = 'status-text status-warning';
+                    button.title = 'Status check unavailable. Click to try opening.';
                 }
             });
-            
-            console.log('Using fallback mode: Skipping link status check');
+            console.log('Using fallback mode: Bypassing link validation.');
         }
-        
-        async function checkHealth() {
-            try {
-                const response = await fetch(`${API_BASE_URL}/api/health`);
-                if (response.ok) {
-                    const data = await response.json();
-                    document.getElementById('status-text').textContent = 'Service Status: OK';
-                    document.querySelector('.status-indicator').style.backgroundColor = '#48bb78';
-                    
-                    setTimeout(() => checkAllLinks(), 1000);
-                    
-                    return true;
-                }
-            } catch (error) {
-                console.log('Health check failed:', error);
-            }
-            
-            document.getElementById('status-text').textContent = 'Service Connection Error';
-            document.querySelector('.status-indicator').style.backgroundColor = '#f56565';
-            
-            useFallbackMode();
-            return false;
+
+        function getFolderDisplayName(folderId) {
+            const names = {
+                'enjoy_ai': 'ENJOY AI',
+                'whalesbot': 'WhalesBot',
+                'test': 'Test Folder'
+            };
+            return names[folderId] || folderId;
         }
-        
+
+        // Initialize
         document.addEventListener('DOMContentLoaded', function() {
-            useFallbackMode();
+            console.log('Dropbox File Center initialized.');
+            console.log('Available folders:', CURRENT_FOLDER_IDS);
             
-            checkHealth();
+            // Initial state
+            CURRENT_FOLDER_IDS.forEach(folderId => {
+                const statusEl = document.getElementById(`status-${folderId}`);
+                statusEl.innerHTML = '<i class="fas fa-hourglass-start"></i> Pending check';
+                statusEl.className = 'status-text status-checking';
+            });
             
-            console.log('Page initialization complete. API Address:', API_BASE_URL);
-            console.log('Current available folders:', CURRENT_FOLDER_IDS);
+            updateSystemStats();
+            
+            // Initial health check
+            checkSystemHealth();
+            
+            // Auto-check every 3 minutes
+            setInterval(() => checkAllLinks(false), 3 * 60 * 1000);
         });
-        
+
         window.addEventListener('offline', () => {
             showError('Network connection lost. Please check your network settings.');
         });
-        
+
         window.addEventListener('online', () => {
-            document.getElementById('error-message').style.display = 'none';
+            const errorEl = document.getElementById('error-message');
+            if (errorEl) errorEl.style.display = 'none';
+            // Re-check when coming back online
+            checkAllLinks(false);
         });
     </script>
 </body>
