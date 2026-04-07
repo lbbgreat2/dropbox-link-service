@@ -12,11 +12,8 @@ app.use(express.json());
 
 // 手动配置的Dropbox永久分享链接
 const MANUAL_SHARE_LINKS = {
-  'apps_software': 'https://www.dropbox.com/scl/fo/ucvn6oqj3e3cpr8shkkwg/AGMNnNzHEoNKYKG6p_zhyQk?rlkey=2opal5oyhm48ahh9c6trtichv&st=2unua7bt&dl=0',
   'enjoy_ai': 'https://www.dropbox.com/scl/fo/xhuafhd7lvzct5qou5exc/APsv0VSGbS0sL2h5q86sxrE?rlkey=wulgqtxyjifm67ymdhj881u66&st=h5z3paub&dl=0',
   'whalesbot': 'https://www.dropbox.com/scl/fo/dm9mk69c56v8o554r11wv/AGjzYhC_2KXZ6xXkLc88k_g?rlkey=67t99jd9gms79e2ato24ee727&st=rhn2cwhy&dl=0',
-  'air_headshot': 'https://www.dropbox.com/scl/fi/u5j4u3b09cldwyzxdm9ic/air-headshot.mp4?rlkey=7qth0k667hgx2a1os4dx0cn3w&st=cgk8vyzm&dl=0'
-};
 
 // 健康检查端点
 app.get('/api/health', (req, res) => {

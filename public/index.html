@@ -274,31 +274,7 @@
             <div id="error-message" class="error-message"></div>
         </header>
         
-        <main id="card-container" class="card-grid">
-            <div class="folder-card" data-folder-id="apps_software">
-                <div class="card-icon">
-                    <i class="fas fa-folder"></i>
-                </div>
-                <h3 class="card-title">Apps and Softwares
-                    <span class="shared-badge">2个项目</span>
-                </h3>
-                <p class="card-desc">应用程序和软件资源。包含2个项目，包括安装文件和文档。</p>
-                <div class="card-meta">
-                    <i class="fas fa-folder-open"></i> 文件夹
-                </div>
-                <button class="access-btn" onclick="handleFolderClick('apps_software')">
-                    <span class="btn-text">打开文件夹</span>
-                </button>
-                <div class="link-status">
-                    <span id="status-apps_software" class="status-text status-checking">
-                        准备就绪
-                    </span>
-                </div>
-                <div id="loading-apps_software" class="loading">
-                    <i class="fas fa-spinner fa-spin"></i> 正在处理...
-                </div>
-            </div>
-            
+        <main id="card-container" class="card-grid">            
             <div class="folder-card" data-folder-id="enjoy_ai">
                 <div class="card-icon">
                     <i class="fas fa-share-alt"></i>
@@ -346,31 +322,7 @@
                     <i class="fas fa-spinner fa-spin"></i> 正在处理...
                 </div>
             </div>
-            
-            <div class="folder-card" data-folder-id="air_headshot">
-                <div class="card-icon">
-                    <i class="fas fa-video"></i>
-                </div>
-                <h3 class="card-title">air headshot
-                    <span class="shared-badge">视频 • 0:01</span>
-                </h3>
-                <p class="card-desc">MP4视频文件，1秒时长。点击直接播放或从Dropbox下载。</p>
-                <div class="card-meta">
-                    <i class="fas fa-file-video"></i> MP4视频 • 1秒
-                </div>
-                <button class="access-btn" onclick="handleFolderClick('air_headshot')">
-                    <span class="btn-text">播放视频</span>
-                </button>
-                <div class="link-status">
-                    <span id="status-air_headshot" class="status-text status-checking">
-                        准备就绪
-                    </span>
-                </div>
-                <div id="loading-air_headshot" class="loading">
-                    <i class="fas fa-spinner fa-spin"></i> 正在处理...
-                </div>
-            </div>
-        </main>
+                   </main>
         
         <button id="refresh-btn" class="refresh-btn" onclick="checkAllLinks()">
             <i class="fas fa-sync-alt"></i> 检测链接状态
