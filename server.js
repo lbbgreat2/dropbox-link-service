@@ -20,132 +20,139 @@ const MANUAL_SHARE_LINKS = {
 
 // Link Status Cache
 let linkStatusCache = {};
-const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes cache for normal links
+const CACHE_DURATION = 5 * 60 * 1000;
 
 /**
- * DIRECT & ROBUST Link Checker
- * 1. Uses realistic browser headers to get the same page you see.
- * 2. Looks for EXACT text from the deletion page screenshot you provided.
- * 3. Provides detailed debug logs in Railway.
+ * ULTIMATE DETECTOR v3 - 解决“页面伪装”问题
+ * 策略：结合请求头伪装 + 内容深度验证
  */
 async function checkLinkValidity(url) {
   const startTime = Date.now();
   try {
-    console.log(`[Link Check] Fetching: ${url.substring(0, 80)}...`);
+    console.log(`[Detector] 检测: ${url.substring(0, 60)}...`);
 
-    // Key: Mimic a REAL web browser request
+    // 关键：使用与您浏览器几乎一致的请求头
     const response = await axios.get(url, {
-      timeout: 15000, // 15 seconds
+      timeout: 15000,
       maxRedirects: 5,
       headers: {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36',
-        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
-        'Accept-Language': 'en-US,en;q=0.9',
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7',
+        'Accept-Language': 'en-US,en;q=0.9', // 明确要求英文页面
         'Accept-Encoding': 'gzip, deflate, br',
         'Cache-Control': 'no-cache',
-        'DNT': '1',
+        'Pragma': 'no-cache',
+        'Sec-Fetch-Dest': 'document',
+        'Sec-Fetch-Mode': 'navigate',
+        'Sec-Fetch-Site': 'none',
         'Upgrade-Insecure-Requests': '1'
       }
     });
 
     const html = response.data;
     const responseTime = Date.now() - startTime;
-    const htmlLength = html.length;
     
-    console.log(`[Link Check] Response: Status ${response.status}, Size ${htmlLength} chars, Time ${responseTime}ms`);
+    console.log(`[Detector] 响应: 状态${response.status}, 大小${html.length}字符, 耗时${responseTime}ms`);
 
-    // ----- CORE DETECTION: Look for the EXACT TEXT from your screenshot -----
-    // Primary Evidence: The main deletion message
-    const hasExactDeletionMessage = html.includes('This item was deleted');
-    
-    // Secondary Evidence: Supporting text commonly found on the same page
-    const hasSupportingDeletionText = 
-      html.includes('deleted files') ||
-      html.includes('You might be able to find it') ||
-      html.includes('Check deleted files') ||
-      html.includes('The file you’re looking for');
+    // --- 阶段1: 寻找删除页面的“铁证” ---
+    const deletionProof = {
+      // 1. 主标题 (来自您的截图)
+      hasExactMessage: html.includes('This item was deleted'),
+      // 2. 辅助描述 (来自您的截图)
+      hasDescription: html.includes('You might be able to find it in your deleted files'),
+      // 3. 按钮文字 (来自您的截图)
+      hasButtonText: html.includes('Check deleted files'),
+      // 4. 垃圾桶图标的SVG路径 (常见)
+      hasTrashSvg: html.includes('M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12z')
+    };
 
-    // Tertiary Evidence: Check for absence of normal file page markers
-    // A normal Dropbox file/folder page has these, a deletion page does not.
-    const hasNormalPageMarkers = 
-      html.includes('file_viewer') ||
-      html.includes('folder_viewer') ||
-      html.includes('download_button') ||
-      (html.includes('shared with you') && html.includes('dropbox.com'));
+    // --- 阶段2: 检查“看起来正常”的页面标记 ---
+    const normalPageIndicators = {
+      // 这些是Dropbox正常页面的结构标记
+      hasFileViewer: html.includes('file_viewer'),
+      hasFolderViewer: html.includes('folder_viewer'),
+      hasReactId: html.includes('data-reactid'),
+      // 这些是正常页面应有的“实质内容”
+      hasDownloadButton: /download-?button/i.test(html),
+      hasFileList: /file-?list|folder-?contents/i.test(html),
+      hasSharedText: html.includes('shared with you') || html.includes('shared by'),
+      hasActualFileName: /\.(pdf|docx?|xlsx?|pptx?|jpg|png|mp4|zip)/i.test(html)
+    };
 
-    // Debug Log - This is CRITICAL for diagnosis
-    console.log(`[Link Check - Signals] ExactMsg:${hasExactDeletionMessage}, SupportText:${hasSupportingDeletionText}, NormalMarkers:${hasNormalPageMarkers}`);
+    // 调试输出
+    console.log(`[Detector-证据] 删除痕迹: 标题=${deletionProof.hasExactMessage}, 描述=${deletionProof.hasDescription}, 按钮=${deletionProof.hasButtonText}`);
+    console.log(`[Detector-证据] 正常标记: 查看器=${normalPageIndicators.hasFileViewer||normalPageIndicators.hasFolderViewer}, 下载按钮=${normalPageIndicators.hasDownloadButton}, 文件列表=${normalPageIndicators.hasFileList}, 具体文件=${normalPageIndicators.hasActualFileName}`);
 
-    // ----- Decision Logic -----
-    // STRONG SIGNAL: The exact phrase from your screenshot is present.
-    if (hasExactDeletionMessage) {
-      console.log(`[Link Check - Result] DEFINITELY DELETED. Found "This item was deleted".`);
+    // --- 决策逻辑 ---
+    // 1. 如果找到任何删除的铁证，直接判为无效
+    if (deletionProof.hasExactMessage || deletionProof.hasDescription || deletionProof.hasButtonText) {
+      console.log(`[Detector-结论] 确认为删除页面。`);
       return {
         valid: false,
         status: response.status,
         timestamp: new Date().toISOString(),
         message: 'This item has been deleted on Dropbox.',
         reason: 'CONTENT_DELETED',
-        debug: { matched: 'exact_deletion_message' }
+        debug: { matched: 'deletion_proof' }
       };
     }
 
-    // MODERATE SIGNAL: Has other deletion text but lacks normal page structure.
-    if (hasSupportingDeletionText && !hasNormalPageMarkers) {
-      console.log(`[Link Check - Result] LIKELY DELETED. Has deletion-related text, no normal page markers.`);
+    // 2. 检查“页面伪装”情况
+    // 如果页面有正常页面的结构标记（如file_viewer），但没有实质内容（如下载按钮、文件列表）
+    // 这很可能就是您遇到的“伪装删除页”
+    const hasStructure = normalPageIndicators.hasFileViewer || normalPageIndicators.hasFolderViewer || normalPageIndicators.hasReactId;
+    const hasSubstance = normalPageIndicators.hasDownloadButton || normalPageIndicators.hasFileList || normalPageIndicators.hasActualFileName;
+    
+    if (hasStructure && !hasSubstance) {
+      console.log(`[Detector-结论] 疑似“伪装页面”。有结构无内容，判为无效。`);
       return {
         valid: false,
         status: response.status,
         timestamp: new Date().toISOString(),
-        message: 'Link appears to point to a deleted or inaccessible item.',
-        reason: 'LIKELY_DELETED',
-        debug: { matched: 'supporting_text_no_normal_markers' }
+        message: 'Link structure suggests a deleted or inaccessible page.',
+        reason: 'LIKELY_DELETED_NO_CONTENT',
+        debug: { hasStructure, hasSubstance }
       };
     }
 
-    // POSITIVE SIGNAL: Has clear markers of a working file/folder page.
-    if (hasNormalPageMarkers) {
-      console.log(`[Link Check - Result] VALID. Contains normal file/folder page structure.`);
+    // 3. 如果既有结构又有实质内容，则是真正的有效页面
+    if (hasSubstance) {
+      console.log(`[Detector-结论] 确认为有效文件页面。`);
       return {
         valid: true,
         status: response.status,
         timestamp: new Date().toISOString(),
         message: 'Link is valid and points to accessible content.',
-        reason: 'CONTENT_VALID',
-        debug: { matched: 'normal_page_markers' }
+        reason: 'CONTENT_VALID_WITH_SUBSTANCE',
+        debug: { hasSubstance }
       };
     }
 
-    // INCONCLUSIVE: Log a sample for debugging. This should not happen for the test link.
-    const sample = html.substring(0, Math.min(300, htmlLength)).replace(/\s+/g, ' ');
-    console.log(`[Link Check - Warning] INCONCLUSIVE. No clear signals. HTML Sample: ${sample}...`);
-    
-    // Default fallback: If we can't tell, and the page loaded (2xx status), assume it's OK but log a warning.
-    // For the test case, you might want to change `valid: false` if it's consistently failing.
+    // 4. 如果既无删除证据，也无明确的有效内容，则根据HTTP状态码判断
     if (response.status >= 200 && response.status < 300) {
+      console.log(`[Detector-结论] 页面可访问但无法确定类型，保守判为有效。`);
       return {
-        valid: true, // Conservative assumption: loaded but unrecognized
+        valid: true,
         status: response.status,
         timestamp: new Date().toISOString(),
-        message: 'Link loaded but content type could not be verified.',
-        reason: 'INDETERMINATE_BUT_LOADED',
-        debug: { sample, note: 'No strong signals matched. Assuming valid.' }
+        message: 'Link is accessible but content type is unclear.',
+        reason: 'ACCESSIBLE_UNKNOWN_TYPE',
+        debug: { note: 'No definitive signals found' }
       };
     } else {
-      // Non-2xx status code
+      // 非2xx状态码
+      console.log(`[Detector-结论] 页面返回错误状态。`);
       return {
         valid: false,
         status: response.status,
         timestamp: new Date().toISOString(),
-        message: `Link returned an error status: ${response.status}`,
-        reason: `HTTP_${response.status}`,
-        debug: { sample }
+        message: `Link returned error status ${response.status}.`,
+        reason: `HTTP_${response.status}`
       };
     }
 
   } catch (error) {
-    const responseTime = Date.now() - startTime;
-    console.error(`[Link Check - Error] ${url}: ${error.message} (${responseTime}ms)`);
+    console.error(`[Detector-错误] ${error.message}`);
     
     let reason = 'NETWORK_ERROR';
     let message = 'Network request failed.';
@@ -155,7 +162,7 @@ async function checkLinkValidity(url) {
       message = 'Request timed out.';
     } else if (error.response) {
       reason = `HTTP_${error.response.status}`;
-      message = `Dropbox returned error status: ${error.response.status}`;
+      message = `Server returned error: ${error.response.status}`;
     }
 
     return {
@@ -169,10 +176,7 @@ async function checkLinkValidity(url) {
   }
 }
 
-/**
- * Get link status with caching.
- * Test folder has NO CACHE to force fresh checks every time.
- */
+// Get link status (with cache disabled for 'test')
 async function getLinkStatus(folderId) {
   const url = MANUAL_SHARE_LINKS[folderId];
   if (!url) {
@@ -187,34 +191,30 @@ async function getLinkStatus(folderId) {
   const cacheKey = folderId;
   const now = Date.now();
 
-  // IMPORTANT: Disable cache for 'test' folder to see immediate results
-  const cacheTime = folderId === 'test' ? 0 : CACHE_DURATION; // 0 = no cache for test
+  // 对test文件夹禁用缓存
+  const cacheTime = folderId === 'test' ? 0 : CACHE_DURATION;
 
   if (cacheTime > 0 && linkStatusCache[cacheKey] && 
       (now - linkStatusCache[cacheKey].timestamp) < cacheTime) {
-    console.log(`[Cache] Using cached result for "${folderId}"`);
     return linkStatusCache[cacheKey];
   }
 
-  console.log(`[Cache] Fetching fresh status for "${folderId}"`);
   const status = await checkLinkValidity(url);
-  linkStatusCache[cacheKey] = status; // Still store, but cacheTime=0 means it's ignored next time
+  linkStatusCache[cacheKey] = status;
   return status;
 }
 
 // ----- API Endpoints -----
-// Health Check Endpoint
 app.get('/api/health', (req, res) => {
   res.json({
     status: 'healthy',
     service: 'dropbox-file-center',
-    mode: 'direct_text_matching_v2',
+    version: 'anti-camouflage-v3',
     timestamp: new Date().toISOString(),
     available_folders: Object.keys(MANUAL_SHARE_LINKS)
   });
 });
 
-// Get a specific folder link
 app.get('/api/link/:folderId', async (req, res) => {
   const folderId = req.params.folderId;
   
@@ -236,15 +236,12 @@ app.get('/api/link/:folderId', async (req, res) => {
   });
 });
 
-// Get status of ALL configured links
 app.get('/api/links/status', async (req, res) => {
   try {
     const linkStatus = {};
-    const folderIds = Object.keys(MANUAL_SHARE_LINKS);
     
-    // Check all links in parallel
-    const promises = folderIds.map(async (folderId) => {
-      linkStatus[folderId] = await getLinkStatus(folderId);
+    const promises = Object.keys(MANUAL_SHARE_LINKS).map(async (key) => {
+      linkStatus[key] = await getLinkStatus(key);
     });
     
     await Promise.all(promises);
@@ -270,14 +267,8 @@ app.use(express.static(path.join(__dirname, 'public')));
 // Start the server
 app.listen(PORT, () => {
   console.log('='.repeat(50));
-  console.log('🚀 Dropbox File Center - Direct Text Matching Edition');
-  console.log(`📡 Server running on port: ${PORT}`);
-  console.log(`🔗 Configured Folders: ${Object.keys(MANUAL_SHARE_LINKS).join(', ')}`);
-  console.log('='.repeat(50));
-  console.log(`👉 Frontend:  http://localhost:${PORT}`);
-  console.log(`🩺 Health:    http://localhost:${PORT}/api/health`);
-  console.log(`📊 All Status: http://localhost:${PORT}/api/links/status`);
-  console.log('='.repeat(50));
-  console.log('💡 Check Railway logs for "[Link Check - Signals]" to debug.');
+  console.log('🚀 Dropbox 文件中心 - 反伪装检测版');
+  console.log(`📡 端口: ${PORT}`);
+  console.log(`🔍 模式: 结构+内容双重验证`);
   console.log('='.repeat(50));
 });
