@@ -2,153 +2,421 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dropbox Link Checker</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+    <title>Dropbox File Center | Link Validator</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: system-ui, sans-serif; }
-        body { background: #f5f8fa; color: #333; padding: 20px; }
-        .container { max-width: 800px; margin: 0 auto; }
-        header { text-align: center; margin-bottom: 30px; }
-        header h1 { color: #0061ff; margin-bottom: 10px; }
-        .card { background: white; border-radius: 12px; padding: 20px; margin-bottom: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
-        .card h3 { display: flex; align-items: center; margin-bottom: 10px; }
-        .icon { width: 40px; height: 40px; border-radius: 8px; display: flex; align-items: center; justify-content: center; margin-right: 12px; }
-        .enjoy-ai .icon { background: #0061ff; color: white; }
-        .whalesbot .icon { background: #00c6ff; color: white; }
-        .test .icon { background: #ffb347; color: white; }
-        .status { display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 14px; font-weight: 500; margin-top: 10px; }
-        .valid { background: #d4edda; color: #155724; }
-        .deleted { background: #f8d7da; color: #721c24; }
-        .checking { background: #d1ecf1; color: #0c5460; }
-        .error { background: #f5c6cb; color: #721c24; }
-        button { background: #0061ff; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: 600; width: 100%; margin-top: 15px; }
-        button:hover { background: #0052d4; }
-        button:disabled { background: #ccc; cursor: not-allowed; }
-        .btn-small { background: #6c757d; width: auto; padding: 6px 12px; font-size: 14px; }
-        .btn-small:hover { background: #545b62; }
-        .footer { text-align: center; margin-top: 30px; color: #6c757d; font-size: 14px; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #0061ff 0%, #60efff 100%);
+            min-height: 100vh;
+            color: #333;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+            color: white;
+        }
+        
+        header h1 {
+            font-size: 2.8rem;
+            margin-bottom: 10px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+        
+        header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            max-width: 600px;
+            margin: 0 auto 20px;
+        }
+        
+        .status-indicator {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background-color: #48bb78;
+            margin-right: 8px;
+        }
+        
+        .card-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+        
+        @media (max-width: 768px) {
+            .card-grid {
+                grid-template-columns: 1fr;
+            }
+            header h1 {
+                font-size: 2.2rem;
+            }
+        }
+        
+        .folder-card {
+            background: white;
+            border-radius: 16px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .folder-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+        }
+        
+        .card-icon {
+            background: linear-gradient(135deg, #0061ff, #60efff);
+            width: 60px;
+            height: 60px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+        
+        .card-icon i {
+            font-size: 1.8rem;
+            color: white;
+        }
+        
+        .card-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+            color: #2d3748;
+        }
+        
+        .card-desc {
+            color: #718096;
+            line-height: 1.6;
+            margin-bottom: 20px;
+            flex-grow: 1;
+        }
+        
+        .card-meta {
+            font-size: 0.9rem;
+            color: #a0aec0;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .card-meta i {
+            margin-right: 8px;
+        }
+        
+        .access-btn {
+            background: linear-gradient(135deg, #0061ff, #60efff);
+            color: white;
+            border: none;
+            padding: 14px 20px;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            text-align: center;
+            width: 100%;
+        }
+        
+        .access-btn:hover:not(:disabled) {
+            background: linear-gradient(135deg, #0052d4, #4fd8ff);
+            box-shadow: 0 5px 15px rgba(0, 97, 255, 0.4);
+        }
+        
+        .access-btn:disabled {
+            background: #cccccc;
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
+        
+        .access-btn i {
+            margin-right: 10px;
+        }
+        
+        .loading {
+            display: none;
+            font-size: 0.9rem;
+            color: #0061ff;
+            margin-top: 10px;
+            text-align: center;
+        }
+        
+        .loading-spinner {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 1s ease-in-out infinite;
+            margin-right: 8px;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .link-status {
+            margin-top: 10px;
+            font-size: 12px;
+            min-height: 20px;
+        }
+        
+        .status-text {
+            padding: 3px 8px;
+            border-radius: 10px;
+            font-size: 11px;
+            display: inline-block;
+        }
+        
+        .status-valid {
+            background-color: rgba(76, 175, 80, 0.1);
+            color: #2e7d32;
+        }
+        
+        .status-checking {
+            background-color: rgba(33, 150, 243, 0.1);
+            color: #1565c0;
+        }
+        
+        .status-invalid {
+            background-color: rgba(244, 67, 54, 0.1);
+            color: #d32f2f;
+        }
+        
+        .refresh-btn {
+            display: block;
+            margin: 20px auto;
+            padding: 10px 20px;
+            background-color: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+        
+        .refresh-btn:hover:not(:disabled) {
+            background-color: rgba(255, 255, 255, 0.3);
+        }
+        
+        .refresh-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .error-message {
+            display: none;
+            background: #fed7d7;
+            color: #c53030;
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin: 15px 0;
+            font-size: 0.9rem;
+        }
+        
+        footer {
+            text-align: center;
+            margin-top: 50px;
+            color: white;
+            opacity: 0.8;
+            font-size: 0.9rem;
+        }
+        
+        .shared-badge {
+            background-color: #e8f4ff;
+            color: #0061ff;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            display: inline-block;
+            margin-left: 10px;
+        }
+        
+        .test-badge {
+            background-color: #fff3cd;
+            color: #856404;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            display: inline-block;
+            margin-left: 10px;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <header>
-            <h1>Dropbox Link Checker</h1>
-            <p>Simple tool to check if your Dropbox links are still valid</p>
+            <h1><i class="fas fa-cloud"></i> Dropbox File Center</h1>
+            <p>Access your Dropbox files through permanent links. Invalid links are automatically detected and flagged.</p>
+            <div style="margin-top: 10px;">
+                <span class="status-indicator"></span>
+                <span id="status-text">Initializing...</span>
+            </div>
+            
+            <div id="error-message" class="error-message"></div>
         </header>
         
-        <div class="card enjoy-ai">
-            <h3><div class="icon"><i>AI</i></div> ENJOY AI Folder</h3>
-            <p>Shared folder for ENJOY AI project with 5 items.</p>
-            <div class="status checking" id="status-enjoy_ai">Checking...</div>
-            <button onclick="openLink('enjoy_ai')" id="btn-enjoy_ai">Open Folder</button>
-        </div>
-        
-        <div class="card whalesbot">
-            <h3><div class="icon"><i>🤖</i></div> WhalesBot Folder</h3>
-            <p>Shared folder for WhalesBot project with 14 items.</p>
-            <div class="status checking" id="status-whalesbot">Checking...</div>
-            <button onclick="openLink('whalesbot')" id="btn-whalesbot">Open Folder</button>
-        </div>
-        
-        <div class="card test">
-            <h3><div class="icon"><i>🧪</i></div> Test Folder</h3>
-            <p><strong>Test purpose:</strong> Try disabling the share link in Dropbox, then check here.</p>
-            <div class="status checking" id="status-test">Checking...</div>
-            <button onclick="openLink('test')" id="btn-test">Open Test Folder</button>
-            <div style="margin-top: 10px; text-align: center;">
-                <button class="btn-small" onclick="checkLink('test')">Check This Link Only</button>
+        <main id="card-container" class="card-grid">
+            <!-- ENJOY AI Shared Folder -->
+            <div class="folder-card" data-folder-id="enjoy_ai">
+                <div class="card-icon">
+                    <i class="fas fa-share-alt"></i>
+                </div>
+                <h3 class="card-title">ENJOY AI
+                    <span class="shared-badge">Shared • 5 items</span>
+                </h3>
+                <p class="card-desc">Shared folder for the ENJOY AI project. Contains 5 items including project files, datasets, and resources.</p>
+                <div class="card-meta">
+                    <i class="fas fa-users"></i> Shared Folder
+                </div>
+                <button class="access-btn" onclick="handleFolderClick('enjoy_ai')">
+                    <span class="btn-text">Open Folder</span>
+                </button>
+                <div class="link-status">
+                    <span id="status-enjoy_ai" class="status-text status-checking">
+                        <i class="fas fa-spinner fa-spin"></i> Checking...
+                    </span>
+                </div>
             </div>
-        </div>
+            
+            <!-- WhalesBot Shared Folder -->
+            <div class="folder-card" data-folder-id="whalesbot">
+                <div class="card-icon">
+                    <i class="fas fa-robot"></i>
+                </div>
+                <h3 class="card-title">WhalesBot
+                    <span class="shared-badge">Shared • 14 items</span>
+                </h3>
+                <p class="card-desc">Shared folder for the WhalesBot project. Contains 14 items including code, resources, and project files.</p>
+                <div class="card-meta">
+                    <i class="fas fa-users"></i> Shared Folder
+                </div>
+                <button class="access-btn" onclick="handleFolderClick('whalesbot')">
+                    <span class="btn-text">Open Folder</span>
+                </button>
+                <div class="link-status">
+                    <span id="status-whalesbot" class="status-text status-checking">
+                        <i class="fas fa-spinner fa-spin"></i> Checking...
+                    </span>
+                </div>
+            </div>
+            
+            <!-- Test Folder -->
+            <div class="folder-card" data-folder-id="test">
+                <div class="card-icon">
+                    <i class="fas fa-vial"></i>
+                </div>
+                <h3 class="card-title">Test Folder
+                    <span class="test-badge">Test • 0 items</span>
+                </h3>
+                <p class="card-desc">Test folder for validating the link detection system. You can disable the Dropbox share link to test the detection feature.</p>
+                <div class="card-meta">
+                    <i class="fas fa-flask"></i> Test Folder
+                </div>
+                <button class="access-btn" onclick="handleFolderClick('test')">
+                    <span class="btn-text">Open Test Folder</span>
+                </button>
+                <div class="link-status">
+                    <span id="status-test" class="status-text status-checking">
+                        <i class="fas fa-spinner fa-spin"></i> Checking...
+                    </span>
+                </div>
+            </div>
+        </main>
         
-        <div style="text-align: center; margin-top: 20px;">
-            <button class="btn-small" onclick="checkAllLinks()">Check All Links Again</button>
-        </div>
+        <button id="refresh-btn" class="refresh-btn" onclick="checkAllLinks()">
+            <i class="fas fa-sync-alt"></i> Check All Link Status
+        </button>
         
-        <div class="footer">
-            <p>System detects deleted files by looking for "was deleted" text and trash can icons</p>
-        </div>
+        <footer>
+            <p>© 2024 Dropbox Permanent Link Service</p>
+            <p>System automatically checks link status. Invalid links are disabled and flagged.</p>
+        </footer>
     </div>
     
     <script>
         const API_BASE_URL = window.location.origin;
+        const FOLDER_IDS = ['enjoy_ai', 'whalesbot', 'test'];
         
-        function updateStatus(folderId, data) {
-            const statusEl = document.getElementById(`status-${folderId}`);
-            const buttonEl = document.getElementById(`btn-${folderId}`);
-            
-            if (!data) {
-                statusEl.textContent = 'Check failed';
-                statusEl.className = 'status error';
-                buttonEl.disabled = false;
-                return;
-            }
-            
-            if (data.valid) {
-                statusEl.textContent = '✓ Link is valid';
-                statusEl.className = 'status valid';
-                buttonEl.disabled = false;
-            } else {
-                if (data.reason === 'DELETED') {
-                    statusEl.textContent = '✗ This item was deleted';
-                } else {
-                    statusEl.textContent = `✗ ${data.message || 'Link invalid'}`;
-                }
-                statusEl.className = 'status deleted';
-                buttonEl.disabled = true;
-            }
+        function showError(message) {
+            const errorEl = document.getElementById('error-message');
+            errorEl.textContent = '⚠️ ' + message;
+            errorEl.style.display = 'block';
+            setTimeout(() => errorEl.style.display = 'none', 5000);
         }
         
-        async function openLink(folderId) {
-            const button = document.getElementById(`btn-${folderId}`);
-            const originalText = button.textContent;
+        async function handleFolderClick(folderId) {
+            const button = document.querySelector(`[data-folder-id="${folderId}"] .access-btn`);
+            const btnText = button.querySelector('.btn-text');
+            const statusEl = document.getElementById(`status-${folderId}`);
             
-            button.textContent = 'Opening...';
             button.disabled = true;
+            btnText.innerHTML = '<span class="loading-spinner"></span> Checking...';
             
             try {
                 const response = await fetch(`${API_BASE_URL}/api/link/${folderId}`);
                 const data = await response.json();
                 
-                if (data.status === 'valid') {
+                if (data.status && data.status.valid) {
                     window.open(data.url, '_blank');
+                    statusEl.textContent = '✅ Link Valid';
+                    statusEl.className = 'status-text status-valid';
                 } else {
-                    alert(`Cannot open: ${data.message}`);
+                    showError(`Cannot open: ${data.status?.message || 'Link invalid'}`);
+                    statusEl.textContent = '❌ ' + (data.status?.reason === 'DELETED' ? 'Item Deleted' : 'Link Invalid');
+                    statusEl.className = 'status-text status-invalid';
                 }
             } catch (error) {
-                alert('Failed to open link');
+                showError(`Error: ${error.message}`);
+                statusEl.textContent = '❌ Check Failed';
+                statusEl.className = 'status-text status-invalid';
             } finally {
                 setTimeout(() => {
-                    button.textContent = originalText;
                     button.disabled = false;
+                    btnText.textContent = folderId === 'test' ? 'Open Test Folder' : 'Open Folder';
                 }, 1000);
             }
         }
         
-        async function checkLink(folderId) {
-            const statusEl = document.getElementById(`status-${folderId}`);
-            statusEl.textContent = 'Checking...';
-            statusEl.className = 'status checking';
-            
-            try {
-                const response = await fetch(`${API_BASE_URL}/api/links/status`);
-                const data = await response.json();
-                
-                if (data.success && data.data[folderId]) {
-                    updateStatus(folderId, data.data[folderId]);
-                }
-            } catch (error) {
-                statusEl.textContent = 'Check failed';
-                statusEl.className = 'status error';
-            }
-        }
-        
         async function checkAllLinks() {
-            const folders = ['enjoy_ai', 'whalesbot', 'test'];
+            const btn = document.getElementById('refresh-btn');
+            const originalText = btn.innerHTML;
             
-            folders.forEach(folderId => {
-                const statusEl = document.getElementById(`status-${folderId}`);
-                statusEl.textContent = 'Checking...';
-                statusEl.className = 'status checking';
+            btn.disabled = true;
+            btn.innerHTML = '<span class="loading-spinner"></span> Checking...';
+            
+            FOLDER_IDS.forEach(id => {
+                const el = document.getElementById(`status-${id}`);
+                el.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Checking...';
+                el.className = 'status-text status-checking';
             });
             
             try {
@@ -156,22 +424,44 @@
                 const data = await response.json();
                 
                 if (data.success) {
-                    folders.forEach(folderId => {
-                        updateStatus(folderId, data.data[folderId]);
+                    let allValid = true;
+                    
+                    FOLDER_IDS.forEach(id => {
+                        const status = data.data[id];
+                        const button = document.querySelector(`[data-folder-id="${id}"] .access-btn`);
+                        const statusEl = document.getElementById(`status-${id}`);
+                        
+                        if (status && status.valid) {
+                            button.disabled = false;
+                            statusEl.textContent = '✅ Link Valid';
+                            statusEl.className = 'status-text status-valid';
+                        } else {
+                            allValid = false;
+                            button.disabled = true;
+                            statusEl.textContent = '❌ ' + (status?.reason === 'DELETED' ? 'Item Deleted' : 'Link Invalid');
+                            statusEl.className = 'status-text status-invalid';
+                        }
                     });
+                    
+                    document.getElementById('status-text').textContent = 
+                        allValid ? 'All links are valid' : 'Some links need attention';
+                    document.querySelector('.status-indicator').style.backgroundColor = 
+                        allValid ? '#48bb78' : '#f56565';
                 }
             } catch (error) {
-                folders.forEach(folderId => {
-                    const statusEl = document.getElementById(`status-${folderId}`);
-                    statusEl.textContent = 'Check failed';
-                    statusEl.className = 'status error';
-                });
+                showError('Failed to check links');
+            } finally {
+                setTimeout(() => {
+                    btn.innerHTML = originalText;
+                    btn.disabled = false;
+                }, 1000);
             }
         }
         
-        // 页面加载时检查所有链接
-        document.addEventListener('DOMContentLoaded', function() {
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
             checkAllLinks();
+            setInterval(checkAllLinks, 300000); // Check every 5 minutes
         });
     </script>
 </body>
