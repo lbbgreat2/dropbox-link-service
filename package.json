@@ -1,7 +1,7 @@
 {
-  "name": "dropbox-file-center",
+  "name": "dropbox-file-center-feature-detection",
   "version": "1.0.0",
-  "description": "Dropbox File Center with enhanced link validation and noscript detection",
+  "description": "Dropbox File Center with page feature detection based on PAGE_INIT_DATA analysis",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
@@ -11,7 +11,8 @@
     "dropbox",
     "file-sharing",
     "link-validation",
-    "noscript-detection"
+    "feature-detection",
+    "page-analysis"
   ],
   "author": "",
   "license": "MIT",
