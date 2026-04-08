@@ -1,7 +1,7 @@
 {
-  "name": "dropbox-file-center-exact-feature-detection",
-  "version": "3.0.0",
-  "description": "Dropbox File Center with exact page feature detection - 100% accurate identification based on three core features",
+  "name": "dropbox-file-center-fixed-feature-detection",
+  "version": "4.0.0",
+  "description": "Dropbox File Center with fixed exact feature detection - 100% accurate identification based on three core features with multiple format support",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
@@ -16,7 +16,8 @@
     "page-analysis",
     "html-parsing",
     "web-scraping",
-    "exact-match"
+    "exact-match",
+    "fixed-detection"
   ],
   "author": "",
   "license": "MIT",
