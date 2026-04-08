@@ -558,9 +558,68 @@
                 }
             });
             
-            // 更新动态状态文本
+            // 特殊处理：更新刷新按钮文本
+            updateRefreshButtonText();
+            
+            // 特殊处理：动态更新的状态文本需要重新应用当前语言
             updateStatusTexts();
             console.log(`Language switched to: ${langCode}`);
+        }
+        
+        // 更新刷新按钮文本（修复按钮翻译问题）
+        function updateRefreshButtonText() {
+            const refreshBtn = document.getElementById('refresh-btn');
+            if (!refreshBtn) return;
+            
+            // 检查按钮是否处于加载状态（有loading-spinner）
+            const spinner = refreshBtn.querySelector('.loading-spinner');
+            const btnTextSpan = refreshBtn.querySelector('[data-i18n-key="btn_refresh"]');
+            
+            if (spinner) {
+                // 按钮处于加载状态，需要更新"验证中..."文本
+                // 找到spinner后面的文本节点
+                const allSpans = refreshBtn.querySelectorAll('span');
+                allSpans.forEach(span => {
+                    if (span !== spinner && !span.hasAttribute('data-i18n-key')) {
+                        // 这个span是动态添加的文本
+                        span.textContent = i18nResources[currentLang]['btn_checking'];
+                    }
+                });
+                
+                // 如果找不到动态文本，就创建一个
+                let foundTextSpan = false;
+                refreshBtn.childNodes.forEach(node => {
+                    if (node.nodeType === 3 && node.textContent.trim()) { // 文本节点
+                        node.textContent = i18nResources[currentLang]['btn_checking'];
+                        foundTextSpan = true;
+                    }
+                });
+                
+                if (!foundTextSpan) {
+                    // 如果没有文本节点，创建一个新的
+                    const textSpan = document.createElement('span');
+                    textSpan.textContent = i18nResources[currentLang]['btn_checking'];
+                    refreshBtn.appendChild(textSpan);
+                }
+            } else if (btnTextSpan) {
+                // 正常状态，更新按钮文本
+                btnTextSpan.textContent = i18nResources[currentLang]['btn_refresh'];
+            } else {
+                // 如果按钮结构被改变，重建它
+                const icon = refreshBtn.querySelector('i');
+                if (icon) {
+                    const newText = document.createElement('span');
+                    newText.setAttribute('data-i18n-key', 'btn_refresh');
+                    newText.textContent = i18nResources[currentLang]['btn_refresh'];
+                    
+                    // 清除现有内容，保留图标
+                    const existingIcon = icon.cloneNode(true);
+                    refreshBtn.innerHTML = '';
+                    refreshBtn.appendChild(existingIcon);
+                    refreshBtn.appendChild(document.createTextNode(' '));
+                    refreshBtn.appendChild(newText);
+                }
+            }
         }
         
         // 更新动态状态文本
@@ -572,23 +631,34 @@
                 if (timeMatch) {
                     const prefix = i18nResources[currentLang]['last_checked'] + ': ';
                     lastCheckedEl.textContent = prefix + timeMatch[0];
+                } else if (!lastCheckedEl.textContent.includes(':')) {
+                    // 如果没有时间格式，直接更新前缀
+                    const prefix = i18nResources[currentLang]['last_checked'] + ': ';
+                    lastCheckedEl.textContent = prefix;
                 }
             }
             
-            // 更新系统状态文本（如果有状态信息）
+            // 更新系统状态文本
             const statusTextEl = document.getElementById('status-text');
             if (statusTextEl && statusTextEl.textContent) {
                 const currentText = statusTextEl.textContent;
                 if (currentText.includes('所有链接正常')) {
                     statusTextEl.textContent = i18nResources[currentLang]['status_all_good'];
                 } else if (currentText.includes('个链接正常')) {
-                    statusTextEl.textContent = currentText.replace('个链接正常', i18nResources[currentLang]['status_some_good']);
+                    const match = currentText.match(/(\d+)\/(\d+)/);
+                    if (match) {
+                        statusTextEl.textContent = `${match[1]}/${match[2]} ${i18nResources[currentLang]['status_some_good']}`;
+                    }
                 } else if (currentText.includes('所有链接均已失效')) {
                     statusTextEl.textContent = i18nResources[currentLang]['status_all_bad'];
                 } else if (currentText.includes('链接状态检测服务不可用')) {
                     statusTextEl.textContent = i18nResources[currentLang]['status_service_error'];
                 } else if (currentText.includes('链接状态检测失败')) {
                     statusTextEl.textContent = i18nResources[currentLang]['status_check_failed'];
+                } else if (currentText.includes('正在检测链接状态')) {
+                    statusTextEl.textContent = i18nResources[currentLang]['status_checking'];
+                } else if (currentText.includes('Checking link status')) {
+                    statusTextEl.textContent = i18nResources[currentLang]['status_checking'];
                 }
             }
             
@@ -599,7 +669,9 @@
                     const currentStatus = statusEl.textContent;
                     if (currentStatus.includes('链接正常')) {
                         statusEl.innerHTML = `<i class="fas fa-check-circle"></i> ${i18nResources[currentLang]['status_live']}`;
-                    } else if (currentStatus.includes('检测中...')) {
+                    } else if (currentStatus.includes('检测中')) {
+                        statusEl.innerHTML = `<i class="fas fa-spinner fa-spin"></i> ${i18nResources[currentLang]['status_checking_short']}`;
+                    } else if (currentStatus.includes('Checking')) {
                         statusEl.innerHTML = `<i class="fas fa-spinner fa-spin"></i> ${i18nResources[currentLang]['status_checking_short']}`;
                     } else if (currentStatus.includes('链接验证失败')) {
                         statusEl.innerHTML = `<i class="fas fa-times-circle"></i> ${i18nResources[currentLang]['status_failed']}`;
@@ -616,6 +688,12 @@
                     } else if (currentStatus.includes('状态未知')) {
                         statusEl.innerHTML = `<i class="fas fa-question-circle"></i> ${i18nResources[currentLang]['status_unknown']}`;
                     } else if (currentStatus.includes('直接访问')) {
+                        statusEl.innerHTML = `<i class="fas fa-exclamation-triangle"></i> ${i18nResources[currentLang]['status_fallback']}`;
+                    } else if (currentStatus.includes('Link Check Failed')) {
+                        statusEl.innerHTML = `<i class="fas fa-times-circle"></i> ${i18nResources[currentLang]['status_failed']}`;
+                    } else if (currentStatus.includes('Link Expired')) {
+                        statusEl.innerHTML = `<i class="fas fa-times-circle"></i> ${i18nResources[currentLang]['status_expired']}`;
+                    } else if (currentStatus.includes('Direct Access')) {
                         statusEl.innerHTML = `<i class="fas fa-exclamation-triangle"></i> ${i18nResources[currentLang]['status_fallback']}`;
                     }
                 }
@@ -733,7 +811,7 @@
         // 检测所有链接状态
         async function checkAllLinks() {
             const refreshBtn = document.getElementById('refresh-btn');
-            const originalText = refreshBtn.innerHTML;
+            const originalHtml = refreshBtn.innerHTML;
             const statusIndicator = document.getElementById('system-status-indicator');
             const statusText = document.getElementById('status-text');
             
@@ -759,7 +837,7 @@
                     if (response.status === 404) {
                         // 如果状态检测接口不存在，使用降级模式
                         useFallbackMode();
-                        refreshBtn.innerHTML = `<i class="fas fa-sync-alt"></i> ${i18nResources[currentLang]['btn_refresh']}`;
+                        refreshBtn.innerHTML = originalHtml;
                         refreshBtn.disabled = false;
                         statusText.textContent = i18nResources[currentLang]['status_service_error'];
                         statusIndicator.style.backgroundColor = '#f56565';
@@ -865,7 +943,7 @@
             } finally {
                 // 恢复按钮状态
                 setTimeout(() => {
-                    refreshBtn.innerHTML = `<i class="fas fa-sync-alt"></i> ${i18nResources[currentLang]['btn_refresh']}`;
+                    refreshBtn.innerHTML = `<i class="fas fa-sync-alt"></i> <span data-i18n-key="btn_refresh">${i18nResources[currentLang]['btn_refresh']}</span>`;
                     refreshBtn.disabled = false;
                 }, 1000);
             }
