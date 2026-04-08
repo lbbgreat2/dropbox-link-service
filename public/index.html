@@ -1,16 +1,16 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dropbox File Center | Enhanced Detection</title>
+    <title>Dropbox 文件中心 | 页面特征检测</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
         }
         
         body {
@@ -21,7 +21,7 @@
         }
         
         .container {
-            max-width: 1200px;
+            max-width: 1400px;
             margin: 0 auto;
         }
         
@@ -40,14 +40,14 @@
         header p {
             font-size: 1.2rem;
             opacity: 0.9;
-            max-width: 600px;
+            max-width: 800px;
             margin: 0 auto 20px;
         }
         
         .system-status {
             display: inline-block;
             background: rgba(255, 255, 255, 0.1);
-            padding: 15px 25px;
+            padding: 15px 30px;
             border-radius: 12px;
             margin-top: 20px;
         }
@@ -64,7 +64,7 @@
         
         .card-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
             gap: 25px;
             margin-bottom: 30px;
         }
@@ -219,6 +219,76 @@
             border: 1px solid rgba(255, 193, 7, 0.3);
         }
         
+        .strategy-info {
+            margin-top: 15px;
+            padding: 12px;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            font-size: 0.85rem;
+        }
+        
+        .strategy-title {
+            font-weight: 600;
+            color: #495057;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .strategy-title i {
+            margin-right: 6px;
+        }
+        
+        .strategy-details {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+            margin-top: 8px;
+        }
+        
+        .strategy-item {
+            padding: 6px 8px;
+            background: white;
+            border-radius: 6px;
+            border-left: 3px solid #ddd;
+        }
+        
+        .strategy-deleted {
+            border-left-color: #f44336;
+        }
+        
+        .strategy-normal {
+            border-left-color: #4caf50;
+        }
+        
+        .strategy-unknown {
+            border-left-color: #ff9800;
+        }
+        
+        .confidence-badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin-left: 8px;
+        }
+        
+        .confidence-high {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        
+        .confidence-medium {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+        
+        .confidence-low {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+        
         .action-bar {
             display: flex;
             justify-content: center;
@@ -262,6 +332,39 @@
             font-size: 0.9rem;
         }
         
+        .feature-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        
+        .feature-table th, .feature-table td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        .feature-table th {
+            background-color: #f8f9fa;
+            font-weight: 600;
+            color: #333;
+        }
+        
+        .feature-table tr:last-child td {
+            border-bottom: none;
+        }
+        
+        .feature-deleted {
+            background-color: #ffebee;
+        }
+        
+        .feature-normal {
+            background-color: #e8f5e9;
+        }
+        
         footer {
             text-align: center;
             margin-top: 50px;
@@ -294,20 +397,58 @@
 <body>
     <div class="container">
         <header>
-            <h1><i class="fas fa-cloud"></i> Dropbox File Center</h1>
-            <p>Access your Dropbox files through permanent links. Enhanced detection for deleted or inaccessible content.</p>
+            <h1><i class="fas fa-cloud"></i> Dropbox 文件中心</h1>
+            <p>基于PAGE_INIT_DATA特征的页面状态检测系统 | 三重检测策略确保准确性</p>
             
             <div class="system-status">
                 <div>
                     <span class="status-indicator" id="system-status-indicator"></span>
-                    <span id="status-text">Initializing system...</span>
+                    <span id="status-text">系统初始化中...</span>
                 </div>
                 <div id="last-checked" style="font-size:0.8rem; margin-top:5px; color:rgba(255,255,255,0.7);">
-                    Last checked: --
+                    最后检查: --
                 </div>
             </div>
             
             <div id="error-message" class="error-message"></div>
+            
+            <!-- 特征对比表 -->
+            <details style="margin-top: 20px; color: white; max-width: 800px; margin-left: auto; margin-right: auto;">
+                <summary style="cursor: pointer; padding: 10px; background: rgba(255,255,255,0.1); border-radius: 8px;">
+                    <i class="fas fa-table"></i> 显示特征对比表
+                </summary>
+                <table class="feature-table">
+                    <thead>
+                        <tr>
+                            <th>特征</th>
+                            <th>文件删除页面</th>
+                            <th>正常文件页面</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>edison_atlasservlet</strong></td>
+                            <td class="feature-deleted">"file_viewer"</td>
+                            <td class="feature-normal">"files_app"</td>
+                        </tr>
+                        <tr>
+                            <td><strong>edison_page_name</strong></td>
+                            <td class="feature-deleted">"scl_oboe_folder"</td>
+                            <td class="feature-normal">"edison_browse_atlas"</td>
+                        </tr>
+                        <tr>
+                            <td><strong>yaps_project</strong></td>
+                            <td class="feature-deleted">"edison_atlasservlet.file_viewer-edison"</td>
+                            <td class="feature-normal">"edison_atlasservlet.files_app-edison"</td>
+                        </tr>
+                        <tr>
+                            <td><strong>模块路径</strong></td>
+                            <td class="feature-deleted">"scl_oboe_folder_bundle_amd"</td>
+                            <td class="feature-normal">"edison_browse_atlas_bundle_amd"</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </details>
         </header>
         
         <main id="card-container" class="card-grid">
@@ -317,19 +458,30 @@
                     <i class="fas fa-share-alt"></i>
                 </div>
                 <h3 class="card-title">ENJOY AI
-                    <span class="shared-badge">Shared • 5 items</span>
+                    <span class="shared-badge">共享 • 5个项目</span>
                 </h3>
-                <p class="card-desc">Shared folder for the ENJOY AI project. Contains 5 items including project files, datasets, and resources.</p>
+                <p class="card-desc">ENJOY AI项目的共享文件夹。包含5个项目，包括项目文件、数据集和资源。</p>
                 <div class="card-meta">
-                    <i class="fas fa-users"></i> Shared Folder
+                    <i class="fas fa-users"></i> 共享文件夹
                 </div>
                 <button class="access-btn" onclick="handleFolderClick('enjoy_ai')" id="btn-enjoy_ai">
-                    <span class="btn-text">Open Folder</span>
+                    <span class="btn-text">打开文件夹</span>
                 </button>
                 <div class="link-status">
                     <span id="status-enjoy_ai" class="status-text status-checking">
-                        <i class="fas fa-spinner fa-spin"></i> Checking...
+                        <i class="fas fa-spinner fa-spin"></i> 检测中...
                     </span>
+                </div>
+                <!-- 检测策略信息 -->
+                <div class="strategy-info" id="strategy-enjoy_ai" style="display: none;">
+                    <div class="strategy-title">
+                        <i class="fas fa-search"></i> 检测策略结果
+                        <span id="confidence-enjoy_ai" class="confidence-badge confidence-medium"></span>
+                    </div>
+                    <div id="detection-method-enjoy_ai" style="font-size: 0.8rem; color: #666; margin-bottom: 5px;"></div>
+                    <div class="strategy-details" id="strategy-details-enjoy_ai">
+                        <!-- 策略结果将通过JS动态填充 -->
+                    </div>
                 </div>
             </div>
             
@@ -339,19 +491,30 @@
                     <i class="fas fa-robot"></i>
                 </div>
                 <h3 class="card-title">WhalesBot
-                    <span class="shared-badge">Shared • 14 items</span>
+                    <span class="shared-badge">共享 • 14个项目</span>
                 </h3>
-                <p class="card-desc">Shared folder for the WhalesBot project. Contains 14 items including code, resources, and project files.</p>
+                <p class="card-desc">WhalesBot项目的共享文件夹。包含14个项目，包括代码、资源和项目文件。</p>
                 <div class="card-meta">
-                    <i class="fas fa-users"></i> Shared Folder
+                    <i class="fas fa-users"></i> 共享文件夹
                 </div>
                 <button class="access-btn" onclick="handleFolderClick('whalesbot')" id="btn-whalesbot">
-                    <span class="btn-text">Open Folder</span>
+                    <span class="btn-text">打开文件夹</span>
                 </button>
                 <div class="link-status">
                     <span id="status-whalesbot" class="status-text status-checking">
-                        <i class="fas fa-spinner fa-spin"></i> Checking...
+                        <i class="fas fa-spinner fa-spin"></i> 检测中...
                     </span>
+                </div>
+                <!-- 检测策略信息 -->
+                <div class="strategy-info" id="strategy-whalesbot" style="display: none;">
+                    <div class="strategy-title">
+                        <i class="fas fa-search"></i> 检测策略结果
+                        <span id="confidence-whalesbot" class="confidence-badge confidence-medium"></span>
+                    </div>
+                    <div id="detection-method-whalesbot" style="font-size: 0.8rem; color: #666; margin-bottom: 5px;"></div>
+                    <div class="strategy-details" id="strategy-details-whalesbot">
+                        <!-- 策略结果将通过JS动态填充 -->
+                    </div>
                 </div>
             </div>
             
@@ -360,36 +523,47 @@
                 <div class="card-icon">
                     <i class="fas fa-vial"></i>
                 </div>
-                <h3 class="card-title">Test Folder
-                    <span class="test-badge">Test • Detection</span>
+                <h3 class="card-title">测试文件夹
+                    <span class="test-badge">测试 • 特征检测</span>
                 </h3>
-                <p class="card-desc">Test folder for validating the enhanced detection system. The system checks for noscript redirects and deletion text patterns.</p>
+                <p class="card-desc">用于验证页面特征检测系统的测试文件夹。系统检测noscript重定向、删除文本模式和正常内容标记。</p>
                 <div class="card-meta">
-                    <i class="fas fa-flask"></i> Test Folder
+                    <i class="fas fa-flask"></i> 测试文件夹
                 </div>
                 <button class="access-btn" onclick="handleFolderClick('test')" id="btn-test">
-                    <span class="btn-text">Open Test Folder</span>
+                    <span class="btn-text">打开测试文件夹</span>
                 </button>
                 <div class="link-status">
                     <span id="status-test" class="status-text status-checking">
-                        <i class="fas fa-spinner fa-spin"></i> Checking...
+                        <i class="fas fa-spinner fa-spin"></i> 检测中...
                     </span>
+                </div>
+                <!-- 检测策略信息 -->
+                <div class="strategy-info" id="strategy-test" style="display: none;">
+                    <div class="strategy-title">
+                        <i class="fas fa-search"></i> 检测策略结果
+                        <span id="confidence-test" class="confidence-badge confidence-medium"></span>
+                    </div>
+                    <div id="detection-method-test" style="font-size: 0.8rem; color: #666; margin-bottom: 5px;"></div>
+                    <div class="strategy-details" id="strategy-details-test">
+                        <!-- 策略结果将通过JS动态填充 -->
+                    </div>
                 </div>
             </div>
         </main>
         
         <div class="action-bar">
             <button class="action-btn" onclick="checkAllLinks()" id="btn-check-all">
-                <i class="fas fa-sync-alt"></i> Check All Links
+                <i class="fas fa-sync-alt"></i> 检测所有链接
             </button>
             <button class="action-btn" onclick="checkHealth()">
-                <i class="fas fa-heartbeat"></i> System Health
+                <i class="fas fa-heartbeat"></i> 系统健康检查
             </button>
         </div>
         
         <footer>
-            <p>© 2024 Dropbox Permanent Link Service | Enhanced Detection v2</p>
-            <p>System checks for noscript redirects, deletion text patterns, and normal content markers.</p>
+            <p>© 2024 Dropbox 永久链接服务 | 页面特征检测系统 v1.0</p>
+            <p>系统基于PAGE_INIT_DATA特征进行三重策略检测，确保高准确性</p>
         </footer>
     </div>
     
@@ -398,7 +572,7 @@
         const FOLDER_IDS = ['enjoy_ai', 'whalesbot', 'test'];
         let lastCheckTime = null;
 
-        // UI Helper Functions
+        // UI 辅助函数
         function showError(message, duration = 5000) {
             const el = document.getElementById('error-message');
             el.textContent = `⚠️ ${message}`;
@@ -409,10 +583,10 @@
         function updateLastCheckedTime() {
             const el = document.getElementById('last-checked');
             if (lastCheckTime) {
-                const timeStr = new Date(lastCheckTime).toLocaleTimeString('en-US', {hour12: false});
-                el.textContent = `Last checked: ${timeStr}`;
+                const timeStr = new Date(lastCheckTime).toLocaleTimeString('zh-CN', {hour12: false});
+                el.textContent = `最后检查: ${timeStr}`;
             } else {
-                el.textContent = 'Last checked: --';
+                el.textContent = '最后检查: --';
             }
         }
 
@@ -421,15 +595,81 @@
             const textEl = document.getElementById('status-text');
             
             if (validCount === totalCount) {
-                indicator.style.backgroundColor = '#48bb78'; // Green
-                textEl.textContent = `All ${totalCount} links are valid`;
+                indicator.style.backgroundColor = '#48bb78'; // 绿色
+                textEl.textContent = `所有 ${totalCount} 个链接有效`;
             } else if (validCount === 0) {
-                indicator.style.backgroundColor = '#f56565'; // Red
-                textEl.textContent = `All ${totalCount} links are invalid`;
+                indicator.style.backgroundColor = '#f56565'; // 红色
+                textEl.textContent = `所有 ${totalCount} 个链接无效`;
             } else {
-                indicator.style.backgroundColor = '#f6ad55'; // Yellow/Orange
-                textEl.textContent = `${validCount}/${totalCount} links are valid`;
+                indicator.style.backgroundColor = '#f6ad55'; // 黄色/橙色
+                textEl.textContent = `${validCount}/${totalCount} 个链接有效`;
             }
+        }
+
+        function updateStrategyInfo(folderId, statusData) {
+            const strategyEl = document.getElementById(`strategy-${folderId}`);
+            const confidenceEl = document.getElementById(`confidence-${folderId}`);
+            const methodEl = document.getElementById(`detection-method-${folderId}`);
+            const detailsEl = document.getElementById(`strategy-details-${folderId}`);
+            
+            if (!statusData) {
+                strategyEl.style.display = 'none';
+                return;
+            }
+            
+            // 显示策略信息区域
+            strategyEl.style.display = 'block';
+            
+            // 更新置信度徽章
+            const confidence = statusData.confidence || 'LOW';
+            confidenceEl.textContent = {
+                'HIGH': '高置信度',
+                'MEDIUM': '中置信度', 
+                'LOW': '低置信度'
+            }[confidence] || '未知';
+            
+            // 更新置信度样式
+            confidenceEl.className = 'confidence-badge ' + {
+                'HIGH': 'confidence-high',
+                'MEDIUM': 'confidence-medium',
+                'LOW': 'confidence-low'
+            }[confidence] || 'confidence-low';
+            
+            // 更新检测方法
+            const method = statusData.detection_method || 'unknown';
+            methodEl.textContent = `检测方法: ${
+                method === 'page_feature_analysis' ? '页面特征分析' :
+                method === 'http_status_only' ? 'HTTP状态检测' :
+                method === 'error_fallback' ? '错误回退' : '未知'
+            }`;
+            
+            // 解析策略结果（从message中提取）
+            const message = statusData.message || '';
+            let strategyResults = [];
+            
+            if (message.includes('字符串搜索')) {
+                strategyResults.push({name: '策略1: 字符串搜索', result: '已执行'});
+            }
+            if (message.includes('正则表达式')) {
+                strategyResults.push({name: '策略2: 正则表达式', result: '已执行'});
+            }
+            if (message.includes('特征组合')) {
+                strategyResults.push({name: '策略3: 特征组合', result: '已执行'});
+            }
+            
+            // 如果后端返回了详细的策略信息，这里可以进一步解析
+            // 目前简单显示检测结果
+            detailsEl.innerHTML = `
+                <div class="strategy-item strategy-${statusData.valid ? 'normal' : 'deleted'}">
+                    <strong>最终结果:</strong> ${statusData.valid ? '页面正常' : '页面已删除'}
+                </div>
+                <div class="strategy-item">
+                    <strong>原因:</strong> ${statusData.reason || '未知'}
+                </div>
+                <div class="strategy-item">
+                    <strong>状态码:</strong> ${statusData.status || '未知'}
+                </div>
+            `;
         }
 
         function updateFolderStatus(folderId, statusData) {
@@ -437,83 +677,91 @@
             const statusEl = document.getElementById(`status-${folderId}`);
             
             if (!statusData) {
-                // Data fetch failed
-                statusEl.innerHTML = '<i class="fas fa-question-circle"></i> Unknown';
+                // 数据获取失败
+                statusEl.innerHTML = '<i class="fas fa-question-circle"></i> 未知';
                 statusEl.className = 'status-text status-checking';
                 button.disabled = true;
-                button.title = 'Status check failed';
+                button.title = '状态检测失败';
                 return;
             }
             
             const isValid = statusData.valid;
             const reason = statusData.reason || 'UNKNOWN';
             
-            // Update Button
+            // 更新按钮
             button.disabled = !isValid;
-            button.title = isValid ? 'Click to open folder' : `Cannot open: ${statusData.message || 'Link invalid'}`;
+            button.title = isValid ? '点击打开文件夹' : `无法打开: ${statusData.message || '链接无效'}`;
             
-            // Update Status Display
+            // 更新状态显示
             if (isValid) {
-                let displayText = '✅ Link valid';
+                let displayText = '✅ 链接有效';
                 let statusClass = 'status-valid';
                 
                 if (reason.includes('ACCESSIBLE')) {
-                    displayText = '✅ Accessible';
+                    displayText = '✅ 可访问';
+                } else if (reason.includes('PAGE_FEATURE')) {
+                    displayText = '✅ 页面正常';
                 }
                 
                 statusEl.innerHTML = `<i class="fas fa-check-circle"></i> ${displayText}`;
                 statusEl.className = `status-text ${statusClass}`;
             } else {
-                let displayText = '❌ Link invalid';
+                let displayText = '❌ 链接无效';
                 let icon = 'fa-times-circle';
                 
                 if (reason.includes('DELETED')) {
-                    displayText = '🗑️ Item deleted';
+                    displayText = '🗑️ 项目已删除';
                     icon = 'fa-trash-alt';
                 } else if (reason === 'TIMEOUT') {
-                    displayText = '⏱️ Timeout';
+                    displayText = '⏱️ 超时';
                     icon = 'fa-clock';
                 } else if (reason.startsWith('HTTP_4') || reason.startsWith('HTTP_5')) {
                     const code = reason.replace('HTTP_', '');
-                    displayText = `⚠️ Error ${code}`;
+                    displayText = `⚠️ 错误 ${code}`;
                     icon = 'fa-exclamation-triangle';
                 } else if (reason === 'NETWORK_ERROR') {
-                    displayText = '🌐 Network error';
+                    displayText = '🌐 网络错误';
                     icon = 'fa-wifi';
+                } else if (reason.includes('PAGE_FEATURE')) {
+                    displayText = '🔍 页面特征删除';
+                    icon = 'fa-search';
                 }
                 
                 statusEl.innerHTML = `<i class="fas ${icon}"></i> ${displayText}`;
                 statusEl.className = 'status-text status-invalid';
             }
+            
+            // 更新策略信息
+            updateStrategyInfo(folderId, statusData);
         }
 
-        // Core Functions
+        // 核心功能函数
         async function handleFolderClick(folderId) {
             const button = document.getElementById(`btn-${folderId}`);
             const btnText = button.querySelector('.btn-text');
             const originalText = btnText.textContent;
             
-            // Visual feedback
+            // 视觉反馈
             button.disabled = true;
-            btnText.innerHTML = '<span class="loading-spinner"></span> Opening...';
+            btnText.innerHTML = '<span class="loading-spinner"></span> 打开中...';
             
             try {
                 const response = await fetch(`${API_BASE_URL}/api/link/${folderId}`);
                 const data = await response.json();
                 
                 if (data.status_check && data.status_check.valid) {
-                    // Link is valid, open it
+                    // 链接有效，打开它
                     window.open(data.url, '_blank');
                 } else {
-                    // Link is invalid, show error
-                    const msg = data.status_check?.message || 'The link is not accessible.';
-                    showError(`Cannot open: ${msg}`);
+                    // 链接无效，显示错误
+                    const msg = data.status_check?.message || '链接无法访问。';
+                    showError(`无法打开: ${msg}`);
                 }
             } catch (error) {
-                console.error('Failed to open link:', error);
-                showError('Failed to open the link. Please try again.');
+                console.error('打开链接失败:', error);
+                showError('打开链接失败，请重试。');
             } finally {
-                // Reset button after a short delay
+                // 短暂延迟后重置按钮
                 setTimeout(() => {
                     button.disabled = false;
                     btnText.textContent = originalText;
@@ -525,22 +773,25 @@
             const checkBtn = document.getElementById('btn-check-all');
             const originalHTML = checkBtn.innerHTML;
             
-            // Disable button and show loading
+            // 禁用按钮并显示加载
             checkBtn.disabled = true;
-            checkBtn.innerHTML = '<span class="loading-spinner"></span> Checking...';
+            checkBtn.innerHTML = '<span class="loading-spinner"></span> 检测中...';
             
-            // Set all status to "checking"
+            // 设置所有状态为"检测中"
             FOLDER_IDS.forEach(id => {
                 const statusEl = document.getElementById(`status-${id}`);
-                statusEl.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Checking...';
+                statusEl.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 检测中...';
                 statusEl.className = 'status-text status-checking';
+                
+                // 隐藏策略信息
+                document.getElementById(`strategy-${id}`).style.display = 'none';
             });
             
             try {
                 const response = await fetch(`${API_BASE_URL}/api/links/status`);
                 
                 if (!response.ok) {
-                    throw new Error(`API returned ${response.status}`);
+                    throw new Error(`API返回 ${response.status}`);
                 }
                 
                 const data = await response.json();
@@ -557,33 +808,33 @@
                         }
                     });
                     
-                    // Update system status and time
+                    // 更新系统状态和时间
                     updateSystemStatus(validCount, FOLDER_IDS.length);
                     lastCheckTime = new Date().toISOString();
                     updateLastCheckedTime();
                     
                 } else {
-                    throw new Error(data.error || 'Failed to check links');
+                    throw new Error(data.error || '检测链接失败');
                 }
                 
             } catch (error) {
-                console.error('Failed to check all links:', error);
-                showError(`Check failed: ${error.message}`);
+                console.error('检测所有链接失败:', error);
+                showError(`检测失败: ${error.message}`);
                 
-                // Fallback: enable all buttons if check fails
+                // 降级模式：如果检测失败，启用所有按钮
                 FOLDER_IDS.forEach(folderId => {
                     const button = document.getElementById(`btn-${folderId}`);
                     const statusEl = document.getElementById(`status-${folderId}`);
                     
                     button.disabled = false;
-                    statusEl.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Check failed';
+                    statusEl.innerHTML = '<i class="fas fa-exclamation-triangle"></i> 检测失败';
                     statusEl.className = 'status-text status-warning';
                 });
                 
                 document.getElementById('system-status-indicator').style.backgroundColor = '#f56565';
-                document.getElementById('status-text').textContent = 'Status check failed';
+                document.getElementById('status-text').textContent = '状态检测失败';
             } finally {
-                // Re-enable button
+                // 重新启用按钮
                 setTimeout(() => {
                     checkBtn.disabled = false;
                     checkBtn.innerHTML = originalHTML;
@@ -595,45 +846,45 @@
             const indicator = document.getElementById('system-status-indicator');
             const originalColor = indicator.style.backgroundColor;
             
-            indicator.style.backgroundColor = '#f6ad55'; // Orange - checking
-            document.getElementById('status-text').textContent = 'Checking system health...';
+            indicator.style.backgroundColor = '#f6ad55'; // 橙色 - 检测中
+            document.getElementById('status-text').textContent = '检查系统健康状态...';
             
             try {
                 const response = await fetch(`${API_BASE_URL}/api/health`);
-                if (!response.ok) throw new Error(`Health check failed: ${response.status}`);
+                if (!response.ok) throw new Error(`健康检查失败: ${response.status}`);
                 
                 const data = await response.json();
-                console.log('System health:', data);
+                console.log('系统健康状态:', data);
                 
-                // Trigger a link check after health check
+                // 健康检查后触发链接检测
                 setTimeout(() => checkAllLinks(), 500);
                 
             } catch (error) {
-                console.error('Health check failed:', error);
-                showError(`Health check failed: ${error.message}`);
+                console.error('健康检查失败:', error);
+                showError(`健康检查失败: ${error.message}`);
                 indicator.style.backgroundColor = '#f56565';
-                document.getElementById('status-text').textContent = 'Health check failed';
+                document.getElementById('status-text').textContent = '健康检查失败';
             }
         }
 
-        // Initialize the page
+        // 初始化页面
         document.addEventListener('DOMContentLoaded', function() {
-            console.log('Dropbox File Center initialized.');
+            console.log('Dropbox 文件中心已初始化。');
             
-            // Initial state
+            // 初始状态
             FOLDER_IDS.forEach(folderId => {
                 const statusEl = document.getElementById(`status-${folderId}`);
-                statusEl.innerHTML = '<i class="fas fa-hourglass-start"></i> Pending';
+                statusEl.innerHTML = '<i class="fas fa-hourglass-start"></i> 等待中';
                 statusEl.className = 'status-text status-checking';
             });
             
             updateSystemStatus(0, FOLDER_IDS.length);
             updateLastCheckedTime();
             
-            // Perform initial health check
+            // 执行初始健康检查
             checkHealth();
             
-            // Auto-refresh every 3 minutes
+            // 每3分钟自动检测
             setInterval(() => checkAllLinks(), 3 * 60 * 1000);
         });
     </script>
