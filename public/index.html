@@ -3,19 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dropbox File Center | Stable Version</title>
+    <title>Dropbox File Center | Enhanced Detection</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: Arial, sans-serif;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
         
         body {
-            background: #0061ff;
+            background: linear-gradient(135deg, #0061ff 0%, #60efff 100%);
             min-height: 100vh;
-            color: white;
+            color: #333;
             padding: 20px;
         }
         
@@ -27,304 +28,519 @@
         header {
             text-align: center;
             margin-bottom: 40px;
-            padding: 20px 0;
+            color: white;
         }
         
         header h1 {
-            font-size: 2.5rem;
+            font-size: 2.8rem;
             margin-bottom: 10px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.2);
         }
         
         header p {
-            font-size: 1.1rem;
+            font-size: 1.2rem;
             opacity: 0.9;
-            margin-bottom: 20px;
+            max-width: 600px;
+            margin: 0 auto 20px;
         }
         
-        .status-area {
-            background: rgba(255,255,255,0.1);
-            padding: 15px;
-            border-radius: 10px;
+        .system-status {
             display: inline-block;
-            min-width: 300px;
-        }
-        
-        .card-container {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 20px;
-            justify-content: center;
-            margin-bottom: 30px;
-        }
-        
-        .folder-card {
-            background: white;
-            color: #333;
-            border-radius: 10px;
-            padding: 20px;
-            width: 300px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-        }
-        
-        .card-header {
-            display: flex;
-            align-items: center;
-            margin-bottom: 15px;
-        }
-        
-        .card-icon {
-            background: #0061ff;
-            color: white;
-            width: 50px;
-            height: 50px;
-            border-radius: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin-right: 15px;
-            font-size: 1.5rem;
-        }
-        
-        .card-title {
-            font-size: 1.3rem;
-            font-weight: bold;
-        }
-        
-        .card-badge {
-            background: #e8f4ff;
-            color: #0061ff;
-            padding: 3px 8px;
-            border-radius: 10px;
-            font-size: 0.8rem;
-            margin-left: 8px;
-        }
-        
-        .card-desc {
-            color: #666;
-            margin-bottom: 15px;
-            line-height: 1.5;
-        }
-        
-        .open-btn {
-            background: #0061ff;
-            color: white;
-            border: none;
-            padding: 12px 0;
-            border-radius: 8px;
-            width: 100%;
-            font-size: 1rem;
-            cursor: pointer;
-            margin-bottom: 10px;
-        }
-        
-        .open-btn:disabled {
-            background: #ccc;
-            cursor: not-allowed;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 15px 25px;
+            border-radius: 12px;
+            margin-top: 20px;
         }
         
         .status-indicator {
             display: inline-block;
-            width: 10px;
-            height: 10px;
+            width: 12px;
+            height: 12px;
             border-radius: 50%;
-            background: #4CAF50;
+            background-color: #48bb78;
+            margin-right: 10px;
+            vertical-align: middle;
+        }
+        
+        .card-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+        
+        @media (max-width: 768px) {
+            .card-grid {
+                grid-template-columns: 1fr;
+            }
+            header h1 {
+                font-size: 2.2rem;
+            }
+        }
+        
+        .folder-card {
+            background: white;
+            border-radius: 16px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .folder-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+        }
+        
+        .card-icon {
+            background: linear-gradient(135deg, #0061ff, #60efff);
+            width: 60px;
+            height: 60px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+        
+        .card-icon i {
+            font-size: 1.8rem;
+            color: white;
+        }
+        
+        .card-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+            color: #2d3748;
+        }
+        
+        .card-desc {
+            color: #718096;
+            line-height: 1.6;
+            margin-bottom: 20px;
+            flex-grow: 1;
+        }
+        
+        .card-meta {
+            font-size: 0.9rem;
+            color: #a0aec0;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .card-meta i {
             margin-right: 8px;
         }
         
-        .status-text {
-            font-size: 0.9rem;
+        .access-btn {
+            background: linear-gradient(135deg, #0061ff, #60efff);
+            color: white;
+            border: none;
+            padding: 14px 20px;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            width: 100%;
         }
         
-        .refresh-btn {
-            background: rgba(255,255,255,0.2);
+        .access-btn:hover:not(:disabled) {
+            background: linear-gradient(135deg, #0052d4, #4fd8ff);
+            box-shadow: 0 5px 15px rgba(0, 97, 255, 0.4);
+        }
+        
+        .access-btn:disabled {
+            background: #cccccc;
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
+        
+        .access-btn i {
+            margin-right: 10px;
+        }
+        
+        .loading-spinner {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 1s ease-in-out infinite;
+            margin-right: 8px;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .link-status {
+            margin-top: 10px;
+            font-size: 12px;
+            min-height: 20px;
+        }
+        
+        .status-text {
+            padding: 4px 10px;
+            border-radius: 10px;
+            font-size: 11px;
+            display: inline-block;
+            font-weight: 500;
+        }
+        
+        .status-valid {
+            background-color: rgba(76, 175, 80, 0.15);
+            color: #2e7d32;
+            border: 1px solid rgba(76, 175, 80, 0.3);
+        }
+        
+        .status-checking {
+            background-color: rgba(33, 150, 243, 0.15);
+            color: #1565c0;
+            border: 1px solid rgba(33, 150, 243, 0.3);
+        }
+        
+        .status-invalid {
+            background-color: rgba(244, 67, 54, 0.15);
+            color: #d32f2f;
+            border: 1px solid rgba(244, 67, 54, 0.3);
+        }
+        
+        .status-warning {
+            background-color: rgba(255, 193, 7, 0.15);
+            color: #ff8f00;
+            border: 1px solid rgba(255, 193, 7, 0.3);
+        }
+        
+        .action-bar {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin: 30px 0;
+            flex-wrap: wrap;
+        }
+        
+        .action-btn {
+            padding: 12px 25px;
+            background-color: rgba(255, 255, 255, 0.2);
             color: white;
-            border: 1px solid rgba(255,255,255,0.3);
-            padding: 10px 20px;
-            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 10px;
             cursor: pointer;
             font-size: 1rem;
-            display: block;
-            margin: 0 auto 30px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
         
-        .error-box {
-            background: #f8d7da;
-            color: #721c24;
-            padding: 10px;
-            border-radius: 5px;
-            margin: 10px 0;
+        .action-btn:hover:not(:disabled) {
+            background-color: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+        }
+        
+        .action-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .error-message {
             display: none;
+            background: #fed7d7;
+            color: #c53030;
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin: 15px 0;
+            font-size: 0.9rem;
         }
         
         footer {
             text-align: center;
-            margin-top: 40px;
-            padding-top: 20px;
-            border-top: 1px solid rgba(255,255,255,0.1);
+            margin-top: 50px;
+            color: white;
+            opacity: 0.8;
+            font-size: 0.9rem;
+        }
+        
+        .shared-badge {
+            background-color: #e8f4ff;
+            color: #0061ff;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            display: inline-block;
+            margin-left: 10px;
+        }
+        
+        .test-badge {
+            background-color: #fff3cd;
+            color: #856404;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            display: inline-block;
+            margin-left: 10px;
         }
     </style>
 </head>
 <body>
     <div class="container">
         <header>
-            <h1>📁 Dropbox File Center</h1>
-            <p>Stable version with reliable link checking</p>
-            <div class="status-area">
+            <h1><i class="fas fa-cloud"></i> Dropbox File Center</h1>
+            <p>Access your Dropbox files through permanent links. Enhanced detection for deleted or inaccessible content.</p>
+            
+            <div class="system-status">
                 <div>
-                    <span class="status-indicator" id="system-indicator"></span>
-                    <span id="system-status">System initializing...</span>
+                    <span class="status-indicator" id="system-status-indicator"></span>
+                    <span id="status-text">Initializing system...</span>
                 </div>
-                <div id="last-check" style="font-size:0.8rem; margin-top:5px;">
-                    Last check: --
-                </div>
-            </div>
-            <div id="error-box" class="error-box"></div>
-        </header>
-        
-        <main>
-            <div class="card-container">
-                <div class="folder-card" id="card-enjoy_ai">
-                    <div class="card-header">
-                        <div class="card-icon">📁</div>
-                        <div class="card-title">ENJOY AI
-                            <span class="card-badge">Shared</span>
-                        </div>
-                    </div>
-                    <p class="card-desc">Shared folder for ENJOY AI project with 5 items.</p>
-                    <button class="open-btn" onclick="openFolder('enjoy_ai')" id="btn-enjoy_ai">
-                        Open Folder
-                    </button>
-                    <div class="status-text" id="status-enjoy_ai">Checking...</div>
-                </div>
-                
-                <div class="folder-card" id="card-whalesbot">
-                    <div class="card-header">
-                        <div class="card-icon">🤖</div>
-                        <div class="card-title">WhalesBot
-                            <span class="card-badge">Shared</span>
-                        </div>
-                    </div>
-                    <p class="card-desc">Shared folder for WhalesBot project with 14 items.</p>
-                    <button class="open-btn" onclick="openFolder('whalesbot')" id="btn-whalesbot">
-                        Open Folder
-                    </button>
-                    <div class="status-text" id="status-whalesbot">Checking...</div>
-                </div>
-                
-                <div class="folder-card" id="card-test">
-                    <div class="card-header">
-                        <div class="card-icon">🧪</div>
-                        <div class="card-title">Test Folder
-                            <span class="card-badge">Test</span>
-                        </div>
-                    </div>
-                    <p class="card-desc">Test folder for validating the detection system.</p>
-                    <button class="open-btn" onclick="openFolder('test')" id="btn-test">
-                        Open Test Folder
-                    </button>
-                    <div class="status-text" id="status-test">Checking...</div>
+                <div id="last-checked" style="font-size:0.8rem; margin-top:5px; color:rgba(255,255,255,0.7);">
+                    Last checked: --
                 </div>
             </div>
             
-            <button class="refresh-btn" onclick="checkAllLinks()" id="refresh-btn">
-                🔄 Check All Links
-            </button>
+            <div id="error-message" class="error-message"></div>
+        </header>
+        
+        <main id="card-container" class="card-grid">
+            <!-- ENJOY AI Shared Folder -->
+            <div class="folder-card" data-folder-id="enjoy_ai">
+                <div class="card-icon">
+                    <i class="fas fa-share-alt"></i>
+                </div>
+                <h3 class="card-title">ENJOY AI
+                    <span class="shared-badge">Shared • 5 items</span>
+                </h3>
+                <p class="card-desc">Shared folder for the ENJOY AI project. Contains 5 items including project files, datasets, and resources.</p>
+                <div class="card-meta">
+                    <i class="fas fa-users"></i> Shared Folder
+                </div>
+                <button class="access-btn" onclick="handleFolderClick('enjoy_ai')" id="btn-enjoy_ai">
+                    <span class="btn-text">Open Folder</span>
+                </button>
+                <div class="link-status">
+                    <span id="status-enjoy_ai" class="status-text status-checking">
+                        <i class="fas fa-spinner fa-spin"></i> Checking...
+                    </span>
+                </div>
+            </div>
+            
+            <!-- WhalesBot Shared Folder -->
+            <div class="folder-card" data-folder-id="whalesbot">
+                <div class="card-icon">
+                    <i class="fas fa-robot"></i>
+                </div>
+                <h3 class="card-title">WhalesBot
+                    <span class="shared-badge">Shared • 14 items</span>
+                </h3>
+                <p class="card-desc">Shared folder for the WhalesBot project. Contains 14 items including code, resources, and project files.</p>
+                <div class="card-meta">
+                    <i class="fas fa-users"></i> Shared Folder
+                </div>
+                <button class="access-btn" onclick="handleFolderClick('whalesbot')" id="btn-whalesbot">
+                    <span class="btn-text">Open Folder</span>
+                </button>
+                <div class="link-status">
+                    <span id="status-whalesbot" class="status-text status-checking">
+                        <i class="fas fa-spinner fa-spin"></i> Checking...
+                    </span>
+                </div>
+            </div>
+            
+            <!-- Test Folder -->
+            <div class="folder-card" data-folder-id="test">
+                <div class="card-icon">
+                    <i class="fas fa-vial"></i>
+                </div>
+                <h3 class="card-title">Test Folder
+                    <span class="test-badge">Test • Detection</span>
+                </h3>
+                <p class="card-desc">Test folder for validating the enhanced detection system. The system checks for noscript redirects and deletion text patterns.</p>
+                <div class="card-meta">
+                    <i class="fas fa-flask"></i> Test Folder
+                </div>
+                <button class="access-btn" onclick="handleFolderClick('test')" id="btn-test">
+                    <span class="btn-text">Open Test Folder</span>
+                </button>
+                <div class="link-status">
+                    <span id="status-test" class="status-text status-checking">
+                        <i class="fas fa-spinner fa-spin"></i> Checking...
+                    </span>
+                </div>
+            </div>
         </main>
         
+        <div class="action-bar">
+            <button class="action-btn" onclick="checkAllLinks()" id="btn-check-all">
+                <i class="fas fa-sync-alt"></i> Check All Links
+            </button>
+            <button class="action-btn" onclick="checkHealth()">
+                <i class="fas fa-heartbeat"></i> System Health
+            </button>
+        </div>
+        
         <footer>
-            <p>Dropbox File Center | Stable Version v9</p>
-            <p>All links checked with simple, reliable detection</p>
+            <p>© 2024 Dropbox Permanent Link Service | Enhanced Detection v2</p>
+            <p>System checks for noscript redirects, deletion text patterns, and normal content markers.</p>
         </footer>
     </div>
     
     <script>
-        const folders = ['enjoy_ai', 'whalesbot', 'test'];
-        
-        function showError(message) {
-            const box = document.getElementById('error-box');
-            box.textContent = '⚠️ ' + message;
-            box.style.display = 'block';
-            setTimeout(function() { 
-                box.style.display = 'none'; 
-            }, 5000);
+        const API_BASE_URL = window.location.origin;
+        const FOLDER_IDS = ['enjoy_ai', 'whalesbot', 'test'];
+        let lastCheckTime = null;
+
+        // UI Helper Functions
+        function showError(message, duration = 5000) {
+            const el = document.getElementById('error-message');
+            el.textContent = `⚠️ ${message}`;
+            el.style.display = 'block';
+            setTimeout(() => el.style.display = 'none', duration);
         }
-        
-        function updateFolderStatus(folderId, data) {
-            const button = document.getElementById('btn-' + folderId);
-            const statusEl = document.getElementById('status-' + folderId);
+
+        function updateLastCheckedTime() {
+            const el = document.getElementById('last-checked');
+            if (lastCheckTime) {
+                const timeStr = new Date(lastCheckTime).toLocaleTimeString('en-US', {hour12: false});
+                el.textContent = `Last checked: ${timeStr}`;
+            } else {
+                el.textContent = 'Last checked: --';
+            }
+        }
+
+        function updateSystemStatus(validCount, totalCount) {
+            const indicator = document.getElementById('system-status-indicator');
+            const textEl = document.getElementById('status-text');
             
-            if (!data) {
-                statusEl.textContent = '❌ Check failed';
-                statusEl.style.color = '#dc3545';
-                button.disabled = false;
+            if (validCount === totalCount) {
+                indicator.style.backgroundColor = '#48bb78'; // Green
+                textEl.textContent = `All ${totalCount} links are valid`;
+            } else if (validCount === 0) {
+                indicator.style.backgroundColor = '#f56565'; // Red
+                textEl.textContent = `All ${totalCount} links are invalid`;
+            } else {
+                indicator.style.backgroundColor = '#f6ad55'; // Yellow/Orange
+                textEl.textContent = `${validCount}/${totalCount} links are valid`;
+            }
+        }
+
+        function updateFolderStatus(folderId, statusData) {
+            const button = document.getElementById(`btn-${folderId}`);
+            const statusEl = document.getElementById(`status-${folderId}`);
+            
+            if (!statusData) {
+                // Data fetch failed
+                statusEl.innerHTML = '<i class="fas fa-question-circle"></i> Unknown';
+                statusEl.className = 'status-text status-checking';
+                button.disabled = true;
+                button.title = 'Status check failed';
                 return;
             }
             
-            if (data.valid) {
-                button.disabled = false;
-                statusEl.textContent = '✅ Link Valid';
-                statusEl.style.color = '#28a745';
-                button.title = 'Click to open';
-            } else {
-                button.disabled = true;
-                if (data.reason && data.reason.includes('DELETED')) {
-                    statusEl.textContent = '🗑️ Item Deleted';
-                } else if (data.reason === 'TIMEOUT') {
-                    statusEl.textContent = '⏱️ Timeout';
-                } else {
-                    statusEl.textContent = '❌ Link Invalid';
+            const isValid = statusData.valid;
+            const reason = statusData.reason || 'UNKNOWN';
+            
+            // Update Button
+            button.disabled = !isValid;
+            button.title = isValid ? 'Click to open folder' : `Cannot open: ${statusData.message || 'Link invalid'}`;
+            
+            // Update Status Display
+            if (isValid) {
+                let displayText = '✅ Link valid';
+                let statusClass = 'status-valid';
+                
+                if (reason.includes('ACCESSIBLE')) {
+                    displayText = '✅ Accessible';
                 }
-                statusEl.style.color = '#dc3545';
-                button.title = data.message || 'Link unavailable';
+                
+                statusEl.innerHTML = `<i class="fas fa-check-circle"></i> ${displayText}`;
+                statusEl.className = `status-text ${statusClass}`;
+            } else {
+                let displayText = '❌ Link invalid';
+                let icon = 'fa-times-circle';
+                
+                if (reason.includes('DELETED')) {
+                    displayText = '🗑️ Item deleted';
+                    icon = 'fa-trash-alt';
+                } else if (reason === 'TIMEOUT') {
+                    displayText = '⏱️ Timeout';
+                    icon = 'fa-clock';
+                } else if (reason.startsWith('HTTP_4') || reason.startsWith('HTTP_5')) {
+                    const code = reason.replace('HTTP_', '');
+                    displayText = `⚠️ Error ${code}`;
+                    icon = 'fa-exclamation-triangle';
+                } else if (reason === 'NETWORK_ERROR') {
+                    displayText = '🌐 Network error';
+                    icon = 'fa-wifi';
+                }
+                
+                statusEl.innerHTML = `<i class="fas ${icon}"></i> ${displayText}`;
+                statusEl.className = 'status-text status-invalid';
             }
         }
-        
-        function openFolder(folderId) {
-            const button = document.getElementById('btn-' + folderId);
-            const originalText = button.textContent;
+
+        // Core Functions
+        async function handleFolderClick(folderId) {
+            const button = document.getElementById(`btn-${folderId}`);
+            const btnText = button.querySelector('.btn-text');
+            const originalText = btnText.textContent;
             
-            const folderUrls = {
-                'enjoy_ai': 'https://www.dropbox.com/scl/fo/xhuafhd7lvzct5qou5exc/APsv0VSGbS0sL2h5q86sxrE?rlkey=wulgqtxyjifm67ymdhj881u66&st=h5z3paub&dl=0',
-                'whalesbot': 'https://www.dropbox.com/scl/fo/dm9mk69c56v8o554r11wv/AGjzYhC_2KXZ6xXkLc88k_g?rlkey=67t99jd9gms79e2ato24ee727&st=rhn2cwhy&dl=0',
-                'test': 'https://www.dropbox.com/scl/fo/jfm93u99iubtds6w4vg4w/AO7Ht-rwUHc7W5oaojNep2o?rlkey=bjvwfmx9tq8oa6v67iw3zyapp&st=o03vu2pi&dl=0'
-            };
-            
-            button.textContent = 'Opening...';
+            // Visual feedback
             button.disabled = true;
+            btnText.innerHTML = '<span class="loading-spinner"></span> Opening...';
             
-            window.open(folderUrls[folderId], '_blank');
-            
-            setTimeout(function() {
-                button.textContent = originalText;
-                button.disabled = false;
-            }, 1000);
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/link/${folderId}`);
+                const data = await response.json();
+                
+                if (data.status_check && data.status_check.valid) {
+                    // Link is valid, open it
+                    window.open(data.url, '_blank');
+                } else {
+                    // Link is invalid, show error
+                    const msg = data.status_check?.message || 'The link is not accessible.';
+                    showError(`Cannot open: ${msg}`);
+                }
+            } catch (error) {
+                console.error('Failed to open link:', error);
+                showError('Failed to open the link. Please try again.');
+            } finally {
+                // Reset button after a short delay
+                setTimeout(() => {
+                    button.disabled = false;
+                    btnText.textContent = originalText;
+                }, 1000);
+            }
         }
-        
+
         async function checkAllLinks() {
-            const refreshBtn = document.getElementById('refresh-btn');
-            const systemStatus = document.getElementById('system-status');
-            const indicator = document.getElementById('system-indicator');
-            const lastCheck = document.getElementById('last-check');
+            const checkBtn = document.getElementById('btn-check-all');
+            const originalHTML = checkBtn.innerHTML;
             
-            const originalText = refreshBtn.textContent;
-            refreshBtn.textContent = 'Checking...';
-            refreshBtn.disabled = true;
+            // Disable button and show loading
+            checkBtn.disabled = true;
+            checkBtn.innerHTML = '<span class="loading-spinner"></span> Checking...';
             
-            systemStatus.textContent = 'Checking links...';
-            indicator.style.background = '#ffc107';
-            
-            folders.forEach(function(id) {
-                const statusEl = document.getElementById('status-' + id);
-                statusEl.textContent = '⏳ Checking...';
-                statusEl.style.color = '#17a2b8';
+            // Set all status to "checking"
+            FOLDER_IDS.forEach(id => {
+                const statusEl = document.getElementById(`status-${id}`);
+                statusEl.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Checking...';
+                statusEl.className = 'status-text status-checking';
             });
             
             try {
-                const baseUrl = window.location.origin;
-                const response = await fetch(baseUrl + '/api/links/status');
+                const response = await fetch(`${API_BASE_URL}/api/links/status`);
                 
                 if (!response.ok) {
-                    throw new Error('Failed to get link status');
+                    throw new Error(`API returned ${response.status}`);
                 }
                 
                 const data = await response.json();
@@ -332,7 +548,7 @@
                 if (data.success) {
                     let validCount = 0;
                     
-                    folders.forEach(function(folderId) {
+                    FOLDER_IDS.forEach(folderId => {
                         const status = data.data[folderId];
                         updateFolderStatus(folderId, status);
                         
@@ -341,55 +557,84 @@
                         }
                     });
                     
-                    if (validCount === folders.length) {
-                        systemStatus.textContent = 'All links are valid';
-                        indicator.style.background = '#28a745';
-                    } else if (validCount === 0) {
-                        systemStatus.textContent = 'All links are invalid';
-                        indicator.style.background = '#dc3545';
-                    } else {
-                        systemStatus.textContent = validCount + '/' + folders.length + ' links valid';
-                        indicator.style.background = '#ffc107';
-                    }
-                    
-                    const now = new Date();
-                    lastCheck.textContent = 'Last check: ' + now.toLocaleTimeString();
+                    // Update system status and time
+                    updateSystemStatus(validCount, FOLDER_IDS.length);
+                    lastCheckTime = new Date().toISOString();
+                    updateLastCheckedTime();
                     
                 } else {
-                    throw new Error(data.error || 'Check failed');
+                    throw new Error(data.error || 'Failed to check links');
                 }
                 
             } catch (error) {
-                console.error('Error checking links:', error);
-                showError('Check failed: ' + error.message);
-                systemStatus.textContent = 'Check failed';
-                indicator.style.background = '#dc3545';
+                console.error('Failed to check all links:', error);
+                showError(`Check failed: ${error.message}`);
                 
-                folders.forEach(function(id) {
-                    const button = document.getElementById('btn-' + id);
-                    const statusEl = document.getElementById('status-' + id);
+                // Fallback: enable all buttons if check fails
+                FOLDER_IDS.forEach(folderId => {
+                    const button = document.getElementById(`btn-${folderId}`);
+                    const statusEl = document.getElementById(`status-${folderId}`);
                     
                     button.disabled = false;
-                    statusEl.textContent = '⚠️ Check failed';
-                    statusEl.style.color = '#ffc107';
+                    statusEl.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Check failed';
+                    statusEl.className = 'status-text status-warning';
                 });
+                
+                document.getElementById('system-status-indicator').style.backgroundColor = '#f56565';
+                document.getElementById('status-text').textContent = 'Status check failed';
             } finally {
-                setTimeout(function() {
-                    refreshBtn.textContent = originalText;
-                    refreshBtn.disabled = false;
+                // Re-enable button
+                setTimeout(() => {
+                    checkBtn.disabled = false;
+                    checkBtn.innerHTML = originalHTML;
                 }, 1000);
             }
         }
-        
-        window.addEventListener('DOMContentLoaded', function() {
-            console.log('Page loaded, starting check...');
+
+        async function checkHealth() {
+            const indicator = document.getElementById('system-status-indicator');
+            const originalColor = indicator.style.backgroundColor;
             
-            document.getElementById('system-status').textContent = 'Starting up...';
-            document.getElementById('system-indicator').style.background = '#17a2b8';
+            indicator.style.backgroundColor = '#f6ad55'; // Orange - checking
+            document.getElementById('status-text').textContent = 'Checking system health...';
             
-            setTimeout(checkAllLinks, 1000);
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/health`);
+                if (!response.ok) throw new Error(`Health check failed: ${response.status}`);
+                
+                const data = await response.json();
+                console.log('System health:', data);
+                
+                // Trigger a link check after health check
+                setTimeout(() => checkAllLinks(), 500);
+                
+            } catch (error) {
+                console.error('Health check failed:', error);
+                showError(`Health check failed: ${error.message}`);
+                indicator.style.backgroundColor = '#f56565';
+                document.getElementById('status-text').textContent = 'Health check failed';
+            }
+        }
+
+        // Initialize the page
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Dropbox File Center initialized.');
             
-            setInterval(checkAllLinks, 5 * 60 * 1000);
+            // Initial state
+            FOLDER_IDS.forEach(folderId => {
+                const statusEl = document.getElementById(`status-${folderId}`);
+                statusEl.innerHTML = '<i class="fas fa-hourglass-start"></i> Pending';
+                statusEl.className = 'status-text status-checking';
+            });
+            
+            updateSystemStatus(0, FOLDER_IDS.length);
+            updateLastCheckedTime();
+            
+            // Perform initial health check
+            checkHealth();
+            
+            // Auto-refresh every 3 minutes
+            setInterval(() => checkAllLinks(), 3 * 60 * 1000);
         });
     </script>
 </body>
