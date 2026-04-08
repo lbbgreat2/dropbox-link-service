@@ -409,7 +409,7 @@
     <div class="container">
         <header>
             <h1><i class="fas fa-cloud"></i> Dropbox 文件中心</h1>
-            <p>精确特征检测系统 | 基于页面源码特征的100%准确识别</p>
+            <p>精确特征检测系统 | 基于三个核心特征的100%准确识别</p>
             
             <div class="system-status">
                 <div>
@@ -451,11 +451,6 @@
                             <td><strong>yaps_project</strong></td>
                             <td class="feature-deleted-cell">"edison_atlasservlet.file_viewer-edison"</td>
                             <td class="feature-normal-cell">"edison_atlasservlet.files_app-edison"</td>
-                        </tr>
-                        <tr>
-                            <td><strong>模块路径</strong></td>
-                            <td class="feature-deleted-cell">"scl_oboe_folder_bundle_amd"</td>
-                            <td class="feature-normal-cell">"edison_browse_atlas_bundle_amd"</td>
                         </tr>
                     </tbody>
                 </table>
@@ -540,7 +535,7 @@
                     <h3 class="card-title">测试文件夹
                         <span class="test-badge">测试 • 特征检测</span>
                     </h3>
-                    <p class="card-desc">用于验证页面特征检测系统的测试文件夹。系统基于页面源码特征进行100%准确识别。</p>
+                    <p class="card-desc">用于验证页面特征检测系统的测试文件夹。系统基于三个核心特征进行100%准确识别。</p>
                     <div class="card-meta">
                         <i class="fas fa-flask"></i> 测试文件夹
                     </div>
@@ -578,8 +573,8 @@
         </main>
         
         <footer>
-            <p>© 2024 Dropbox 永久链接服务 | 精确特征检测系统 v1.0</p>
-            <p>基于页面源码特征的100%准确识别 | 三重特征验证确保可靠性</p>
+            <p>© 2024 Dropbox 永久链接服务 | 精确特征检测系统 v2.0</p>
+            <p>基于三个核心特征的100%准确识别 | 匹配即判定，无需复杂策略</p>
         </footer>
     </div>
     
@@ -654,10 +649,11 @@
             // 更新检测方法
             const method = statusData.detection_method || 'unknown';
             methodEl.textContent = `检测方法: ${
-                method === 'page_feature_analysis' ? '页面特征分析' :
-                method === 'fallback_with_content' ? '内容回退检测' :
-                method === 'fallback_accessible' ? '可访问性检测' :
-                method === 'http_error' ? 'HTTP错误检测' :
+                method === 'feature_match' ? '特征匹配' :
+                method === 'fallback_notice' ? '删除提示回退' :
+                method === 'fallback_content' ? '内容回退' :
+                method === 'fallback_accessible' ? '可访问性回退' :
+                method === 'http_error' ? 'HTTP错误' :
                 method === 'error_fallback' ? '错误回退' : '未知'
             }`;
             
@@ -671,13 +667,15 @@
             
             // 添加关键特征
             if (features.edison_atlasservlet) {
-                featureHTML += `<div class="feature-item ${features.edison_atlasservlet === 'file_viewer' ? 'feature-deleted' : 'feature-normal'}">
+                const isDeleted = features.edison_atlasservlet === 'file_viewer';
+                featureHTML += `<div class="feature-item ${isDeleted ? 'feature-deleted' : 'feature-normal'}">
                     <strong>edison_atlasservlet:</strong> "${features.edison_atlasservlet}"
                 </div>`;
             }
             
             if (features.edison_page_name) {
-                featureHTML += `<div class="feature-item ${features.edison_page_name === 'scl_oboe_folder' ? 'feature-deleted' : 'feature-normal'}">
+                const isDeleted = features.edison_page_name === 'scl_oboe_folder';
+                featureHTML += `<div class="feature-item ${isDeleted ? 'feature-deleted' : 'feature-normal'}">
                     <strong>edison_page_name:</strong> "${features.edison_page_name}"
                 </div>`;
             }
@@ -689,17 +687,10 @@
                 </div>`;
             }
             
-            // 添加模块路径信息
-            if (features.has_delete_module !== undefined || features.has_normal_module !== undefined) {
+            // 如果特征都为空，显示提示
+            if (!features.edison_atlasservlet && !features.edison_page_name && !features.yaps_project) {
                 featureHTML += `<div class="feature-item">
-                    <strong>模块路径:</strong> ${features.has_delete_module ? '删除模块' : ''} ${features.has_normal_module ? '正常模块' : ''}
-                </div>`;
-            }
-            
-            // 添加内容检测信息
-            if (features.has_deletion_notice !== undefined || features.has_file_content !== undefined) {
-                featureHTML += `<div class="feature-item">
-                    <strong>内容检测:</strong> ${features.has_deletion_notice ? '有删除提示' : ''} ${features.has_file_content ? '有文件内容' : ''}
+                    <strong>特征提取:</strong> 未找到特征值
                 </div>`;
             }
             
@@ -731,8 +722,10 @@
                 let displayText = '✅ 链接有效';
                 let statusClass = 'status-valid';
                 
-                if (reason.includes('EXACT_NORMAL_FEATURES')) {
-                    displayText = '✅ 页面正常（精确特征）';
+                if (reason.includes('PAGE_FEATURES_NORMAL')) {
+                    displayText = '✅ 页面正常（特征匹配）';
+                } else if (reason.includes('FILE_CONTENT')) {
+                    displayText = '✅ 有文件内容';
                 } else if (reason.includes('ACCESSIBLE')) {
                     displayText = '✅ 页面可访问';
                 }
@@ -745,15 +738,12 @@
                 let displayText = '❌ 链接无效';
                 let icon = 'fa-times-circle';
                 
-                if (reason.includes('EXACT_DELETED_FEATURES')) {
-                    displayText = '🗑️ 页面已删除（精确特征）';
+                if (reason.includes('PAGE_FEATURES_DELETED')) {
+                    displayText = '🗑️ 页面已删除（特征匹配）';
                     icon = 'fa-trash-alt';
                 } else if (reason.includes('DELETION_NOTICE')) {
                     displayText = '🗑️ 有删除提示';
                     icon = 'fa-exclamation-triangle';
-                } else if (reason.includes('PAGE_FRAMEWORK_ONLY')) {
-                    displayText = '⚠️ 只有页面框架';
-                    icon = 'fa-layer-group';
                 } else if (reason === 'TIMEOUT') {
                     displayText = '⏱️ 超时';
                     icon = 'fa-clock';
