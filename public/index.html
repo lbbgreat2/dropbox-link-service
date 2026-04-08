@@ -29,6 +29,39 @@
             text-align: center;
             margin-bottom: 40px;
             color: white;
+            position: relative;
+        }
+        
+        /* 语言切换器样式 */
+        .language-switcher {
+            position: absolute;
+            top: 0;
+            right: 0;
+            display: flex;
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 20px;
+            padding: 4px;
+            backdrop-filter: blur(5px);
+        }
+        
+        .lang-btn {
+            background: transparent;
+            color: white;
+            border: none;
+            padding: 6px 16px;
+            border-radius: 16px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+        }
+        
+        .lang-btn.active {
+            background: rgba(255, 255, 255, 0.3);
+            font-weight: 600;
+        }
+        
+        .lang-btn:hover:not(.active) {
+            background: rgba(255, 255, 255, 0.1);
         }
         
         header h1 {
@@ -75,6 +108,13 @@
             }
             header h1 {
                 font-size: 2.2rem;
+            }
+            .language-switcher {
+                position: relative;
+                top: auto;
+                right: auto;
+                margin: 0 auto 20px;
+                display: inline-flex;
             }
         }
         
@@ -300,13 +340,19 @@
 <body>
     <div class="container">
         <header>
-            <h1><i class="fas fa-cloud"></i> Dropbox文件中心</h1>
-            <p>智能检测链接状态，失效链接自动禁用，确保访问成功率。</p>
+            <!-- 语言切换器 -->
+            <div class="language-switcher">
+                <button id="lang-zh" class="lang-btn active">中文</button>
+                <button id="lang-en" class="lang-btn">English</button>
+            </div>
+            
+            <h1><i class="fas fa-cloud"></i> <span data-i18n-key="title">Dropbox文件中心</span></h1>
+            <p data-i18n-key="subtitle">智能检测链接状态，失效链接自动禁用，确保访问成功率。</p>
             
             <div class="system-status">
                 <div>
                     <span class="status-indicator" id="system-status-indicator"></span>
-                    <span id="status-text">正在检测链接状态...</span>
+                    <span id="status-text" data-i18n-key="status_checking">正在检测链接状态...</span>
                 </div>
                 <div id="last-checked-time" class="last-checked"></div>
             </div>
@@ -320,19 +366,19 @@
                 <div class="card-icon">
                     <i class="fas fa-share-alt"></i>
                 </div>
-                <h3 class="card-title">ENJOY AI
-                    <span class="shared-badge">共享 • 5个项目</span>
+                <h3 class="card-title"><span data-i18n-key="folder_enjoy">ENJOY AI</span>
+                    <span class="shared-badge" data-i18n-key="badge_shared">共享 • 5个项目</span>
                 </h3>
-                <p class="card-desc">ENJOY AI项目的共享文件夹。包含5个项目，包括项目文件、数据集和资源。</p>
+                <p class="card-desc" data-i18n-key="desc_enjoy_ai">ENJOY AI项目的共享文件夹。包含5个项目，包括项目文件、数据集和资源。</p>
                 <div class="card-meta">
-                    <i class="fas fa-users"></i> 共享文件夹
+                    <i class="fas fa-users"></i> <span data-i18n-key="meta_shared">共享文件夹</span>
                 </div>
                 <button class="access-btn" onclick="handleFolderClick('enjoy_ai')">
-                    <span class="btn-text">打开文件夹</span>
+                    <span class="btn-text" data-i18n-key="btn_open">打开文件夹</span>
                 </button>
                 <div class="link-status">
                     <span id="status-enjoy_ai" class="status-text status-checking">
-                        <i class="fas fa-spinner fa-spin"></i> 检测中...
+                        <i class="fas fa-spinner fa-spin"></i> <span data-i18n-key="status_checking_short">检测中...</span>
                     </span>
                 </div>
             </div>
@@ -342,19 +388,19 @@
                 <div class="card-icon">
                     <i class="fas fa-robot"></i>
                 </div>
-                <h3 class="card-title">WhalesBot
-                    <span class="shared-badge">共享 • 14个项目</span>
+                <h3 class="card-title"><span data-i18n-key="folder_whale">WhalesBot</span>
+                    <span class="shared-badge" data-i18n-key="badge_shared">共享 • 5个项目</span>
                 </h3>
-                <p class="card-desc">WhalesBot项目的共享文件夹。包含14个项目，包括代码、资源和项目文件。</p>
+                <p class="card-desc" data-i18n-key="desc_whalesbot">WhalesBot项目的共享文件夹。包含14个项目，包括代码、资源和项目文件。</p>
                 <div class="card-meta">
-                    <i class="fas fa-users"></i> 共享文件夹
+                    <i class="fas fa-users"></i> <span data-i18n-key="meta_shared">共享文件夹</span>
                 </div>
                 <button class="access-btn" onclick="handleFolderClick('whalesbot')">
-                    <span class="btn-text">打开文件夹</span>
+                    <span class="btn-text" data-i18n-key="btn_open">打开文件夹</span>
                 </button>
                 <div class="link-status">
                     <span id="status-whalesbot" class="status-text status-checking">
-                        <i class="fas fa-spinner fa-spin"></i> 检测中...
+                        <i class="fas fa-spinner fa-spin"></i> <span data-i18n-key="status_checking_short">检测中...</span>
                     </span>
                 </div>
             </div>
@@ -364,31 +410,31 @@
                 <div class="card-icon">
                     <i class="fas fa-vial"></i>
                 </div>
-                <h3 class="card-title">Test 文件夹
-                    <span class="test-badge">测试 • 检测功能</span>
+                <h3 class="card-title"><span data-i18n-key="folder_test">Test 文件夹</span>
+                    <span class="test-badge" data-i18n-key="badge_test">测试 • 检测功能</span>
                 </h3>
-                <p class="card-desc">用于测试链接失效检测功能的文件夹。您可以删除Dropbox中的分享链接来测试检测功能。</p>
+                <p class="card-desc" data-i18n-key="desc_test">用于测试链接失效检测功能的文件夹。您可以删除Dropbox中的分享链接来测试检测功能。</p>
                 <div class="card-meta">
-                    <i class="fas fa-flask"></i> 测试文件夹
+                    <i class="fas fa-flask"></i> <span data-i18n-key="meta_test">测试文件夹</span>
                 </div>
                 <button class="access-btn" onclick="handleFolderClick('test')">
-                    <span class="btn-text">打开测试文件夹</span>
+                    <span class="btn-text" data-i18n-key="btn_open_test">打开测试文件夹</span>
                 </button>
                 <div class="link-status">
                     <span id="status-test" class="status-text status-checking">
-                        <i class="fas fa-spinner fa-spin"></i> 检测中...
+                        <i class="fas fa-spinner fa-spin"></i> <span data-i18n-key="status_checking_short">检测中...</span>
                     </span>
                 </div>
             </div>
         </main>
         
         <button id="refresh-btn" class="refresh-btn" onclick="checkAllLinks()">
-            <i class="fas fa-sync-alt"></i> 重新检测所有链接状态
+            <i class="fas fa-sync-alt"></i> <span data-i18n-key="btn_refresh">重新检测所有链接状态</span>
         </button>
         
         <footer>
-            <p>© 2024 Dropbox永久链接服务 | 智能链接验证版</p>
-            <p>系统每5分钟自动检测链接状态，失效链接将被禁用并提示。</p>
+            <p data-i18n-key="footer_copyright">© 2024 Dropbox永久链接服务 | 智能链接验证版</p>
+            <p data-i18n-key="footer_note">系统每5分钟自动检测链接状态，失效链接将被禁用并提示。</p>
         </footer>
     </div>
     
@@ -397,9 +443,205 @@
         let linkStatusCache = {};
         const CURRENT_FOLDER_IDS = ['enjoy_ai', 'whalesbot', 'test'];
         
+        // ==================== 语言资源定义 ====================
+        const i18nResources = {
+            'zh-CN': {
+                'title': 'Dropbox文件中心',
+                'subtitle': '智能检测链接状态，失效链接自动禁用，确保访问成功率。',
+                'status_checking': '正在检测链接状态...',
+                'status_all_good': '所有链接正常',
+                'status_some_good': '个链接正常',
+                'status_all_bad': '所有链接均已失效',
+                'status_service_error': '链接状态检测服务不可用',
+                'status_check_failed': '链接状态检测失败',
+                'btn_open': '打开文件夹',
+                'btn_open_test': '打开测试文件夹',
+                'btn_checking': '验证中...',
+                'btn_refresh': '重新检测所有链接状态',
+                'status_live': '链接正常',
+                'status_checking_short': '检测中...',
+                'status_failed': '链接验证失败',
+                'status_expired': '链接已失效',
+                'status_deleted': '内容已删除',
+                'status_abnormal': '链接异常',
+                'status_timeout': '检测超时',
+                'status_network_error': '网络错误',
+                'status_unknown': '状态未知',
+                'status_fallback': '直接访问',
+                'desc_enjoy_ai': 'ENJOY AI项目的共享文件夹。包含5个项目，包括项目文件、数据集和资源。',
+                'desc_whalesbot': 'WhalesBot项目的共享文件夹。包含14个项目，包括代码、资源和项目文件。',
+                'desc_test': '用于测试链接失效检测功能的文件夹。您可以删除Dropbox中的分享链接来测试检测功能。',
+                'meta_shared': '共享文件夹',
+                'meta_test': '测试文件夹',
+                'badge_shared': '共享 • 5个项目',
+                'badge_test': '测试 • 检测功能',
+                'folder_enjoy': 'ENJOY AI',
+                'folder_whale': 'WhalesBot',
+                'folder_test': 'Test 文件夹',
+                'footer_copyright': '© 2024 Dropbox永久链接服务 | 智能链接验证版',
+                'footer_note': '系统每5分钟自动检测链接状态，失效链接将被禁用并提示。',
+                'last_checked': '最后检测',
+                'error_link_expired': '链接已失效',
+                'error_network': '检测失败',
+                'error_not_found': '链接不存在或已失效',
+                'error_server': '服务器错误',
+                'error_invalid_data': '链接数据格式错误',
+                'error_unavailable': '服务连接异常',
+                'warning_all_links_down': '警告：所有链接均已失效，请检查Dropbox分享设置',
+                'alert_offline': '网络连接已断开，请检查网络设置'
+            },
+            'en-US': {
+                'title': 'Dropbox File Hub',
+                'subtitle': 'Smart link validation. Invalid links are disabled automatically to ensure access success.',
+                'status_checking': 'Checking link status...',
+                'status_all_good': 'All links active',
+                'status_some_good': 'links active',
+                'status_all_bad': 'All links are down',
+                'status_service_error': 'Link status service unavailable',
+                'status_check_failed': 'Link status check failed',
+                'btn_open': 'Open Folder',
+                'btn_open_test': 'Open Test Folder',
+                'btn_checking': 'Checking...',
+                'btn_refresh': 'Re-check All Links',
+                'status_live': 'Link Active',
+                'status_checking_short': 'Checking...',
+                'status_failed': 'Link Check Failed',
+                'status_expired': 'Link Expired',
+                'status_deleted': 'Content Deleted',
+                'status_abnormal': 'Link Abnormal',
+                'status_timeout': 'Check Timeout',
+                'status_network_error': 'Network Error',
+                'status_unknown': 'Status Unknown',
+                'status_fallback': 'Direct Access',
+                'desc_enjoy_ai': 'Shared folder for ENJOY AI projects. Contains 5 items including project files, datasets, and resources.',
+                'desc_whalesbot': 'Shared folder for WhalesBot projects. Contains 14 items including code, resources, and project files.',
+                'desc_test': 'Folder for testing link validation. You can delete the share link in Dropbox to test the detection feature.',
+                'meta_shared': 'Shared Folder',
+                'meta_test': 'Test Folder',
+                'badge_shared': 'Shared • 5 items',
+                'badge_test': 'Test • Validation',
+                'folder_enjoy': 'ENJOY AI',
+                'folder_whale': 'WhalesBot',
+                'folder_test': 'Test Folder',
+                'footer_copyright': '© 2024 Dropbox Permanent Link Service | Smart Validation',
+                'footer_note': 'The system automatically checks link status every 5 minutes. Invalid links are disabled.',
+                'last_checked': 'Last checked',
+                'error_link_expired': 'Link has expired',
+                'error_network': 'Check failed',
+                'error_not_found': 'Link not found or expired',
+                'error_server': 'Server error',
+                'error_invalid_data': 'Invalid link data format',
+                'error_unavailable': 'Service connection error',
+                'warning_all_links_down': 'Warning: All links are down, please check Dropbox sharing settings',
+                'alert_offline': 'Network connection lost, please check your network settings'
+            }
+        };
+        
+        // 当前语言设置
+        let currentLang = localStorage.getItem('preferredLang') || 'zh-CN';
+        
+        // ==================== 语言切换功能 ====================
+        function switchLanguage(langCode) {
+            if (!i18nResources[langCode]) return;
+            currentLang = langCode;
+            localStorage.setItem('preferredLang', langCode);
+            
+            // 更新按钮激活状态
+            document.querySelectorAll('.lang-btn').forEach(btn => btn.classList.remove('active'));
+            document.getElementById(`lang-${langCode === 'zh-CN' ? 'zh' : 'en'}`).classList.add('active');
+            
+            // 更新所有带有 data-i18n-key 属性的元素
+            document.querySelectorAll('[data-i18n-key]').forEach(element => {
+                const key = element.getAttribute('data-i18n-key');
+                if (i18nResources[langCode][key]) {
+                    element.textContent = i18nResources[langCode][key];
+                }
+            });
+            
+            // 更新动态状态文本
+            updateStatusTexts();
+            console.log(`Language switched to: ${langCode}`);
+        }
+        
+        // 更新动态状态文本
+        function updateStatusTexts() {
+            // 更新最后检测时间显示
+            const lastCheckedEl = document.getElementById('last-checked-time');
+            if (lastCheckedEl && lastCheckedEl.textContent) {
+                const timeMatch = lastCheckedEl.textContent.match(/(\d{1,2}:\d{2}:\d{2}\s*(?:AM|PM)?)/i);
+                if (timeMatch) {
+                    const prefix = i18nResources[currentLang]['last_checked'] + ': ';
+                    lastCheckedEl.textContent = prefix + timeMatch[0];
+                }
+            }
+            
+            // 更新系统状态文本（如果有状态信息）
+            const statusTextEl = document.getElementById('status-text');
+            if (statusTextEl && statusTextEl.textContent) {
+                const currentText = statusTextEl.textContent;
+                if (currentText.includes('所有链接正常')) {
+                    statusTextEl.textContent = i18nResources[currentLang]['status_all_good'];
+                } else if (currentText.includes('个链接正常')) {
+                    statusTextEl.textContent = currentText.replace('个链接正常', i18nResources[currentLang]['status_some_good']);
+                } else if (currentText.includes('所有链接均已失效')) {
+                    statusTextEl.textContent = i18nResources[currentLang]['status_all_bad'];
+                } else if (currentText.includes('链接状态检测服务不可用')) {
+                    statusTextEl.textContent = i18nResources[currentLang]['status_service_error'];
+                } else if (currentText.includes('链接状态检测失败')) {
+                    statusTextEl.textContent = i18nResources[currentLang]['status_check_failed'];
+                }
+            }
+            
+            // 更新链接状态文本
+            CURRENT_FOLDER_IDS.forEach(folderId => {
+                const statusEl = document.getElementById(`status-${folderId}`);
+                if (statusEl) {
+                    const currentStatus = statusEl.textContent;
+                    if (currentStatus.includes('链接正常')) {
+                        statusEl.innerHTML = `<i class="fas fa-check-circle"></i> ${i18nResources[currentLang]['status_live']}`;
+                    } else if (currentStatus.includes('检测中...')) {
+                        statusEl.innerHTML = `<i class="fas fa-spinner fa-spin"></i> ${i18nResources[currentLang]['status_checking_short']}`;
+                    } else if (currentStatus.includes('链接验证失败')) {
+                        statusEl.innerHTML = `<i class="fas fa-times-circle"></i> ${i18nResources[currentLang]['status_failed']}`;
+                    } else if (currentStatus.includes('链接已失效')) {
+                        statusEl.innerHTML = `<i class="fas fa-times-circle"></i> ${i18nResources[currentLang]['status_expired']}`;
+                    } else if (currentStatus.includes('内容已删除')) {
+                        statusEl.innerHTML = `<i class="fas fa-times-circle"></i> ${i18nResources[currentLang]['status_deleted']}`;
+                    } else if (currentStatus.includes('链接异常')) {
+                        statusEl.innerHTML = `<i class="fas fa-times-circle"></i> ${i18nResources[currentLang]['status_abnormal']}`;
+                    } else if (currentStatus.includes('检测超时')) {
+                        statusEl.innerHTML = `<i class="fas fa-times-circle"></i> ${i18nResources[currentLang]['status_timeout']}`;
+                    } else if (currentStatus.includes('网络错误')) {
+                        statusEl.innerHTML = `<i class="fas fa-times-circle"></i> ${i18nResources[currentLang]['status_network_error']}`;
+                    } else if (currentStatus.includes('状态未知')) {
+                        statusEl.innerHTML = `<i class="fas fa-question-circle"></i> ${i18nResources[currentLang]['status_unknown']}`;
+                    } else if (currentStatus.includes('直接访问')) {
+                        statusEl.innerHTML = `<i class="fas fa-exclamation-triangle"></i> ${i18nResources[currentLang]['status_fallback']}`;
+                    }
+                }
+            });
+        }
+        
+        // 绑定语言切换按钮事件
+        document.addEventListener('DOMContentLoaded', function() {
+            // 初始化语言
+            switchLanguage(currentLang);
+            
+            // 为语言按钮绑定点击事件
+            document.getElementById('lang-zh').addEventListener('click', () => switchLanguage('zh-CN'));
+            document.getElementById('lang-en').addEventListener('click', () => switchLanguage('en-US'));
+            
+            // 原有的初始化逻辑
+            useFallbackMode();
+            checkHealth();
+            console.log('页面初始化完成，当前语言:', currentLang);
+        });
+        
+        // ==================== 核心功能函数 ====================
+        
         // 格式化时间
         function formatTime(date) {
-            return date.toLocaleTimeString('zh-CN', { 
+            return date.toLocaleTimeString(currentLang === 'zh-CN' ? 'zh-CN' : 'en-US', { 
                 hour: '2-digit', 
                 minute: '2-digit',
                 second: '2-digit'
@@ -421,7 +663,8 @@
         function updateLastCheckedTime() {
             const timeEl = document.getElementById('last-checked-time');
             const now = new Date();
-            timeEl.textContent = `最后检测: ${formatTime(now)}`;
+            const prefix = i18nResources[currentLang]['last_checked'] + ': ';
+            timeEl.textContent = prefix + formatTime(now);
         }
         
         // 处理文件夹点击
@@ -432,7 +675,7 @@
             
             // 显示加载状态
             button.disabled = true;
-            btnText.innerHTML = '<span class="loading-spinner"></span>验证中...';
+            btnText.innerHTML = `<span class="loading-spinner"></span>${i18nResources[currentLang]['btn_checking']}`;
             
             try {
                 const response = await fetch(`${API_BASE_URL}/api/link/${folderId}`);
@@ -440,15 +683,17 @@
                 if (!response.ok) {
                     if (response.status === 503) {
                         const data = await response.json();
-                        showError(`链接已失效: ${data.error}`);
-                        statusEl.innerHTML = '<i class="fas fa-times-circle"></i> 链接已失效';
+                        showError(`${i18nResources[currentLang]['error_link_expired']}: ${data.error}`);
+                        statusEl.innerHTML = `<i class="fas fa-times-circle"></i> ${i18nResources[currentLang]['status_expired']}`;
                         statusEl.className = 'status-text status-invalid';
-                        btnText.textContent = folderId === 'test' ? '打开测试文件夹' : '打开文件夹';
+                        btnText.textContent = folderId === 'test' ? 
+                            i18nResources[currentLang]['btn_open_test'] : 
+                            i18nResources[currentLang]['btn_open'];
                         return;
                     } else if (response.status === 404) {
-                        throw new Error('链接不存在或已失效');
+                        throw new Error(i18nResources[currentLang]['error_not_found']);
                     } else {
-                        throw new Error(`服务器错误: ${response.status}`);
+                        throw new Error(`${i18nResources[currentLang]['error_server']}: ${response.status}`);
                     }
                 }
                 
@@ -458,25 +703,29 @@
                     window.open(data.url, '_blank');
                     
                     // 更新状态显示
-                    statusEl.innerHTML = '<i class="fas fa-check-circle"></i> 链接有效';
+                    statusEl.innerHTML = `<i class="fas fa-check-circle"></i> ${i18nResources[currentLang]['status_live']}`;
                     statusEl.className = 'status-text status-valid';
                     
-                    btnText.textContent = folderId === 'test' ? '打开测试文件夹' : '打开文件夹';
+                    btnText.textContent = folderId === 'test' ? 
+                        i18nResources[currentLang]['btn_open_test'] : 
+                        i18nResources[currentLang]['btn_open'];
                     setTimeout(() => {
                         button.disabled = false;
                     }, 1000);
                 } else {
-                    throw new Error('链接数据格式错误');
+                    throw new Error(i18nResources[currentLang]['error_invalid_data']);
                 }
             } catch (error) {
                 console.error('打开链接失败:', error);
                 
                 // 更新状态显示
-                statusEl.innerHTML = '<i class="fas fa-times-circle"></i> 链接验证失败';
+                statusEl.innerHTML = `<i class="fas fa-times-circle"></i> ${i18nResources[currentLang]['status_failed']}`;
                 statusEl.className = 'status-text status-invalid';
                 
-                showError(`无法访问文件: ${error.message}`);
-                btnText.textContent = folderId === 'test' ? '打开测试文件夹' : '打开文件夹';
+                showError(`${i18nResources[currentLang]['error_network']}: ${error.message}`);
+                btnText.textContent = folderId === 'test' ? 
+                    i18nResources[currentLang]['btn_open_test'] : 
+                    i18nResources[currentLang]['btn_open'];
                 button.disabled = false;
             }
         }
@@ -490,15 +739,15 @@
             
             // 更新按钮状态
             refreshBtn.disabled = true;
-            refreshBtn.innerHTML = '<span class="loading-spinner"></span>检测中...';
-            statusText.textContent = '正在检测所有链接状态...';
+            refreshBtn.innerHTML = `<span class="loading-spinner"></span>${i18nResources[currentLang]['btn_checking']}`;
+            statusText.textContent = i18nResources[currentLang]['status_checking'];
             statusIndicator.style.backgroundColor = '#f6ad55'; // 黄色，表示检测中
             
             // 重置所有状态为检测中
             CURRENT_FOLDER_IDS.forEach(folderId => {
                 const statusEl = document.getElementById(`status-${folderId}`);
                 if (statusEl) {
-                    statusEl.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 检测中...';
+                    statusEl.innerHTML = `<i class="fas fa-spinner fa-spin"></i> ${i18nResources[currentLang]['status_checking_short']}`;
                     statusEl.className = 'status-text status-checking';
                 }
             });
@@ -510,13 +759,13 @@
                     if (response.status === 404) {
                         // 如果状态检测接口不存在，使用降级模式
                         useFallbackMode();
-                        refreshBtn.innerHTML = '<i class="fas fa-sync-alt"></i> 重新检测所有链接状态';
+                        refreshBtn.innerHTML = `<i class="fas fa-sync-alt"></i> ${i18nResources[currentLang]['btn_refresh']}`;
                         refreshBtn.disabled = false;
-                        statusText.textContent = '链接状态检测服务不可用';
+                        statusText.textContent = i18nResources[currentLang]['status_service_error'];
                         statusIndicator.style.backgroundColor = '#f56565';
                         return;
                     }
-                    throw new Error(`状态检测失败: ${response.status}`);
+                    throw new Error(`${i18nResources[currentLang]['error_server']}: ${response.status}`);
                 }
                 
                 const data = await response.json();
@@ -533,6 +782,7 @@
                         totalCount++;
                         const button = document.querySelector(`[data-folder-id="${folderId}"] .access-btn`);
                         const statusEl = document.getElementById(`status-${folderId}`);
+                        const btnText = button.querySelector('.btn-text');
                         
                         if (linkStatusCache[folderId]) {
                             const status = linkStatusCache[folderId];
@@ -541,53 +791,66 @@
                                 // 链接有效
                                 validCount++;
                                 button.disabled = false;
-                                statusEl.innerHTML = `<i class="fas fa-check-circle"></i> 链接正常`;
+                                statusEl.innerHTML = `<i class="fas fa-check-circle"></i> ${i18nResources[currentLang]['status_live']}`;
                                 statusEl.className = 'status-text status-valid';
+                                button.title = currentLang === 'zh-CN' ? '点击打开链接' : 'Click to open link';
                                 
-                                // 添加工具提示
-                                button.title = '点击打开链接';
+                                // 更新按钮文本
+                                btnText.textContent = folderId === 'test' ? 
+                                    i18nResources[currentLang]['btn_open_test'] : 
+                                    i18nResources[currentLang]['btn_open'];
                             } else {
                                 // 链接失效
                                 button.disabled = true;
                                 
                                 // 根据失效原因显示不同提示
-                                let message = '链接失效';
+                                let messageKey = 'status_expired';
                                 if (status.reason === 'CONTENT_DELETED_OR_NO_PERMISSION') {
-                                    message = '内容已删除';
+                                    messageKey = 'status_deleted';
                                 } else if (status.reason === 'NOT_DROPBOX') {
-                                    message = '链接异常';
+                                    messageKey = 'status_abnormal';
                                 } else if (status.reason === 'TIMEOUT') {
-                                    message = '检测超时';
+                                    messageKey = 'status_timeout';
                                 } else if (status.reason === 'NETWORK_ERROR') {
-                                    message = '网络错误';
+                                    messageKey = 'status_network_error';
                                 }
                                 
-                                statusEl.innerHTML = `<i class="fas fa-times-circle"></i> ${message}`;
+                                statusEl.innerHTML = `<i class="fas fa-times-circle"></i> ${i18nResources[currentLang][messageKey]}`;
                                 statusEl.className = 'status-text status-invalid';
                                 
                                 // 添加详细的工具提示
-                                button.title = `失效原因: ${status.message || '未知错误'}`;
+                                button.title = `${currentLang === 'zh-CN' ? '失效原因: ' : 'Reason: '}${status.message || 'Unknown error'}`;
+                                
+                                // 更新按钮文本
+                                btnText.textContent = folderId === 'test' ? 
+                                    i18nResources[currentLang]['btn_open_test'] : 
+                                    i18nResources[currentLang]['btn_open'];
                             }
                         } else {
                             // 状态未知
                             button.disabled = true;
-                            statusEl.innerHTML = '<i class="fas fa-question-circle"></i> 状态未知';
+                            statusEl.innerHTML = `<i class="fas fa-question-circle"></i> ${i18nResources[currentLang]['status_unknown']}`;
                             statusEl.className = 'status-text status-checking';
-                            button.title = '状态检测失败';
+                            button.title = currentLang === 'zh-CN' ? '状态检测失败' : 'Status check failed';
+                            
+                            // 更新按钮文本
+                            btnText.textContent = folderId === 'test' ? 
+                                i18nResources[currentLang]['btn_open_test'] : 
+                                i18nResources[currentLang]['btn_open'];
                         }
                     });
                     
                     // 更新系统状态
                     if (validCount === totalCount) {
-                        statusText.textContent = `所有链接正常 (${validCount}/${totalCount})`;
+                        statusText.textContent = `${i18nResources[currentLang]['status_all_good']} (${validCount}/${totalCount})`;
                         statusIndicator.style.backgroundColor = '#48bb78'; // 绿色
                     } else if (validCount > 0) {
-                        statusText.textContent = `${validCount}/${totalCount} 个链接正常`;
+                        statusText.textContent = `${validCount}/${totalCount} ${i18nResources[currentLang]['status_some_good']}`;
                         statusIndicator.style.backgroundColor = '#f6ad55'; // 黄色
                     } else {
-                        statusText.textContent = '所有链接均已失效';
+                        statusText.textContent = i18nResources[currentLang]['status_all_bad'];
                         statusIndicator.style.backgroundColor = '#f56565'; // 红色
-                        showError('警告：所有链接均已失效，请检查Dropbox分享设置', 10000);
+                        showError(i18nResources[currentLang]['warning_all_links_down'], 10000);
                     }
                     
                     // 更新最后检测时间
@@ -596,13 +859,13 @@
             } catch (error) {
                 console.error('检测链接状态失败:', error);
                 useFallbackMode();
-                statusText.textContent = '链接状态检测失败';
+                statusText.textContent = i18nResources[currentLang]['status_check_failed'];
                 statusIndicator.style.backgroundColor = '#f56565';
-                showError(`检测失败: ${error.message}`);
+                showError(`${i18nResources[currentLang]['error_network']}: ${error.message}`);
             } finally {
                 // 恢复按钮状态
                 setTimeout(() => {
-                    refreshBtn.innerHTML = originalText;
+                    refreshBtn.innerHTML = `<i class="fas fa-sync-alt"></i> ${i18nResources[currentLang]['btn_refresh']}`;
                     refreshBtn.disabled = false;
                 }, 1000);
             }
@@ -613,11 +876,17 @@
             CURRENT_FOLDER_IDS.forEach(folderId => {
                 const button = document.querySelector(`[data-folder-id="${folderId}"] .access-btn`);
                 const statusEl = document.getElementById(`status-${folderId}`);
+                const btnText = button.querySelector('.btn-text');
                 
                 button.disabled = false;
-                statusEl.innerHTML = '<i class="fas fa-exclamation-triangle"></i> 直接访问';
+                statusEl.innerHTML = `<i class="fas fa-exclamation-triangle"></i> ${i18nResources[currentLang]['status_fallback']}`;
                 statusEl.className = 'status-text status-checking';
-                button.title = '状态检测不可用，点击尝试访问';
+                button.title = currentLang === 'zh-CN' ? '状态检测不可用，点击尝试访问' : 'Status check unavailable, click to try access';
+                
+                // 更新按钮文本
+                btnText.textContent = folderId === 'test' ? 
+                    i18nResources[currentLang]['btn_open_test'] : 
+                    i18nResources[currentLang]['btn_open'];
             });
             
             console.log('使用降级模式：跳过链接状态检测');
@@ -630,7 +899,7 @@
                 if (response.ok) {
                     const data = await response.json();
                     document.getElementById('system-status-indicator').style.backgroundColor = '#48bb78';
-                    document.getElementById('status-text').textContent = '服务运行正常';
+                    document.getElementById('status-text').textContent = i18nResources[currentLang]['status_all_good'].split(' (')[0];
                     
                     // 自动检测一次链接状态
                     setTimeout(() => checkAllLinks(), 1000);
@@ -642,24 +911,12 @@
             }
             
             document.getElementById('system-status-indicator').style.backgroundColor = '#f56565';
-            document.getElementById('status-text').textContent = '服务连接异常';
+            document.getElementById('status-text').textContent = i18nResources[currentLang]['error_unavailable'];
             
             // 健康检查失败时使用降级模式
             useFallbackMode();
             return false;
         }
-        
-        // 页面初始化
-        document.addEventListener('DOMContentLoaded', function() {
-            // 初始使用降级模式
-            useFallbackMode();
-            
-            // 执行健康检查
-            checkHealth();
-            
-            console.log('页面初始化完成，API地址:', API_BASE_URL);
-            console.log('当前可用文件夹:', CURRENT_FOLDER_IDS);
-        });
         
         // 定期检测链接状态（每5分钟一次）
         setInterval(() => {
@@ -668,7 +925,7 @@
         
         // 网络状态检测
         window.addEventListener('offline', () => {
-            showError('网络连接已断开，请检查网络设置');
+            showError(i18nResources[currentLang]['alert_offline']);
         });
         
         window.addEventListener('online', () => {
