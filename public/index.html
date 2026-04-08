@@ -409,7 +409,7 @@
     <div class="container">
         <header>
             <h1><i class="fas fa-cloud"></i> Dropbox 文件中心</h1>
-            <p>精确特征检测系统 | 基于三个核心特征的100%准确识别</p>
+            <p>修复版精确特征检测系统 | 基于三个核心特征的100%准确识别</p>
             
             <div class="system-status">
                 <div>
@@ -573,8 +573,8 @@
         </main>
         
         <footer>
-            <p>© 2024 Dropbox 永久链接服务 | 精确特征检测系统 v2.0</p>
-            <p>基于三个核心特征的100%准确识别 | 匹配即判定，无需复杂策略</p>
+            <p>© 2024 Dropbox 永久链接服务 | 修复版精确特征检测系统 v3.0</p>
+            <p>基于三个核心特征的100%准确识别 | 支持多种格式的特征提取</p>
         </footer>
     </div>
     
@@ -659,7 +659,18 @@
             
             // 更新检测原因
             const reason = statusData.reason || 'UNKNOWN';
-            reasonEl.textContent = `检测原因: ${reason}`;
+            const reasonMap = {
+                'NORMAL_PAGE_FEATURES': '正常页面特征',
+                'DELETED_PAGE_FEATURES': '删除页面特征',
+                'DELETION_NOTICE': '删除提示',
+                'FILE_CONTENT': '文件内容',
+                'ACCESSIBLE_UNKNOWN': '可访问但未知',
+                'HTTP_404': 'HTTP 404错误',
+                'HTTP_500': 'HTTP 500错误',
+                'TIMEOUT': '超时',
+                'NETWORK_ERROR': '网络错误'
+            };
+            reasonEl.textContent = `检测原因: ${reasonMap[reason] || reason}`;
             
             // 更新特征详情
             const features = statusData.features || {};
@@ -681,7 +692,7 @@
             }
             
             if (features.yaps_project) {
-                const isDeleted = features.yaps_project.includes('file_viewer');
+                const isDeleted = features.yaps_project && features.yaps_project.includes('file_viewer');
                 featureHTML += `<div class="feature-item ${isDeleted ? 'feature-deleted' : 'feature-normal'}">
                     <strong>yaps_project:</strong> "${features.yaps_project}"
                 </div>`;
@@ -722,11 +733,11 @@
                 let displayText = '✅ 链接有效';
                 let statusClass = 'status-valid';
                 
-                if (reason.includes('PAGE_FEATURES_NORMAL')) {
-                    displayText = '✅ 页面正常（特征匹配）';
-                } else if (reason.includes('FILE_CONTENT')) {
+                if (reason === 'NORMAL_PAGE_FEATURES') {
+                    displayText = '✅ 正常页面（特征匹配）';
+                } else if (reason === 'FILE_CONTENT') {
                     displayText = '✅ 有文件内容';
-                } else if (reason.includes('ACCESSIBLE')) {
+                } else if (reason === 'ACCESSIBLE_UNKNOWN') {
                     displayText = '✅ 页面可访问';
                 }
                 
@@ -738,10 +749,10 @@
                 let displayText = '❌ 链接无效';
                 let icon = 'fa-times-circle';
                 
-                if (reason.includes('PAGE_FEATURES_DELETED')) {
+                if (reason === 'DELETED_PAGE_FEATURES') {
                     displayText = '🗑️ 页面已删除（特征匹配）';
                     icon = 'fa-trash-alt';
-                } else if (reason.includes('DELETION_NOTICE')) {
+                } else if (reason === 'DELETION_NOTICE') {
                     displayText = '🗑️ 有删除提示';
                     icon = 'fa-exclamation-triangle';
                 } else if (reason === 'TIMEOUT') {
