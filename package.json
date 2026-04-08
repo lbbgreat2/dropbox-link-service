@@ -1,7 +1,7 @@
 {
-  "name": "dropbox-file-center-precise",
-  "version": "8.0.0",
-  "description": "Dropbox File Center with precise link detection",
+  "name": "dropbox-file-center",
+  "version": "1.0.0",
+  "description": "Dropbox File Center with enhanced link validation and noscript detection",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
@@ -11,7 +11,7 @@
     "dropbox",
     "file-sharing",
     "link-validation",
-    "precise-detection"
+    "noscript-detection"
   ],
   "author": "",
   "license": "MIT",
@@ -20,6 +20,9 @@
     "cors": "^2.8.5",
     "dotenv": "^16.0.3",
     "axios": "^1.6.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.1"
   },
   "engines": {
     "node": ">=18.0.0"
