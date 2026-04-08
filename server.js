@@ -20,21 +20,15 @@ const MANUAL_SHARE_LINKS = {
 
 // 链接状态缓存
 let linkStatusCache = {};
-const CACHE_DURATION = 5 * 60 * 1000; // 5分钟缓存
+const CACHE_DURATION = 5 * 60 * 1000;
 
 /**
- * 精确检测器 - 修复 <script nonce> 误识别问题
- * 核心修正：
- * 1. 更精确的匹配：只匹配真正的 <noscript> 标签
- * 2. 避免误匹配：排除 <script nonce> 和其他相似内容
- * 3. 多重验证：结合文本、内容和状态码
+ * 简单稳定的检测器
  */
 async function checkLinkValidity(url) {
-  const startTime = Date.now();
   try {
-    console.log(`[检测器] 检查链接: ${url.substring(0, 50)}...`);
+    console.log(`[检测] 检查: ${url.substring(0, 50)}...`);
 
-    // 获取页面
     const response = await axios.get(url, {
       timeout: 10000,
       headers: {
@@ -43,102 +37,36 @@ async function checkLinkValidity(url) {
     });
 
     const html = response.data;
-    const responseTime = Date.now() - startTime;
     
-    console.log(`[检测器] 响应: 状态 ${response.status}, 大小 ${html.length} 字符, 耗时 ${responseTime}ms`);
+    // 检查删除页面特征
+    const isDeleted = html.includes('此项目已删除') || 
+                     html.includes('This item was deleted') ||
+                     html.includes('deleted files') ||
+                     /<noscript>[\s\S]*?noscript=1[\s\S]*?<\/noscript>/i.test(html);
 
-    // --- 核心修正 1: 更精确的匹配 ---
-    // 只匹配真正的 <noscript> 标签
-    const noscriptMatches = html.match(/<noscript[^>]*>([\s\S]*?)<\/noscript>/gi) || [];
-    let hasValidNoscriptRedirect = false;
-    let noscriptContent = '';
-
-    for (const match of noscriptMatches) {
-      // 提取 <noscript> 标签内的内容
-      const contentMatch = match.match(/<noscript[^>]*>([\s\S]*?)<\/noscript>/i);
-      if (contentMatch && contentMatch[1]) {
-        const content = contentMatch[1];
-        // 检查是否是真正的删除页面特征
-        if (content.includes('noscript=1') && content.includes('refresh')) {
-          hasValidNoscriptRedirect = true;
-          noscriptContent = content;
-          break;
-        }
-      }
+    if (isDeleted) {
+      console.log(`[检测] 结果: 已删除`);
+      return {
+        valid: false,
+        status: response.status,
+        timestamp: new Date().toISOString(),
+        message: 'This item has been deleted.',
+        reason: 'CONTENT_DELETED'
+      };
     }
 
-    // --- 核心修正 2: 避免误匹配 ---
-    // 同时检查删除页面的其他特征
-    const hasDeletionText = 
-      /此项目已删除/i.test(html) ||
-      /This item was deleted/i.test(html) ||
-      /deleted files/i.test(html) ||
-      /已删除的文件/i.test(html) ||
-      /找不到此项目/i.test(html) ||
-      /couldn['\u2019]t find this item/i.test(html);
-
-    // --- 核心修正 3: 多重验证 ---
-    // 检查正常页面特征
-    const hasNormalContent = 
-      /file_viewer|folder_viewer/i.test(html) ||
-      /shared with you|shared by/i.test(html) ||
-      /download-?button/i.test(html) ||
-      /file-?list|folder-?contents/i.test(html) ||
-      /viewing shared folder/i.test(html);
-
-    // 调试信息
-    console.log(`[检测器-特征] 有效Noscript重定向:${hasValidNoscriptRedirect}, 删除文本:${hasDeletionText}, 正常内容:${hasNormalContent}`);
-    
-    if (hasValidNoscriptRedirect && noscriptContent) {
-      console.log(`[检测器] Noscript内容: ${noscriptContent.substring(0, 100)}...`);
-    }
-
-    // --- 决策逻辑 ---
-    // 情况1: 检测到明确的删除特征
-    if (hasValidNoscriptRedirect || hasDeletionText) {
-      // 如果有删除特征但没有正常内容，判定为已删除
-      if (!hasNormalContent) {
-        console.log(`[检测器-结论] 检测到删除特征，无正常内容，设为无效`);
-        return {
-          valid: false,
-          status: response.status,
-          timestamp: new Date().toISOString(),
-          message: 'This item has been deleted.',
-          reason: 'CONTENT_DELETED'
-        };
-      }
-      
-      // 如果有删除特征但同时也正常内容，需要进一步判断
-      // 记录警告，但暂时设为有效
-      console.log(`[检测器-警告] 检测到删除特征但也有正常内容，设为有效`);
-    }
-
-    // 情况2: 有正常内容
-    if (hasNormalContent) {
-      console.log(`[检测器-结论] 检测到正常内容，设为有效`);
+    // 页面可访问
+    if (response.status >= 200 && response.status < 300) {
+      console.log(`[检测] 结果: 有效`);
       return {
         valid: true,
         status: response.status,
         timestamp: new Date().toISOString(),
-        message: 'Link contains valid file or folder content.',
+        message: 'Link is accessible.',
         reason: 'CONTENT_VALID'
       };
     }
 
-    // 情况3: 页面可访问但没有明确特征
-    if (response.status >= 200 && response.status < 300) {
-      console.log(`[检测器-结论] 页面可访问但无明确特征，保守设为有效`);
-      return {
-        valid: true,
-        status: response.status,
-        timestamp: new Date().toISOString(),
-        message: 'Link is accessible but content type is unclear.',
-        reason: 'ACCESSIBLE_NO_CLEAR_SIGNALS'
-      };
-    }
-
-    // 情况4: HTTP错误
-    console.log(`[检测器-结论] 页面返回错误状态，设为无效`);
     return {
       valid: false,
       status: response.status,
@@ -148,31 +76,19 @@ async function checkLinkValidity(url) {
     };
 
   } catch (error) {
-    console.error(`[检测器-错误] ${error.message}`);
+    console.error(`[检测-错误] ${error.message}`);
     
-    let reason = 'NETWORK_ERROR';
-    let message = 'Network request failed.';
-
-    if (error.code === 'ECONNABORTED') {
-      reason = 'TIMEOUT';
-      message = 'Request timed out.';
-    } else if (error.response) {
-      reason = `HTTP_${error.response.status}`;
-      message = `Server returned error: ${error.response.status}`;
-    }
-
     return {
       valid: false,
       error: error.message,
       status: error.response?.status || 0,
       timestamp: new Date().toISOString(),
-      message: message,
-      reason: reason
+      message: 'Network request failed.',
+      reason: error.code === 'ECONNABORTED' ? 'TIMEOUT' : 'NETWORK_ERROR'
     };
   }
 }
 
-// 获取链接状态（带缓存）
 async function getLinkStatus(folderId) {
   const url = MANUAL_SHARE_LINKS[folderId];
   if (!url) {
@@ -202,7 +118,7 @@ app.get('/api/health', (req, res) => {
   res.json({
     status: 'healthy',
     service: 'dropbox-file-center',
-    mode: 'precise_detection_v8',
+    version: 'stable_v9',
     timestamp: new Date().toISOString(),
     available_folders: Object.keys(MANUAL_SHARE_LINKS)
   });
@@ -233,11 +149,9 @@ app.get('/api/links/status', async (req, res) => {
   try {
     const linkStatus = {};
     
-    const promises = Object.keys(MANUAL_SHARE_LINKS).map(async (key) => {
+    for (const key of Object.keys(MANUAL_SHARE_LINKS)) {
       linkStatus[key] = await getLinkStatus(key);
-    });
-    
-    await Promise.all(promises);
+    }
     
     res.json({
       success: true,
@@ -260,8 +174,8 @@ app.use(express.static(path.join(__dirname, 'public')));
 // 启动服务器
 app.listen(PORT, () => {
   console.log('='.repeat(50));
-  console.log('🚀 Dropbox 文件中心 - 精确检测版');
+  console.log('🚀 Dropbox 文件中心 - 稳定版');
   console.log(`📡 端口: ${PORT}`);
-  console.log(`🔍 模式: 精确匹配，修复 <script nonce> 误识别问题`);
+  console.log(`🔍 模式: 简单稳定检测`);
   console.log('='.repeat(50));
 });
