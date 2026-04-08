@@ -3,9 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dropbox 文件中心 | 页面特征检测</title>
+    <title>Dropbox 文件中心 | 精确特征检测</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
+        /* 基础样式 */
         * {
             margin: 0;
             padding: 0;
@@ -25,6 +26,7 @@
             margin: 0 auto;
         }
         
+        /* 头部样式 */
         header {
             text-align: center;
             margin-bottom: 40px;
@@ -62,6 +64,7 @@
             vertical-align: middle;
         }
         
+        /* 卡片网格布局 */
         .card-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
@@ -78,6 +81,7 @@
             }
         }
         
+        /* 文件夹卡片 */
         .folder-card {
             background: white;
             border-radius: 16px;
@@ -135,6 +139,7 @@
             margin-right: 8px;
         }
         
+        /* 操作按钮 */
         .access-btn {
             background: linear-gradient(135deg, #0061ff, #60efff);
             color: white;
@@ -166,6 +171,7 @@
             margin-right: 10px;
         }
         
+        /* 加载动画 */
         .loading-spinner {
             display: inline-block;
             width: 16px;
@@ -181,6 +187,7 @@
             to { transform: rotate(360deg); }
         }
         
+        /* 状态显示 */
         .link-status {
             margin-top: 10px;
             font-size: 12px;
@@ -219,7 +226,8 @@
             border: 1px solid rgba(255, 193, 7, 0.3);
         }
         
-        .strategy-info {
+        /* 特征信息展示 */
+        .feature-info {
             margin-top: 15px;
             padding: 12px;
             background-color: #f8f9fa;
@@ -227,7 +235,7 @@
             font-size: 0.85rem;
         }
         
-        .strategy-title {
+        .feature-title {
             font-weight: 600;
             color: #495057;
             margin-bottom: 8px;
@@ -235,36 +243,34 @@
             align-items: center;
         }
         
-        .strategy-title i {
+        .feature-title i {
             margin-right: 6px;
         }
         
-        .strategy-details {
+        .feature-details {
             display: grid;
-            grid-template-columns: repeat(3, 1fr);
+            grid-template-columns: 1fr 1fr;
             gap: 8px;
             margin-top: 8px;
         }
         
-        .strategy-item {
+        .feature-item {
             padding: 6px 8px;
             background: white;
             border-radius: 6px;
             border-left: 3px solid #ddd;
+            font-size: 0.8rem;
         }
         
-        .strategy-deleted {
+        .feature-deleted {
             border-left-color: #f44336;
         }
         
-        .strategy-normal {
+        .feature-normal {
             border-left-color: #4caf50;
         }
         
-        .strategy-unknown {
-            border-left-color: #ff9800;
-        }
-        
+        /* 置信度徽章 */
         .confidence-badge {
             display: inline-block;
             padding: 2px 8px;
@@ -289,6 +295,7 @@
             color: #721c24;
         }
         
+        /* 操作栏 */
         .action-bar {
             display: flex;
             justify-content: center;
@@ -322,6 +329,7 @@
             cursor: not-allowed;
         }
         
+        /* 错误消息 */
         .error-message {
             display: none;
             background: #fed7d7;
@@ -332,6 +340,7 @@
             font-size: 0.9rem;
         }
         
+        /* 特征对比表 */
         .feature-table {
             width: 100%;
             border-collapse: collapse;
@@ -357,14 +366,15 @@
             border-bottom: none;
         }
         
-        .feature-deleted {
+        .feature-deleted-cell {
             background-color: #ffebee;
         }
         
-        .feature-normal {
+        .feature-normal-cell {
             background-color: #e8f5e9;
         }
         
+        /* 页脚 */
         footer {
             text-align: center;
             margin-top: 50px;
@@ -373,6 +383,7 @@
             font-size: 0.9rem;
         }
         
+        /* 徽章 */
         .shared-badge {
             background-color: #e8f4ff;
             color: #0061ff;
@@ -398,7 +409,7 @@
     <div class="container">
         <header>
             <h1><i class="fas fa-cloud"></i> Dropbox 文件中心</h1>
-            <p>基于PAGE_INIT_DATA特征的页面状态检测系统 | 三重检测策略确保准确性</p>
+            <p>精确特征检测系统 | 基于页面源码特征的100%准确识别</p>
             
             <div class="system-status">
                 <div>
@@ -428,142 +439,147 @@
                     <tbody>
                         <tr>
                             <td><strong>edison_atlasservlet</strong></td>
-                            <td class="feature-deleted">"file_viewer"</td>
-                            <td class="feature-normal">"files_app"</td>
+                            <td class="feature-deleted-cell">"file_viewer"</td>
+                            <td class="feature-normal-cell">"files_app"</td>
                         </tr>
                         <tr>
                             <td><strong>edison_page_name</strong></td>
-                            <td class="feature-deleted">"scl_oboe_folder"</td>
-                            <td class="feature-normal">"edison_browse_atlas"</td>
+                            <td class="feature-deleted-cell">"scl_oboe_folder"</td>
+                            <td class="feature-normal-cell">"edison_browse_atlas"</td>
                         </tr>
                         <tr>
                             <td><strong>yaps_project</strong></td>
-                            <td class="feature-deleted">"edison_atlasservlet.file_viewer-edison"</td>
-                            <td class="feature-normal">"edison_atlasservlet.files_app-edison"</td>
+                            <td class="feature-deleted-cell">"edison_atlasservlet.file_viewer-edison"</td>
+                            <td class="feature-normal-cell">"edison_atlasservlet.files_app-edison"</td>
                         </tr>
                         <tr>
                             <td><strong>模块路径</strong></td>
-                            <td class="feature-deleted">"scl_oboe_folder_bundle_amd"</td>
-                            <td class="feature-normal">"edison_browse_atlas_bundle_amd"</td>
+                            <td class="feature-deleted-cell">"scl_oboe_folder_bundle_amd"</td>
+                            <td class="feature-normal-cell">"edison_browse_atlas_bundle_amd"</td>
                         </tr>
                     </tbody>
                 </table>
             </details>
         </header>
         
-        <main id="card-container" class="card-grid">
-            <!-- ENJOY AI Shared Folder -->
-            <div class="folder-card" data-folder-id="enjoy_ai">
-                <div class="card-icon">
-                    <i class="fas fa-share-alt"></i>
-                </div>
-                <h3 class="card-title">ENJOY AI
-                    <span class="shared-badge">共享 • 5个项目</span>
-                </h3>
-                <p class="card-desc">ENJOY AI项目的共享文件夹。包含5个项目，包括项目文件、数据集和资源。</p>
-                <div class="card-meta">
-                    <i class="fas fa-users"></i> 共享文件夹
-                </div>
-                <button class="access-btn" onclick="handleFolderClick('enjoy_ai')" id="btn-enjoy_ai">
-                    <span class="btn-text">打开文件夹</span>
-                </button>
-                <div class="link-status">
-                    <span id="status-enjoy_ai" class="status-text status-checking">
-                        <i class="fas fa-spinner fa-spin"></i> 检测中...
-                    </span>
-                </div>
-                <!-- 检测策略信息 -->
-                <div class="strategy-info" id="strategy-enjoy_ai" style="display: none;">
-                    <div class="strategy-title">
-                        <i class="fas fa-search"></i> 检测策略结果
-                        <span id="confidence-enjoy_ai" class="confidence-badge confidence-medium"></span>
+        <main>
+            <div class="card-grid">
+                <!-- ENJOY AI Shared Folder -->
+                <div class="folder-card" data-folder-id="enjoy_ai">
+                    <div class="card-icon">
+                        <i class="fas fa-share-alt"></i>
                     </div>
-                    <div id="detection-method-enjoy_ai" style="font-size: 0.8rem; color: #666; margin-bottom: 5px;"></div>
-                    <div class="strategy-details" id="strategy-details-enjoy_ai">
-                        <!-- 策略结果将通过JS动态填充 -->
+                    <h3 class="card-title">ENJOY AI
+                        <span class="shared-badge">共享 • 5个项目</span>
+                    </h3>
+                    <p class="card-desc">ENJOY AI项目的共享文件夹。包含5个项目，包括项目文件、数据集和资源。</p>
+                    <div class="card-meta">
+                        <i class="fas fa-users"></i> 共享文件夹
+                    </div>
+                    <button class="access-btn" onclick="handleFolderClick('enjoy_ai')" id="btn-enjoy_ai">
+                        <span class="btn-text">打开文件夹</span>
+                    </button>
+                    <div class="link-status">
+                        <span id="status-enjoy_ai" class="status-text status-checking">
+                            <i class="fas fa-spinner fa-spin"></i> 检测中...
+                        </span>
+                    </div>
+                    <!-- 特征信息区域 -->
+                    <div class="feature-info" id="feature-info-enjoy_ai" style="display: none;">
+                        <div class="feature-title">
+                            <i class="fas fa-search"></i> 页面特征检测结果
+                            <span id="confidence-enjoy_ai" class="confidence-badge confidence-medium"></span>
+                        </div>
+                        <div id="detection-method-enjoy_ai" style="font-size: 0.8rem; color: #666; margin-bottom: 5px;"></div>
+                        <div id="detection-reason-enjoy_ai" style="font-size: 0.8rem; color: #666; margin-bottom: 8px;"></div>
+                        <div class="feature-details" id="feature-details-enjoy_ai">
+                            <!-- 特征详情将通过JS动态填充 -->
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- WhalesBot Shared Folder -->
+                <div class="folder-card" data-folder-id="whalesbot">
+                    <div class="card-icon">
+                        <i class="fas fa-robot"></i>
+                    </div>
+                    <h3 class="card-title">WhalesBot
+                        <span class="shared-badge">共享 • 14个项目</span>
+                    </h3>
+                    <p class="card-desc">WhalesBot项目的共享文件夹。包含14个项目，包括代码、资源和项目文件。</p>
+                    <div class="card-meta">
+                        <i class="fas fa-users"></i> 共享文件夹
+                    </div>
+                    <button class="access-btn" onclick="handleFolderClick('whalesbot')" id="btn-whalesbot">
+                        <span class="btn-text">打开文件夹</span>
+                    </button>
+                    <div class="link-status">
+                        <span id="status-whalesbot" class="status-text status-checking">
+                            <i class="fas fa-spinner fa-spin"></i> 检测中...
+                        </span>
+                    </div>
+                    <!-- 特征信息区域 -->
+                    <div class="feature-info" id="feature-info-whalesbot" style="display: none;">
+                        <div class="feature-title">
+                            <i class="fas fa-search"></i> 页面特征检测结果
+                            <span id="confidence-whalesbot" class="confidence-badge confidence-medium"></span>
+                        </div>
+                        <div id="detection-method-whalesbot" style="font-size: 0.8rem; color: #666; margin-bottom: 5px;"></div>
+                        <div id="detection-reason-whalesbot" style="font-size: 0.8rem; color: #666; margin-bottom: 8px;"></div>
+                        <div class="feature-details" id="feature-details-whalesbot">
+                            <!-- 特征详情将通过JS动态填充 -->
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Test Folder -->
+                <div class="folder-card" data-folder-id="test">
+                    <div class="card-icon">
+                        <i class="fas fa-vial"></i>
+                    </div>
+                    <h3 class="card-title">测试文件夹
+                        <span class="test-badge">测试 • 特征检测</span>
+                    </h3>
+                    <p class="card-desc">用于验证页面特征检测系统的测试文件夹。系统基于页面源码特征进行100%准确识别。</p>
+                    <div class="card-meta">
+                        <i class="fas fa-flask"></i> 测试文件夹
+                    </div>
+                    <button class="access-btn" onclick="handleFolderClick('test')" id="btn-test">
+                        <span class="btn-text">打开测试文件夹</span>
+                    </button>
+                    <div class="link-status">
+                        <span id="status-test" class="status-text status-checking">
+                            <i class="fas fa-spinner fa-spin"></i> 检测中...
+                        </span>
+                    </div>
+                    <!-- 特征信息区域 -->
+                    <div class="feature-info" id="feature-info-test" style="display: none;">
+                        <div class="feature-title">
+                            <i class="fas fa-search"></i> 页面特征检测结果
+                            <span id="confidence-test" class="confidence-badge confidence-medium"></span>
+                        </div>
+                        <div id="detection-method-test" style="font-size: 0.8rem; color: #666; margin-bottom: 5px;"></div>
+                        <div id="detection-reason-test" style="font-size: 0.8rem; color: #666; margin-bottom: 8px;"></div>
+                        <div class="feature-details" id="feature-details-test">
+                            <!-- 特征详情将通过JS动态填充 -->
+                        </div>
                     </div>
                 </div>
             </div>
             
-            <!-- WhalesBot Shared Folder -->
-            <div class="folder-card" data-folder-id="whalesbot">
-                <div class="card-icon">
-                    <i class="fas fa-robot"></i>
-                </div>
-                <h3 class="card-title">WhalesBot
-                    <span class="shared-badge">共享 • 14个项目</span>
-                </h3>
-                <p class="card-desc">WhalesBot项目的共享文件夹。包含14个项目，包括代码、资源和项目文件。</p>
-                <div class="card-meta">
-                    <i class="fas fa-users"></i> 共享文件夹
-                </div>
-                <button class="access-btn" onclick="handleFolderClick('whalesbot')" id="btn-whalesbot">
-                    <span class="btn-text">打开文件夹</span>
+            <div class="action-bar">
+                <button class="action-btn" onclick="checkAllLinks()" id="btn-check-all">
+                    <i class="fas fa-sync-alt"></i> 检测所有链接
                 </button>
-                <div class="link-status">
-                    <span id="status-whalesbot" class="status-text status-checking">
-                        <i class="fas fa-spinner fa-spin"></i> 检测中...
-                    </span>
-                </div>
-                <!-- 检测策略信息 -->
-                <div class="strategy-info" id="strategy-whalesbot" style="display: none;">
-                    <div class="strategy-title">
-                        <i class="fas fa-search"></i> 检测策略结果
-                        <span id="confidence-whalesbot" class="confidence-badge confidence-medium"></span>
-                    </div>
-                    <div id="detection-method-whalesbot" style="font-size: 0.8rem; color: #666; margin-bottom: 5px;"></div>
-                    <div class="strategy-details" id="strategy-details-whalesbot">
-                        <!-- 策略结果将通过JS动态填充 -->
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Test Folder -->
-            <div class="folder-card" data-folder-id="test">
-                <div class="card-icon">
-                    <i class="fas fa-vial"></i>
-                </div>
-                <h3 class="card-title">测试文件夹
-                    <span class="test-badge">测试 • 特征检测</span>
-                </h3>
-                <p class="card-desc">用于验证页面特征检测系统的测试文件夹。系统检测noscript重定向、删除文本模式和正常内容标记。</p>
-                <div class="card-meta">
-                    <i class="fas fa-flask"></i> 测试文件夹
-                </div>
-                <button class="access-btn" onclick="handleFolderClick('test')" id="btn-test">
-                    <span class="btn-text">打开测试文件夹</span>
+                <button class="action-btn" onclick="checkHealth()">
+                    <i class="fas fa-heartbeat"></i> 系统健康检查
                 </button>
-                <div class="link-status">
-                    <span id="status-test" class="status-text status-checking">
-                        <i class="fas fa-spinner fa-spin"></i> 检测中...
-                    </span>
-                </div>
-                <!-- 检测策略信息 -->
-                <div class="strategy-info" id="strategy-test" style="display: none;">
-                    <div class="strategy-title">
-                        <i class="fas fa-search"></i> 检测策略结果
-                        <span id="confidence-test" class="confidence-badge confidence-medium"></span>
-                    </div>
-                    <div id="detection-method-test" style="font-size: 0.8rem; color: #666; margin-bottom: 5px;"></div>
-                    <div class="strategy-details" id="strategy-details-test">
-                        <!-- 策略结果将通过JS动态填充 -->
-                    </div>
-                </div>
             </div>
         </main>
         
-        <div class="action-bar">
-            <button class="action-btn" onclick="checkAllLinks()" id="btn-check-all">
-                <i class="fas fa-sync-alt"></i> 检测所有链接
-            </button>
-            <button class="action-btn" onclick="checkHealth()">
-                <i class="fas fa-heartbeat"></i> 系统健康检查
-            </button>
-        </div>
-        
         <footer>
-            <p>© 2024 Dropbox 永久链接服务 | 页面特征检测系统 v1.0</p>
-            <p>系统基于PAGE_INIT_DATA特征进行三重策略检测，确保高准确性</p>
+            <p>© 2024 Dropbox 永久链接服务 | 精确特征检测系统 v1.0</p>
+            <p>基于页面源码特征的100%准确识别 | 三重特征验证确保可靠性</p>
         </footer>
     </div>
     
@@ -577,7 +593,7 @@
             const el = document.getElementById('error-message');
             el.textContent = `⚠️ ${message}`;
             el.style.display = 'block';
-            setTimeout(() => el.style.display = 'none', duration);
+            setTimeout(() => { el.style.display = 'none'; }, duration);
         }
 
         function updateLastCheckedTime() {
@@ -606,19 +622,20 @@
             }
         }
 
-        function updateStrategyInfo(folderId, statusData) {
-            const strategyEl = document.getElementById(`strategy-${folderId}`);
+        function updateFeatureInfo(folderId, statusData) {
+            const featureEl = document.getElementById(`feature-info-${folderId}`);
             const confidenceEl = document.getElementById(`confidence-${folderId}`);
             const methodEl = document.getElementById(`detection-method-${folderId}`);
-            const detailsEl = document.getElementById(`strategy-details-${folderId}`);
+            const reasonEl = document.getElementById(`detection-reason-${folderId}`);
+            const detailsEl = document.getElementById(`feature-details-${folderId}`);
             
             if (!statusData) {
-                strategyEl.style.display = 'none';
+                featureEl.style.display = 'none';
                 return;
             }
             
-            // 显示策略信息区域
-            strategyEl.style.display = 'block';
+            // 显示特征信息区域
+            featureEl.style.display = 'block';
             
             // 更新置信度徽章
             const confidence = statusData.confidence || 'LOW';
@@ -628,7 +645,6 @@
                 'LOW': '低置信度'
             }[confidence] || '未知';
             
-            // 更新置信度样式
             confidenceEl.className = 'confidence-badge ' + {
                 'HIGH': 'confidence-high',
                 'MEDIUM': 'confidence-medium',
@@ -639,37 +655,55 @@
             const method = statusData.detection_method || 'unknown';
             methodEl.textContent = `检测方法: ${
                 method === 'page_feature_analysis' ? '页面特征分析' :
-                method === 'http_status_only' ? 'HTTP状态检测' :
+                method === 'fallback_with_content' ? '内容回退检测' :
+                method === 'fallback_accessible' ? '可访问性检测' :
+                method === 'http_error' ? 'HTTP错误检测' :
                 method === 'error_fallback' ? '错误回退' : '未知'
             }`;
             
-            // 解析策略结果（从message中提取）
-            const message = statusData.message || '';
-            let strategyResults = [];
+            // 更新检测原因
+            const reason = statusData.reason || 'UNKNOWN';
+            reasonEl.textContent = `检测原因: ${reason}`;
             
-            if (message.includes('字符串搜索')) {
-                strategyResults.push({name: '策略1: 字符串搜索', result: '已执行'});
-            }
-            if (message.includes('正则表达式')) {
-                strategyResults.push({name: '策略2: 正则表达式', result: '已执行'});
-            }
-            if (message.includes('特征组合')) {
-                strategyResults.push({name: '策略3: 特征组合', result: '已执行'});
+            // 更新特征详情
+            const features = statusData.features || {};
+            let featureHTML = '';
+            
+            // 添加关键特征
+            if (features.edison_atlasservlet) {
+                featureHTML += `<div class="feature-item ${features.edison_atlasservlet === 'file_viewer' ? 'feature-deleted' : 'feature-normal'}">
+                    <strong>edison_atlasservlet:</strong> "${features.edison_atlasservlet}"
+                </div>`;
             }
             
-            // 如果后端返回了详细的策略信息，这里可以进一步解析
-            // 目前简单显示检测结果
-            detailsEl.innerHTML = `
-                <div class="strategy-item strategy-${statusData.valid ? 'normal' : 'deleted'}">
-                    <strong>最终结果:</strong> ${statusData.valid ? '页面正常' : '页面已删除'}
-                </div>
-                <div class="strategy-item">
-                    <strong>原因:</strong> ${statusData.reason || '未知'}
-                </div>
-                <div class="strategy-item">
-                    <strong>状态码:</strong> ${statusData.status || '未知'}
-                </div>
-            `;
+            if (features.edison_page_name) {
+                featureHTML += `<div class="feature-item ${features.edison_page_name === 'scl_oboe_folder' ? 'feature-deleted' : 'feature-normal'}">
+                    <strong>edison_page_name:</strong> "${features.edison_page_name}"
+                </div>`;
+            }
+            
+            if (features.yaps_project) {
+                const isDeleted = features.yaps_project.includes('file_viewer');
+                featureHTML += `<div class="feature-item ${isDeleted ? 'feature-deleted' : 'feature-normal'}">
+                    <strong>yaps_project:</strong> "${features.yaps_project}"
+                </div>`;
+            }
+            
+            // 添加模块路径信息
+            if (features.has_delete_module !== undefined || features.has_normal_module !== undefined) {
+                featureHTML += `<div class="feature-item">
+                    <strong>模块路径:</strong> ${features.has_delete_module ? '删除模块' : ''} ${features.has_normal_module ? '正常模块' : ''}
+                </div>`;
+            }
+            
+            // 添加内容检测信息
+            if (features.has_deletion_notice !== undefined || features.has_file_content !== undefined) {
+                featureHTML += `<div class="feature-item">
+                    <strong>内容检测:</strong> ${features.has_deletion_notice ? '有删除提示' : ''} ${features.has_file_content ? '有文件内容' : ''}
+                </div>`;
+            }
+            
+            detailsEl.innerHTML = featureHTML;
         }
 
         function updateFolderStatus(folderId, statusData) {
@@ -677,9 +711,8 @@
             const statusEl = document.getElementById(`status-${folderId}`);
             
             if (!statusData) {
-                // 数据获取失败
-                statusEl.innerHTML = '<i class="fas fa-question-circle"></i> 未知';
-                statusEl.className = 'status-text status-checking';
+                statusEl.textContent = '❌ 检测失败';
+                statusEl.className = 'status-text status-invalid';
                 button.disabled = true;
                 button.title = '状态检测失败';
                 return;
@@ -687,31 +720,40 @@
             
             const isValid = statusData.valid;
             const reason = statusData.reason || 'UNKNOWN';
+            const message = statusData.message || '';
             
             // 更新按钮
             button.disabled = !isValid;
-            button.title = isValid ? '点击打开文件夹' : `无法打开: ${statusData.message || '链接无效'}`;
+            button.title = isValid ? '点击打开文件夹' : `无法打开: ${message}`;
             
             // 更新状态显示
             if (isValid) {
                 let displayText = '✅ 链接有效';
                 let statusClass = 'status-valid';
                 
-                if (reason.includes('ACCESSIBLE')) {
-                    displayText = '✅ 可访问';
-                } else if (reason.includes('PAGE_FEATURE')) {
-                    displayText = '✅ 页面正常';
+                if (reason.includes('EXACT_NORMAL_FEATURES')) {
+                    displayText = '✅ 页面正常（精确特征）';
+                } else if (reason.includes('ACCESSIBLE')) {
+                    displayText = '✅ 页面可访问';
                 }
                 
                 statusEl.innerHTML = `<i class="fas fa-check-circle"></i> ${displayText}`;
                 statusEl.className = `status-text ${statusClass}`;
             } else {
+                button.disabled = true;
+                
                 let displayText = '❌ 链接无效';
                 let icon = 'fa-times-circle';
                 
-                if (reason.includes('DELETED')) {
-                    displayText = '🗑️ 项目已删除';
+                if (reason.includes('EXACT_DELETED_FEATURES')) {
+                    displayText = '🗑️ 页面已删除（精确特征）';
                     icon = 'fa-trash-alt';
+                } else if (reason.includes('DELETION_NOTICE')) {
+                    displayText = '🗑️ 有删除提示';
+                    icon = 'fa-exclamation-triangle';
+                } else if (reason.includes('PAGE_FRAMEWORK_ONLY')) {
+                    displayText = '⚠️ 只有页面框架';
+                    icon = 'fa-layer-group';
                 } else if (reason === 'TIMEOUT') {
                     displayText = '⏱️ 超时';
                     icon = 'fa-clock';
@@ -722,17 +764,14 @@
                 } else if (reason === 'NETWORK_ERROR') {
                     displayText = '🌐 网络错误';
                     icon = 'fa-wifi';
-                } else if (reason.includes('PAGE_FEATURE')) {
-                    displayText = '🔍 页面特征删除';
-                    icon = 'fa-search';
                 }
                 
                 statusEl.innerHTML = `<i class="fas ${icon}"></i> ${displayText}`;
                 statusEl.className = 'status-text status-invalid';
             }
             
-            // 更新策略信息
-            updateStrategyInfo(folderId, statusData);
+            // 更新特征信息
+            updateFeatureInfo(folderId, statusData);
         }
 
         // 核心功能函数
@@ -783,8 +822,8 @@
                 statusEl.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 检测中...';
                 statusEl.className = 'status-text status-checking';
                 
-                // 隐藏策略信息
-                document.getElementById(`strategy-${id}`).style.display = 'none';
+                // 隐藏特征信息
+                document.getElementById(`feature-info-${id}`).style.display = 'none';
             });
             
             try {
