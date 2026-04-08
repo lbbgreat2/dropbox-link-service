@@ -23,8 +23,16 @@ let linkStatusCache = {};
 const CACHE_DURATION = 5 * 60 * 1000; // 5分钟缓存
 
 /**
- * 基于页面源码特征的精确检测器
- * 根据用户提供的截图对比，100%准确识别正常页面和已删除页面
+ * 精确特征检测器 - 基于三个核心特征
+ * 正常页面特征：
+ *   - edison_atlasservlet: "files_app"
+ *   - edison_page_name: "edison_browse_atlas"
+ *   - yaps_project: "edison_atlasservlet.files_app-edison"
+ * 
+ * 删除页面特征：
+ *   - edison_atlasservlet: "file_viewer"
+ *   - edison_page_name: "scl_oboe_folder"
+ *   - yaps_project: "edison_atlasservlet.file_viewer-edison"
  */
 async function checkLinkValidity(url) {
   const startTime = Date.now();
@@ -43,178 +51,175 @@ async function checkLinkValidity(url) {
     
     console.log(`[精确检测] 状态: ${response.status}, 大小: ${html.length} 字符, 耗时: ${responseTime}ms`);
 
-    // --- 基于您提供的截图进行精确特征提取 ---
+    // --- 提取三个核心特征 ---
     
-    // 1. 提取关键特征（基于您提供的源码截图结构）
-    const extractFeature = (html, featureName) => {
-      // 匹配格式："edison_atlasservlet":"file_viewer" 或 "edison_atlasservlet": "files_app"
-      const pattern1 = new RegExp(`"${featureName}"\\s*:\\s*"([^"]+)"`);
-      const pattern2 = new RegExp(`'${featureName}'\\s*:\\s*'([^']+)'`);
-      const pattern3 = new RegExp(`${featureName}\\s*=\\s*["']([^"']+)["']`);
+    // 1. 提取edison_atlasservlet
+    const extractAtlasservlet = (html) => {
+      // 尝试从exceptionTags中提取（格式：edison_atlasservlet:files_app）
+      const tagsPattern = /edison_atlasservlet:([^",\]]+)/;
+      const tagsMatch = html.match(tagsPattern);
       
-      const match1 = html.match(pattern1);
-      const match2 = html.match(pattern2);
-      const match3 = html.match(pattern3);
+      // 尝试从JSON中提取（格式："edison_atlasservlet":"files_app"）
+      const jsonPattern = /"edison_atlasservlet"\s*:\s*"([^"]+)"/;
+      const jsonMatch = html.match(jsonPattern);
       
-      return match1 ? match1[1] : (match2 ? match2[1] : (match3 ? match3[1] : null));
+      return tagsMatch ? tagsMatch[1] : (jsonMatch ? jsonMatch[1] : null);
     };
-
-    const edisonAtlasservlet = extractFeature(html, 'edison_atlasservlet');
-    const edisonPageName = extractFeature(html, 'edison_page_name');
     
-    // 2. 提取yaps_project（从exceptionExtras中）
+    // 2. 提取edison_page_name
+    const extractPageName = (html) => {
+      // 尝试从exceptionTags中提取（格式：edison_page_name:edison_browse_atlas）
+      const tagsPattern = /edison_page_name:([^",\]]+)/;
+      const tagsMatch = html.match(tagsPattern);
+      
+      // 尝试从JSON中提取（格式："edison_page_name":"edison_browse_atlas"）
+      const jsonPattern = /"edison_page_name"\s*:\s*"([^"]+)"/;
+      const jsonMatch = html.match(jsonPattern);
+      
+      return tagsMatch ? tagsMatch[1] : (jsonMatch ? jsonMatch[1] : null);
+    };
+    
+    // 3. 提取yaps_project
     const extractYapsProject = (html) => {
-      // 匹配格式："yaps_project":"edison_atlasservlet.file_viewer-edison"
-      const pattern1 = /"yaps_project"\s*:\s*"([^"]+)"/;
-      const pattern2 = /'yaps_project'\s*:\s*'([^']+)'/;
+      // 从exceptionExtras中提取（格式："yaps_project":"edison_atlasservlet.files_app-edison"）
+      const pattern = /"yaps_project"\s*:\s*"([^"]+)"/;
+      const match = html.match(pattern);
       
-      const match1 = html.match(pattern1);
-      const match2 = html.match(pattern2);
-      
-      return match1 ? match1[1] : (match2 ? match2[1] : null);
+      return match ? match[1] : null;
     };
     
+    const edisonAtlasservlet = extractAtlasservlet(html);
+    const edisonPageName = extractPageName(html);
     const yapsProject = extractYapsProject(html);
     
-    // 3. 检查模块路径（从截图中的JavaScript/CSS链接）
-    const hasDeleteModule = 
-      html.includes('scl_oboe_folder_bundle_amd') ||
-      /\/scl_oboe_folder_bundle_amd\//.test(html);
-    const hasNormalModule = 
-      html.includes('edison_browse_atlas_bundle_amd') ||
-      /\/edison_browse_atlas_bundle_amd\//.test(html);
-    
-    // 4. 检查页面中的其他关键特征
-    const hasDeletionNotice = 
-      html.includes('此项目已删除') ||
-      html.includes('This item was deleted') ||
-      html.includes('deleted files') ||
-      html.includes('已删除的文件') ||
-      html.includes('找不到此项目') ||
-      html.includes('couldn\'t find this item') ||
-      html.includes('The file you\'re looking for');
-    
-    const hasFileContent = 
-      html.includes('file_list') ||
-      html.includes('folder_contents') ||
-      html.includes('file_viewer_content') ||
-      html.includes('shared_content') ||
-      html.includes('查看文件夹') ||
-      html.includes('下载文件') ||
-      html.includes('下载') ||
-      html.includes('download') ||
-      (html.includes('files') && html.includes('items'));
-    
     console.log(`[精确检测-特征] atlasservlet: ${edisonAtlasservlet || '未找到'}, pageName: ${edisonPageName || '未找到'}, yapsProject: ${yapsProject || '未找到'}`);
-    console.log(`[精确检测-模块] 删除模块: ${hasDeleteModule}, 正常模块: ${hasNormalModule}`);
-    console.log(`[精确检测-内容] 删除提示: ${hasDeletionNotice}, 文件内容: ${hasFileContent}`);
-
-    // --- 基于您提供的截图对比进行精确决策 ---
     
-    // 情况1: 明确的删除页面特征组合（从您的第二张截图）
-    const isDefinitelyDeleted = 
+    // --- 基于特征进行决策 ---
+    
+    // 情况1: 检测到删除页面特征组合
+    const isDeletedPage = 
       (edisonAtlasservlet === 'file_viewer' && edisonPageName === 'scl_oboe_folder') ||
-      yapsProject === 'edison_atlasservlet.file_viewer-edison' ||
-      (hasDeleteModule && !hasNormalModule) ||
-      hasDeletionNotice;
+      (yapsProject === 'edison_atlasservlet.file_viewer-edison') ||
+      (edisonAtlasservlet === 'file_viewer' && yapsProject === 'edison_atlasservlet.file_viewer-edison') ||
+      (edisonPageName === 'scl_oboe_folder' && yapsProject === 'edison_atlasservlet.file_viewer-edison');
     
-    // 情况2: 明确的正常页面特征组合（从您的第一张截图）
-    const isDefinitelyNormal = 
+    // 情况2: 检测到正常页面特征组合
+    const isNormalPage = 
       (edisonAtlasservlet === 'files_app' && edisonPageName === 'edison_browse_atlas') ||
-      yapsProject === 'edison_atlasservlet.files_app-edison' ||
-      (hasNormalModule && !hasDeleteModule) ||
-      (hasFileContent && !hasDeletionNotice);
+      (yapsProject === 'edison_atlasservlet.files_app-edison') ||
+      (edisonAtlasservlet === 'files_app' && yapsProject === 'edison_atlasservlet.files_app-edison') ||
+      (edisonPageName === 'edison_browse_atlas' && yapsProject === 'edison_atlasservlet.files_app-edison');
     
-    console.log(`[精确检测-判定] 明确删除: ${isDefinitelyDeleted}, 明确正常: ${isDefinitelyNormal}`);
-
-    // 决策逻辑
-    if (isDefinitelyDeleted) {
-      console.log(`[精确检测-结论] 100%确认: 页面已删除`);
+    console.log(`[精确检测-判定] 删除页面: ${isDeletedPage}, 正常页面: ${isNormalPage}`);
+    
+    // --- 决策逻辑 ---
+    
+    if (isDeletedPage) {
+      console.log(`[精确检测-结论] 页面已删除`);
       return {
         valid: false,
         status: response.status,
         timestamp: new Date().toISOString(),
-        message: 'This item has been deleted (based on exact page features).',
-        reason: 'EXACT_DELETED_FEATURES',
+        message: 'This item has been deleted (based on page features).',
+        reason: 'PAGE_FEATURES_DELETED',
         confidence: 'HIGH',
-        detection_method: 'page_feature_analysis',
+        detection_method: 'feature_match',
         features: {
           edison_atlasservlet: edisonAtlasservlet,
           edison_page_name: edisonPageName,
-          yaps_project: yapsProject,
-          has_delete_module: hasDeleteModule,
-          has_normal_module: hasNormalModule,
-          has_deletion_notice: hasDeletionNotice,
-          has_file_content: hasFileContent
+          yaps_project: yapsProject
         }
       };
     }
     
-    if (isDefinitelyNormal) {
-      console.log(`[精确检测-结论] 100%确认: 页面正常`);
+    if (isNormalPage) {
+      console.log(`[精确检测-结论] 页面正常`);
       return {
         valid: true,
         status: response.status,
         timestamp: new Date().toISOString(),
-        message: 'Link is valid (based on exact normal page features).',
-        reason: 'EXACT_NORMAL_FEATURES',
+        message: 'Link is valid (based on page features).',
+        reason: 'PAGE_FEATURES_NORMAL',
         confidence: 'HIGH',
-        detection_method: 'page_feature_analysis',
+        detection_method: 'feature_match',
         features: {
           edison_atlasservlet: edisonAtlasservlet,
           edison_page_name: edisonPageName,
-          yaps_project: yapsProject,
-          has_delete_module: hasDeleteModule,
-          has_normal_module: hasNormalModule,
-          has_deletion_notice: hasDeletionNotice,
-          has_file_content: hasFileContent
+          yaps_project: yapsProject
         }
       };
     }
     
-    // 情况3: 特征不明确，但页面可访问
+    // 情况3: 特征不完整或未找到，但页面可访问
     if (response.status >= 200 && response.status < 300) {
-      // 如果有文件内容特征，倾向认为有效
-      if (hasFileContent) {
-        console.log(`[精确检测-结论] 页面可访问且有文件内容，设为有效`);
+      console.log(`[精确检测-结论] 页面可访问但特征不完整`);
+      
+      // 检查是否有明确的删除提示
+      const hasDeletionNotice = 
+        html.includes('此项目已删除') ||
+        html.includes('This item was deleted') ||
+        html.includes('deleted files') ||
+        html.includes('已删除的文件');
+      
+      if (hasDeletionNotice) {
+        console.log(`[精确检测-结论] 有删除提示，设为无效`);
         return {
-          valid: true,
+          valid: false,
           status: response.status,
           timestamp: new Date().toISOString(),
-          message: 'Link is accessible and appears to have file content.',
-          reason: 'ACCESSIBLE_WITH_FILE_CONTENT',
+          message: 'This item has been deleted (found deletion notice).',
+          reason: 'DELETION_NOTICE',
           confidence: 'MEDIUM',
-          detection_method: 'fallback_with_content',
+          detection_method: 'fallback_notice',
           features: {
             edison_atlasservlet: edisonAtlasservlet,
             edison_page_name: edisonPageName,
-            yaps_project: yapsProject,
-            has_delete_module: hasDeleteModule,
-            has_normal_module: hasNormalModule,
-            has_deletion_notice: hasDeletionNotice,
-            has_file_content: hasFileContent
+            yaps_project: yapsProject
           }
         };
       }
       
-      // 没有明确特征但页面可访问
-      console.log(`[精确检测-结论] 页面可访问但特征不明确`);
+      // 检查是否有文件内容
+      const hasFileContent = 
+        html.includes('file_list') ||
+        html.includes('folder_contents') ||
+        html.includes('shared_content') ||
+        html.includes('查看文件夹') ||
+        html.includes('下载文件') ||
+        html.includes('download');
+      
+      if (hasFileContent) {
+        console.log(`[精确检测-结论] 有文件内容，设为有效`);
+        return {
+          valid: true,
+          status: response.status,
+          timestamp: new Date().toISOString(),
+          message: 'Link contains file or folder content.',
+          reason: 'FILE_CONTENT',
+          confidence: 'MEDIUM',
+          detection_method: 'fallback_content',
+          features: {
+            edison_atlasservlet: edisonAtlasservlet,
+            edison_page_name: edisonPageName,
+            yaps_project: yapsProject
+          }
+        };
+      }
+      
+      // 默认：可访问但无法确定
+      console.log(`[精确检测-结论] 页面可访问但无法确定状态`);
       return {
         valid: true, // 保守设为有效
         status: response.status,
         timestamp: new Date().toISOString(),
         message: 'Link is accessible but page type is unclear.',
-        reason: 'ACCESSIBLE_FEATURES_UNKNOWN',
+        reason: 'ACCESSIBLE_UNKNOWN',
         confidence: 'LOW',
         detection_method: 'fallback_accessible',
         features: {
           edison_atlasservlet: edisonAtlasservlet,
           edison_page_name: edisonPageName,
-          yaps_project: yapsProject,
-          has_delete_module: hasDeleteModule,
-          has_normal_module: hasNormalModule,
-          has_deletion_notice: hasDeletionNotice,
-          has_file_content: hasFileContent
+          yaps_project: yapsProject
         }
       };
     }
@@ -232,11 +237,7 @@ async function checkLinkValidity(url) {
       features: {
         edison_atlasservlet: edisonAtlasservlet,
         edison_page_name: edisonPageName,
-        yaps_project: yapsProject,
-        has_delete_module: hasDeleteModule,
-        has_normal_module: hasNormalModule,
-        has_deletion_notice: hasDeletionNotice,
-        has_file_content: hasFileContent
+        yaps_project: yapsProject
       }
     };
 
@@ -298,7 +299,7 @@ app.get('/api/health', (req, res) => {
   res.json({
     status: 'healthy',
     service: 'dropbox-file-center',
-    mode: 'exact_feature_detection_v1',
+    mode: 'exact_feature_match_v2',
     timestamp: new Date().toISOString(),
     available_folders: Object.keys(MANUAL_SHARE_LINKS)
   });
@@ -356,21 +357,19 @@ app.use(express.static(path.join(__dirname, 'public')));
 // 启动服务器
 app.listen(PORT, () => {
   console.log('='.repeat(50));
-  console.log('🚀 Dropbox 文件中心 - 精确特征检测版');
+  console.log('🚀 Dropbox 文件中心 - 精确特征匹配版');
   console.log(`📡 端口: ${PORT}`);
-  console.log(`🔍 模式: 基于源码截图的100%准确特征检测`);
+  console.log(`🔍 模式: 基于三个核心特征的精确匹配`);
   console.log('='.repeat(50));
   console.log('📊 检测特征:');
-  console.log('  删除页面特征:');
-  console.log('    - edison_atlasservlet: "file_viewer"');
-  console.log('    - edison_page_name: "scl_oboe_folder"');
-  console.log('    - yaps_project: "edison_atlasservlet.file_viewer-edison"');
-  console.log('    - 模块路径: scl_oboe_folder_bundle_amd');
-  console.log('  正常页面特征:');
+  console.log('  ✅ 正常页面特征:');
   console.log('    - edison_atlasservlet: "files_app"');
   console.log('    - edison_page_name: "edison_browse_atlas"');
   console.log('    - yaps_project: "edison_atlasservlet.files_app-edison"');
-  console.log('    - 模块路径: edison_browse_atlas_bundle_amd');
+  console.log('  🗑️ 删除页面特征:');
+  console.log('    - edison_atlasservlet: "file_viewer"');
+  console.log('    - edison_page_name: "scl_oboe_folder"');
+  console.log('    - yaps_project: "edison_atlasservlet.file_viewer-edison"');
   console.log('='.repeat(50));
   console.log(`👉 前端访问: http://localhost:${PORT}`);
   console.log(`🩺 健康检查: http://localhost:${PORT}/api/health`);
