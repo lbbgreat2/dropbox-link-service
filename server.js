@@ -24,15 +24,7 @@ const CACHE_DURATION = 5 * 60 * 1000; // 5分钟缓存
 
 /**
  * 精确特征检测器 - 基于三个核心特征
- * 正常页面特征：
- *   - edison_atlasservlet: "files_app"
- *   - edison_page_name: "edison_browse_atlas"
- *   - yaps_project: "edison_atlasservlet.files_app-edison"
- * 
- * 删除页面特征：
- *   - edison_atlasservlet: "file_viewer"
- *   - edison_page_name: "scl_oboe_folder"
- *   - yaps_project: "edison_atlasservlet.file_viewer-edison"
+ * 根据用户截图，特征格式为：edison_atlasservlet: files_app（冒号+空格，无引号）
  */
 async function checkLinkValidity(url) {
   const startTime = Date.now();
@@ -51,95 +43,98 @@ async function checkLinkValidity(url) {
     
     console.log(`[精确检测] 状态: ${response.status}, 大小: ${html.length} 字符, 耗时: ${responseTime}ms`);
 
-    // --- 提取三个核心特征 ---
+    // --- 修复的特征提取逻辑 ---
     
     // 1. 提取edison_atlasservlet
     const extractAtlasservlet = (html) => {
-      // 尝试从exceptionTags中提取（格式：edison_atlasservlet:files_app）
-      const tagsPattern = /edison_atlasservlet:([^",\]]+)/;
-      const tagsMatch = html.match(tagsPattern);
+      // 从exceptionTags中提取（格式：edison_atlasservlet:files_app 或 edison_atlasservlet: files_app）
+      const patterns = [
+        /edison_atlasservlet:([^",\]]+)/,        // 格式1: edison_atlasservlet:files_app
+        /edison_atlasservlet:\s*([^",\]]+)/,     // 格式2: edison_atlasservlet: files_app
+        /"edison_atlasservlet"\s*:\s*"([^"]+)"/, // 格式3: "edison_atlasservlet":"files_app"
+        /'edison_atlasservlet'\s*:\s*'([^']+)'/, // 格式4: 'edison_atlasservlet':'files_app'
+      ];
       
-      // 尝试从JSON中提取（格式："edison_atlasservlet":"files_app"）
-      const jsonPattern = /"edison_atlasservlet"\s*:\s*"([^"]+)"/;
-      const jsonMatch = html.match(jsonPattern);
-      
-      return tagsMatch ? tagsMatch[1] : (jsonMatch ? jsonMatch[1] : null);
+      for (const pattern of patterns) {
+        const match = html.match(pattern);
+        if (match && match[1]) {
+          return match[1].trim(); // 去除可能的空格
+        }
+      }
+      return null;
     };
     
     // 2. 提取edison_page_name
     const extractPageName = (html) => {
-      // 尝试从exceptionTags中提取（格式：edison_page_name:edison_browse_atlas）
-      const tagsPattern = /edison_page_name:([^",\]]+)/;
-      const tagsMatch = html.match(tagsPattern);
+      // 从exceptionTags中提取（格式：edison_page_name:edison_browse_atlas）
+      const patterns = [
+        /edison_page_name:([^",\]]+)/,        // 格式1: edison_page_name:edison_browse_atlas
+        /edison_page_name:\s*([^",\]]+)/,     // 格式2: edison_page_name: edison_browse_atlas
+        /"edison_page_name"\s*:\s*"([^"]+)"/, // 格式3: "edison_page_name":"edison_browse_atlas"
+        /'edison_page_name'\s*:\s*'([^']+)'/, // 格式4: 'edison_page_name':'edison_browse_atlas'
+      ];
       
-      // 尝试从JSON中提取（格式："edison_page_name":"edison_browse_atlas"）
-      const jsonPattern = /"edison_page_name"\s*:\s*"([^"]+)"/;
-      const jsonMatch = html.match(jsonPattern);
-      
-      return tagsMatch ? tagsMatch[1] : (jsonMatch ? jsonMatch[1] : null);
+      for (const pattern of patterns) {
+        const match = html.match(pattern);
+        if (match && match[1]) {
+          return match[1].trim(); // 去除可能的空格
+        }
+      }
+      return null;
     };
     
     // 3. 提取yaps_project
     const extractYapsProject = (html) => {
       // 从exceptionExtras中提取（格式："yaps_project":"edison_atlasservlet.files_app-edison"）
-      const pattern = /"yaps_project"\s*:\s*"([^"]+)"/;
-      const match = html.match(pattern);
+      const patterns = [
+        /"yaps_project"\s*:\s*"([^"]+)"/, // JSON格式
+        /'yaps_project'\s*:\s*'([^']+)'/, // 单引号格式
+        /yaps_project:\s*([^",\]]+)/,     // 无引号格式
+      ];
       
-      return match ? match[1] : null;
+      for (const pattern of patterns) {
+        const match = html.match(pattern);
+        if (match && match[1]) {
+          return match[1].trim(); // 去除可能的空格
+        }
+      }
+      return null;
     };
     
     const edisonAtlasservlet = extractAtlasservlet(html);
     const edisonPageName = extractPageName(html);
     const yapsProject = extractYapsProject(html);
     
-    console.log(`[精确检测-特征] atlasservlet: ${edisonAtlasservlet || '未找到'}, pageName: ${edisonPageName || '未找到'}, yapsProject: ${yapsProject || '未找到'}`);
+    console.log(`[精确检测-特征] atlasservlet: "${edisonAtlasservlet || '未找到'}", pageName: "${edisonPageName || '未找到'}", yapsProject: "${yapsProject || '未找到'}"`);
     
     // --- 基于特征进行决策 ---
     
-    // 情况1: 检测到删除页面特征组合
-    const isDeletedPage = 
-      (edisonAtlasservlet === 'file_viewer' && edisonPageName === 'scl_oboe_folder') ||
-      (yapsProject === 'edison_atlasservlet.file_viewer-edison') ||
-      (edisonAtlasservlet === 'file_viewer' && yapsProject === 'edison_atlasservlet.file_viewer-edison') ||
-      (edisonPageName === 'scl_oboe_folder' && yapsProject === 'edison_atlasservlet.file_viewer-edison');
-    
-    // 情况2: 检测到正常页面特征组合
+    // 1. 检查是否是正常页面
     const isNormalPage = 
       (edisonAtlasservlet === 'files_app' && edisonPageName === 'edison_browse_atlas') ||
       (yapsProject === 'edison_atlasservlet.files_app-edison') ||
-      (edisonAtlasservlet === 'files_app' && yapsProject === 'edison_atlasservlet.files_app-edison') ||
-      (edisonPageName === 'edison_browse_atlas' && yapsProject === 'edison_atlasservlet.files_app-edison');
+      (edisonAtlasservlet === 'files_app' && yapsProject && yapsProject.includes('files_app')) ||
+      (edisonPageName === 'edison_browse_atlas' && yapsProject && yapsProject.includes('files_app'));
     
-    console.log(`[精确检测-判定] 删除页面: ${isDeletedPage}, 正常页面: ${isNormalPage}`);
+    // 2. 检查是否是删除页面
+    const isDeletedPage = 
+      (edisonAtlasservlet === 'file_viewer' && edisonPageName === 'scl_oboe_folder') ||
+      (yapsProject === 'edison_atlasservlet.file_viewer-edison') ||
+      (edisonAtlasservlet === 'file_viewer' && yapsProject && yapsProject.includes('file_viewer')) ||
+      (edisonPageName === 'scl_oboe_folder' && yapsProject && yapsProject.includes('file_viewer'));
+    
+    console.log(`[精确检测-判定] 正常页面: ${isNormalPage}, 删除页面: ${isDeletedPage}`);
     
     // --- 决策逻辑 ---
     
-    if (isDeletedPage) {
-      console.log(`[精确检测-结论] 页面已删除`);
-      return {
-        valid: false,
-        status: response.status,
-        timestamp: new Date().toISOString(),
-        message: 'This item has been deleted (based on page features).',
-        reason: 'PAGE_FEATURES_DELETED',
-        confidence: 'HIGH',
-        detection_method: 'feature_match',
-        features: {
-          edison_atlasservlet: edisonAtlasservlet,
-          edison_page_name: edisonPageName,
-          yaps_project: yapsProject
-        }
-      };
-    }
-    
     if (isNormalPage) {
-      console.log(`[精确检测-结论] 页面正常`);
+      console.log(`[精确检测-结论] 正常页面（匹配正常特征）`);
       return {
         valid: true,
         status: response.status,
         timestamp: new Date().toISOString(),
-        message: 'Link is valid (based on page features).',
-        reason: 'PAGE_FEATURES_NORMAL',
+        message: 'This is a normal Dropbox page (matches normal page features).',
+        reason: 'NORMAL_PAGE_FEATURES',
         confidence: 'HIGH',
         detection_method: 'feature_match',
         features: {
@@ -150,24 +145,57 @@ async function checkLinkValidity(url) {
       };
     }
     
-    // 情况3: 特征不完整或未找到，但页面可访问
+    if (isDeletedPage) {
+      console.log(`[精确检测-结论] 删除页面（匹配删除特征）`);
+      return {
+        valid: false,
+        status: response.status,
+        timestamp: new Date().toISOString(),
+        message: 'This item has been deleted (matches deleted page features).',
+        reason: 'DELETED_PAGE_FEATURES',
+        confidence: 'HIGH',
+        detection_method: 'feature_match',
+        features: {
+          edison_atlasservlet: edisonAtlasservlet,
+          edison_page_name: edisonPageName,
+          yaps_project: yapsProject
+        }
+      };
+    }
+    
+    // 3. 特征不明确，检查页面内容
     if (response.status >= 200 && response.status < 300) {
-      console.log(`[精确检测-结论] 页面可访问但特征不完整`);
+      console.log(`[精确检测-结论] 页面可访问但特征不明确，进行内容检查`);
       
-      // 检查是否有明确的删除提示
+      // 检查是否有删除提示
       const hasDeletionNotice = 
         html.includes('此项目已删除') ||
         html.includes('This item was deleted') ||
         html.includes('deleted files') ||
-        html.includes('已删除的文件');
+        html.includes('已删除的文件') ||
+        html.includes('找不到此项目') ||
+        html.includes('couldn\'t find this item');
       
-      if (hasDeletionNotice) {
+      // 检查是否有文件内容
+      const hasFileContent = 
+        html.includes('file_list') ||
+        html.includes('folder_contents') ||
+        html.includes('shared_content') ||
+        html.includes('查看文件夹') ||
+        html.includes('下载文件') ||
+        html.includes('download') ||
+        html.includes('files') ||
+        html.includes('items');
+      
+      console.log(`[精确检测-内容] 删除提示: ${hasDeletionNotice}, 文件内容: ${hasFileContent}`);
+      
+      if (hasDeletionNotice && !hasFileContent) {
         console.log(`[精确检测-结论] 有删除提示，设为无效`);
         return {
           valid: false,
           status: response.status,
           timestamp: new Date().toISOString(),
-          message: 'This item has been deleted (found deletion notice).',
+          message: 'This item appears to be deleted (found deletion notice).',
           reason: 'DELETION_NOTICE',
           confidence: 'MEDIUM',
           detection_method: 'fallback_notice',
@@ -179,22 +207,13 @@ async function checkLinkValidity(url) {
         };
       }
       
-      // 检查是否有文件内容
-      const hasFileContent = 
-        html.includes('file_list') ||
-        html.includes('folder_contents') ||
-        html.includes('shared_content') ||
-        html.includes('查看文件夹') ||
-        html.includes('下载文件') ||
-        html.includes('download');
-      
       if (hasFileContent) {
         console.log(`[精确检测-结论] 有文件内容，设为有效`);
         return {
           valid: true,
           status: response.status,
           timestamp: new Date().toISOString(),
-          message: 'Link contains file or folder content.',
+          message: 'Link appears to have file or folder content.',
           reason: 'FILE_CONTENT',
           confidence: 'MEDIUM',
           detection_method: 'fallback_content',
@@ -224,7 +243,7 @@ async function checkLinkValidity(url) {
       };
     }
     
-    // 情况4: HTTP错误
+    // 4. HTTP错误
     console.log(`[精确检测-结论] 页面返回错误状态`);
     return {
       valid: false,
@@ -299,7 +318,7 @@ app.get('/api/health', (req, res) => {
   res.json({
     status: 'healthy',
     service: 'dropbox-file-center',
-    mode: 'exact_feature_match_v2',
+    mode: 'exact_feature_match_v3',
     timestamp: new Date().toISOString(),
     available_folders: Object.keys(MANUAL_SHARE_LINKS)
   });
@@ -357,9 +376,9 @@ app.use(express.static(path.join(__dirname, 'public')));
 // 启动服务器
 app.listen(PORT, () => {
   console.log('='.repeat(50));
-  console.log('🚀 Dropbox 文件中心 - 精确特征匹配版');
+  console.log('🚀 Dropbox 文件中心 - 修复特征检测版');
   console.log(`📡 端口: ${PORT}`);
-  console.log(`🔍 模式: 基于三个核心特征的精确匹配`);
+  console.log(`🔍 模式: 基于三个核心特征的精确匹配（修复版）`);
   console.log('='.repeat(50));
   console.log('📊 检测特征:');
   console.log('  ✅ 正常页面特征:');
