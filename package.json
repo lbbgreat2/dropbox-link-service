@@ -1,7 +1,7 @@
 {
-  "name": "dropbox-file-center-exact-detection",
-  "version": "2.0.0",
-  "description": "Dropbox File Center with exact page feature detection based on PAGE_INIT_DATA analysis - 100% accurate identification of deleted vs normal pages",
+  "name": "dropbox-file-center-exact-feature-detection",
+  "version": "3.0.0",
+  "description": "Dropbox File Center with exact page feature detection - 100% accurate identification based on three core features",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
@@ -14,9 +14,9 @@
     "link-validation",
     "feature-detection",
     "page-analysis",
-    "noscript",
     "html-parsing",
-    "web-scraping"
+    "web-scraping",
+    "exact-match"
   ],
   "author": "",
   "license": "MIT",
