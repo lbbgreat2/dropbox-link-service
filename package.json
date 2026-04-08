@@ -1,7 +1,7 @@
 {
-  "name": "dropbox-file-center-noscript",
-  "version": "3.0.0",
-  "description": "Dropbox File Center with reliable no-JavaScript link detection",
+  "name": "dropbox-file-center-precise",
+  "version": "8.0.0",
+  "description": "Dropbox File Center with precise link detection",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
@@ -11,7 +11,7 @@
     "dropbox",
     "file-sharing",
     "link-validation",
-    "noscript-detection"
+    "precise-detection"
   ],
   "author": "",
   "license": "MIT",
