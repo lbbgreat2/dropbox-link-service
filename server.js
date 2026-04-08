@@ -23,15 +23,18 @@ let linkStatusCache = {};
 const CACHE_DURATION = 5 * 60 * 1000; // 5分钟缓存
 
 /**
- * 终极简单检测器 - 基于<noscript>标签
- * 只需要一个特征：检查页面是否包含指向noscript=1的重定向
+ * 精确检测器 - 修复 <script nonce> 误识别问题
+ * 核心修正：
+ * 1. 更精确的匹配：只匹配真正的 <noscript> 标签
+ * 2. 避免误匹配：排除 <script nonce> 和其他相似内容
+ * 3. 多重验证：结合文本、内容和状态码
  */
 async function checkLinkValidity(url) {
   const startTime = Date.now();
   try {
     console.log(`[检测器] 检查链接: ${url.substring(0, 50)}...`);
 
-    // 1. 获取原始页面
+    // 获取页面
     const response = await axios.get(url, {
       timeout: 10000,
       headers: {
@@ -42,34 +45,106 @@ async function checkLinkValidity(url) {
     const html = response.data;
     const responseTime = Date.now() - startTime;
     
-    console.log(`[检测器] 状态: ${response.status}, 大小: ${html.length} 字符, 耗时: ${responseTime}ms`);
+    console.log(`[检测器] 响应: 状态 ${response.status}, 大小 ${html.length} 字符, 耗时 ${responseTime}ms`);
 
-    // 2. 关键：检查删除页面的唯一特征
-    // 特征：包含 <noscript> 标签，且其中有指向 noscript=1 版本的重定向
-    const hasNoscriptRedirect = /<noscript>[\s\S]*?noscript=1[\s\S]*?<\/noscript>/i.test(html);
+    // --- 核心修正 1: 更精确的匹配 ---
+    // 只匹配真正的 <noscript> 标签
+    const noscriptMatches = html.match(/<noscript[^>]*>([\s\S]*?)<\/noscript>/gi) || [];
+    let hasValidNoscriptRedirect = false;
+    let noscriptContent = '';
+
+    for (const match of noscriptMatches) {
+      // 提取 <noscript> 标签内的内容
+      const contentMatch = match.match(/<noscript[^>]*>([\s\S]*?)<\/noscript>/i);
+      if (contentMatch && contentMatch[1]) {
+        const content = contentMatch[1];
+        // 检查是否是真正的删除页面特征
+        if (content.includes('noscript=1') && content.includes('refresh')) {
+          hasValidNoscriptRedirect = true;
+          noscriptContent = content;
+          break;
+        }
+      }
+    }
+
+    // --- 核心修正 2: 避免误匹配 ---
+    // 同时检查删除页面的其他特征
+    const hasDeletionText = 
+      /此项目已删除/i.test(html) ||
+      /This item was deleted/i.test(html) ||
+      /deleted files/i.test(html) ||
+      /已删除的文件/i.test(html) ||
+      /找不到此项目/i.test(html) ||
+      /couldn['\u2019]t find this item/i.test(html);
+
+    // --- 核心修正 3: 多重验证 ---
+    // 检查正常页面特征
+    const hasNormalContent = 
+      /file_viewer|folder_viewer/i.test(html) ||
+      /shared with you|shared by/i.test(html) ||
+      /download-?button/i.test(html) ||
+      /file-?list|folder-?contents/i.test(html) ||
+      /viewing shared folder/i.test(html);
+
+    // 调试信息
+    console.log(`[检测器-特征] 有效Noscript重定向:${hasValidNoscriptRedirect}, 删除文本:${hasDeletionText}, 正常内容:${hasNormalContent}`);
     
-    console.log(`[检测器-特征] 是否有noscript重定向: ${hasNoscriptRedirect}`);
+    if (hasValidNoscriptRedirect && noscriptContent) {
+      console.log(`[检测器] Noscript内容: ${noscriptContent.substring(0, 100)}...`);
+    }
 
-    // 3. 决策逻辑
-    if (hasNoscriptRedirect) {
-      console.log(`[检测器-结论] 链接已删除（检测到noscript重定向）`);
+    // --- 决策逻辑 ---
+    // 情况1: 检测到明确的删除特征
+    if (hasValidNoscriptRedirect || hasDeletionText) {
+      // 如果有删除特征但没有正常内容，判定为已删除
+      if (!hasNormalContent) {
+        console.log(`[检测器-结论] 检测到删除特征，无正常内容，设为无效`);
+        return {
+          valid: false,
+          status: response.status,
+          timestamp: new Date().toISOString(),
+          message: 'This item has been deleted.',
+          reason: 'CONTENT_DELETED'
+        };
+      }
+      
+      // 如果有删除特征但同时也正常内容，需要进一步判断
+      // 记录警告，但暂时设为有效
+      console.log(`[检测器-警告] 检测到删除特征但也有正常内容，设为有效`);
+    }
+
+    // 情况2: 有正常内容
+    if (hasNormalContent) {
+      console.log(`[检测器-结论] 检测到正常内容，设为有效`);
       return {
-        valid: false,
+        valid: true,
         status: response.status,
         timestamp: new Date().toISOString(),
-        message: 'This item has been deleted.',
-        reason: 'CONTENT_DELETED_NOSCRIPT_REDIRECT'
+        message: 'Link contains valid file or folder content.',
+        reason: 'CONTENT_VALID'
       };
     }
-    
-    // 4. 如果没有检测到删除特征，则认为是有效链接
-    console.log(`[检测器-结论] 链接有效（无删除特征）`);
+
+    // 情况3: 页面可访问但没有明确特征
+    if (response.status >= 200 && response.status < 300) {
+      console.log(`[检测器-结论] 页面可访问但无明确特征，保守设为有效`);
+      return {
+        valid: true,
+        status: response.status,
+        timestamp: new Date().toISOString(),
+        message: 'Link is accessible but content type is unclear.',
+        reason: 'ACCESSIBLE_NO_CLEAR_SIGNALS'
+      };
+    }
+
+    // 情况4: HTTP错误
+    console.log(`[检测器-结论] 页面返回错误状态，设为无效`);
     return {
-      valid: true,
+      valid: false,
       status: response.status,
       timestamp: new Date().toISOString(),
-      message: 'Link is valid and accessible.',
-      reason: 'CONTENT_VALID_NO_REDIRECT'
+      message: `Link returned error status ${response.status}`,
+      reason: `HTTP_${response.status}`
     };
 
   } catch (error) {
@@ -127,7 +202,7 @@ app.get('/api/health', (req, res) => {
   res.json({
     status: 'healthy',
     service: 'dropbox-file-center',
-    mode: 'noscript_tag_detection_v6',
+    mode: 'precise_detection_v8',
     timestamp: new Date().toISOString(),
     available_folders: Object.keys(MANUAL_SHARE_LINKS)
   });
@@ -185,8 +260,8 @@ app.use(express.static(path.join(__dirname, 'public')));
 // 启动服务器
 app.listen(PORT, () => {
   console.log('='.repeat(50));
-  console.log('🚀 Dropbox 文件中心 - Noscript标签检测版');
+  console.log('🚀 Dropbox 文件中心 - 精确检测版');
   console.log(`📡 端口: ${PORT}`);
-  console.log(`🔍 模式: 基于<noscript>标签的100%可靠检测`);
+  console.log(`🔍 模式: 精确匹配，修复 <script nonce> 误识别问题`);
   console.log('='.repeat(50));
 });
