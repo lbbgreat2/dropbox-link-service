@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dropbox File Center | Stable Version</title>
     <style>
-        /* 最基本样式，确保一定能显示 */
         * {
             margin: 0;
             padding: 0;
@@ -184,7 +183,6 @@
         
         <main>
             <div class="card-container">
-                <!-- 卡片1: ENJOY AI -->
                 <div class="folder-card" id="card-enjoy_ai">
                     <div class="card-header">
                         <div class="card-icon">📁</div>
@@ -199,7 +197,6 @@
                     <div class="status-text" id="status-enjoy_ai">Checking...</div>
                 </div>
                 
-                <!-- 卡片2: WhalesBot -->
                 <div class="folder-card" id="card-whalesbot">
                     <div class="card-header">
                         <div class="card-icon">🤖</div>
@@ -214,7 +211,6 @@
                     <div class="status-text" id="status-whalesbot">Checking...</div>
                 </div>
                 
-                <!-- 卡片3: Test Folder -->
                 <div class="folder-card" id="card-test">
                     <div class="card-header">
                         <div class="card-icon">🧪</div>
@@ -242,18 +238,17 @@
     </div>
     
     <script>
-        // 极简JavaScript，修复了所有语法错误
         const folders = ['enjoy_ai', 'whalesbot', 'test'];
         
-        // 显示错误
         function showError(message) {
             const box = document.getElementById('error-box');
             box.textContent = '⚠️ ' + message;
             box.style.display = 'block';
-            setTimeout(() => { box.style.display = 'none'; }, 5000);
+            setTimeout(function() { 
+                box.style.display = 'none'; 
+            }, 5000);
         }
         
-        // 更新单个文件夹状态
         function updateFolderStatus(folderId, data) {
             const button = document.getElementById('btn-' + folderId);
             const statusEl = document.getElementById('status-' + folderId);
@@ -261,18 +256,16 @@
             if (!data) {
                 statusEl.textContent = '❌ Check failed';
                 statusEl.style.color = '#dc3545';
-                button.disabled = false; // 允许尝试
+                button.disabled = false;
                 return;
             }
             
             if (data.valid) {
-                // 有效
                 button.disabled = false;
                 statusEl.textContent = '✅ Link Valid';
                 statusEl.style.color = '#28a745';
                 button.title = 'Click to open';
             } else {
-                // 无效
                 button.disabled = true;
                 if (data.reason && data.reason.includes('DELETED')) {
                     statusEl.textContent = '🗑️ Item Deleted';
@@ -286,12 +279,10 @@
             }
         }
         
-        // 打开文件夹
         function openFolder(folderId) {
             const button = document.getElementById('btn-' + folderId);
             const originalText = button.textContent;
             
-            // 简单的文件夹URL映射
             const folderUrls = {
                 'enjoy_ai': 'https://www.dropbox.com/scl/fo/xhuafhd7lvzct5qou5exc/APsv0VSGbS0sL2h5q86sxrE?rlkey=wulgqtxyjifm67ymdhj881u66&st=h5z3paub&dl=0',
                 'whalesbot': 'https://www.dropbox.com/scl/fo/dm9mk69c56v8o554r11wv/AGjzYhC_2KXZ6xXkLc88k_g?rlkey=67t99jd9gms79e2ato24ee727&st=rhn2cwhy&dl=0',
@@ -301,44 +292,35 @@
             button.textContent = 'Opening...';
             button.disabled = true;
             
-            // 直接打开链接
             window.open(folderUrls[folderId], '_blank');
             
-            // 恢复按钮状态
-            setTimeout(() => {
+            setTimeout(function() {
                 button.textContent = originalText;
                 button.disabled = false;
             }, 1000);
         }
         
-        // 检查所有链接
         async function checkAllLinks() {
             const refreshBtn = document.getElementById('refresh-btn');
             const systemStatus = document.getElementById('system-status');
             const indicator = document.getElementById('system-indicator');
             const lastCheck = document.getElementById('last-check');
             
-            // 更新按钮状态
             const originalText = refreshBtn.textContent;
             refreshBtn.textContent = 'Checking...';
             refreshBtn.disabled = true;
             
-            // 更新系统状态
             systemStatus.textContent = 'Checking links...';
             indicator.style.background = '#ffc107';
             
-            // 更新所有文件夹状态为"检查中"
-            folders.forEach(id => {
+            folders.forEach(function(id) {
                 const statusEl = document.getElementById('status-' + id);
                 statusEl.textContent = '⏳ Checking...';
                 statusEl.style.color = '#17a2b8';
             });
             
             try {
-                // 获取当前域名
                 const baseUrl = window.location.origin;
-                
-                // 获取链接状态
                 const response = await fetch(baseUrl + '/api/links/status');
                 
                 if (!response.ok) {
@@ -348,10 +330,9 @@
                 const data = await response.json();
                 
                 if (data.success) {
-                    // 更新每个文件夹
                     let validCount = 0;
                     
-                    folders.forEach(folderId => {
+                    folders.forEach(function(folderId) {
                         const status = data.data[folderId];
                         updateFolderStatus(folderId, status);
                         
@@ -360,7 +341,6 @@
                         }
                     });
                     
-                    // 更新系统状态
                     if (validCount === folders.length) {
                         systemStatus.textContent = 'All links are valid';
                         indicator.style.background = '#28a745';
@@ -372,7 +352,6 @@
                         indicator.style.background = '#ffc107';
                     }
                     
-                    // 更新最后检查时间
                     const now = new Date();
                     lastCheck.textContent = 'Last check: ' + now.toLocaleTimeString();
                     
@@ -386,8 +365,7 @@
                 systemStatus.textContent = 'Check failed';
                 indicator.style.background = '#dc3545';
                 
-                // 降级模式：允许手动尝试
-                folders.forEach(id => {
+                folders.forEach(function(id) {
                     const button = document.getElementById('btn-' + id);
                     const statusEl = document.getElementById('status-' + id);
                     
@@ -396,26 +374,21 @@
                     statusEl.style.color = '#ffc107';
                 });
             } finally {
-                // 恢复按钮
-                setTimeout(() => {
+                setTimeout(function() {
                     refreshBtn.textContent = originalText;
                     refreshBtn.disabled = false;
                 }, 1000);
             }
         }
         
-        // 页面加载时初始化
         window.addEventListener('DOMContentLoaded', function() {
             console.log('Page loaded, starting check...');
             
-            // 初始状态
             document.getElementById('system-status').textContent = 'Starting up...';
             document.getElementById('system-indicator').style.background = '#17a2b8';
             
-            // 初始检查
             setTimeout(checkAllLinks, 1000);
             
-            // 每5分钟自动检查
             setInterval(checkAllLinks, 5 * 60 * 1000);
         });
     </script>
