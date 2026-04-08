@@ -242,7 +242,7 @@
     </div>
     
     <script>
-        // 极简JavaScript，避免任何可能的错误
+        // 极简JavaScript，修复了所有语法错误
         const folders = ['enjoy_ai', 'whalesbot', 'test'];
         
         // 显示错误
@@ -250,14 +250,13 @@
             const box = document.getElementById('error-box');
             box.textContent = '⚠️ ' + message;
             box.style.display = 'block';
-            setTimeout(() => box.style.display = 'none', 5000);
+            setTimeout(() => { box.style.display = 'none'; }, 5000);
         }
         
         // 更新单个文件夹状态
         function updateFolderStatus(folderId, data) {
             const button = document.getElementById('btn-' + folderId);
             const statusEl = document.getElementById('status-' + folderId);
-            const indicator = document.getElementById('system-indicator');
             
             if (!data) {
                 statusEl.textContent = '❌ Check failed';
@@ -387,7 +386,7 @@
                 systemStatus.textContent = 'Check failed';
                 indicator.style.background = '#dc3545';
                 
-                // 允许手动尝试
+                // 降级模式：允许手动尝试
                 folders.forEach(id => {
                     const button = document.getElementById('btn-' + id);
                     const statusEl = document.getElementById('status-' + id);
@@ -406,7 +405,7 @@
         }
         
         // 页面加载时初始化
-        window.onload = function() {
+        window.addEventListener('DOMContentLoaded', function() {
             console.log('Page loaded, starting check...');
             
             // 初始状态
@@ -418,7 +417,7 @@
             
             // 每5分钟自动检查
             setInterval(checkAllLinks, 5 * 60 * 1000);
-        };
+        });
     </script>
 </body>
 </html>
