@@ -1,25 +1,20 @@
 {
-  "name": "dropbox-file-center-fixed-feature-detection",
-  "version": "4.0.0",
-  "description": "Dropbox File Center with fixed exact feature detection - 100% accurate identification based on three core features with multiple format support",
+  "name": "dropbox-permanent-link-service",
+  "version": "1.0.0",
+  "description": "永久有效的Dropbox文件分享服务，解决Dropbox链接失效问题",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
+    "build": "npm install",
     "dev": "nodemon server.js",
-    "test": "echo \"No tests specified\" && exit 0"
+    "test": "echo \"No test specified\" && exit 0"
   },
   "keywords": [
     "dropbox",
     "file-sharing",
-    "link-validation",
-    "feature-detection",
-    "page-analysis",
-    "html-parsing",
-    "web-scraping",
-    "exact-match",
-    "fixed-detection"
+    "permanent-links"
   ],
-  "author": "",
+  "author": "lbbgreat2",
   "license": "MIT",
   "dependencies": {
     "express": "^4.18.2",
@@ -35,10 +30,6 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/yourusername/dropbox-file-center.git"
-  },
-  "bugs": {
-    "url": "https://github.com/yourusername/dropbox-file-center/issues"
-  },
-  "homepage": "https://github.com/yourusername/dropbox-file-center#readme"
+    "url": "https://github.com/lbbgreat2/dropbox-link-service.git"
+  }
 }
