@@ -22,12 +22,16 @@ const MANUAL_SHARE_LINKS = {
 let linkStatusCache = {};
 const CACHE_DURATION = 5 * 60 * 1000; // 5分钟缓存
 
-// 链接有效性检测函数（使用您提供的代码）
+/**
+ * 基于PAGE_INIT_DATA特征的状态检测器
+ * 核心原理：通过分析Dropbox页面中的PAGE_INIT_DATA对象特征来识别页面状态
+ */
 async function checkLinkValidity(url) {
   const startTime = Date.now();
   try {
-    console.log(`[检测器] 检查: ${url.substring(0, 50)}...`);
+    console.log(`[特征检测器] 开始检查: ${url.substring(0, 50)}...`);
 
+    // 获取页面HTML
     const response = await axios.get(url, {
       timeout: 10000,
       headers: {
@@ -38,71 +42,109 @@ async function checkLinkValidity(url) {
     const html = response.data;
     const responseTime = Date.now() - startTime;
     
-    console.log(`[检测器] 响应: 状态 ${response.status}, 大小 ${html.length} 字符, 耗时 ${responseTime}ms`);
+    console.log(`[特征检测器] 响应: 状态 ${response.status}, 大小 ${html.length} 字符, 耗时 ${responseTime}ms`);
 
-    // 1. 修正：使用更精确的正则表达式匹配真正的noscript标签
-    // 确保匹配 <noscript> 标签，并且里面包含 noscript=1
-    const noscriptMatch = html.match(/<noscript[^>]*>([\s\S]*?)<\/noscript>/i);
-    const hasNoscriptRedirect = noscriptMatch && 
-                               /noscript=1/i.test(noscriptMatch[1]) &&
-                               /http-equiv=["']?refresh["']?/i.test(noscriptMatch[1]);
-
-    // 2. 同时检查删除页面的其他特征
-    const hasDeletionText = 
-      html.includes('此项目已删除') ||
-      html.includes('This item was deleted') ||
-      html.includes('deleted files') ||
-      html.includes('已删除的文件') ||
-      html.includes('找不到此项目');
-
-    // 3. 检查正常页面特征
-    const hasNormalContent = 
-      html.includes('file_viewer') ||
-      html.includes('folder_contents') ||
-      html.includes('shared with you') ||
-      html.includes('查看文件夹') ||
-      html.includes('下载') ||
-      html.includes('download');
-
-    console.log(`[检测器-特征] Noscript重定向:${hasNoscriptRedirect}, 删除文本:${hasDeletionText}, 正常内容:${hasNormalContent}`);
-
-    // 决策逻辑
-    if (hasNoscriptRedirect || hasDeletionText) {
-      // 如果是删除页面，应该没有正常内容
-      if (!hasNormalContent) {
-        console.log(`[检测器-结论] 检测到删除特征，设为无效`);
-        return {
-          valid: false,
-          status: response.status,
-          timestamp: new Date().toISOString(),
-          message: 'This item has been deleted.',
-          reason: 'CONTENT_DELETED'
-        };
-      }
-    }
-
-    // 如果有正常内容，或者页面可访问但没有删除特征，设为有效
-    if (hasNormalContent || (response.status >= 200 && response.status < 300)) {
-      console.log(`[检测器-结论] 页面可访问，设为有效`);
+    // --- 策略1: 字符串搜索法 ---
+    const strategy1 = detectByStringSearch(html);
+    
+    // --- 策略2: 正则表达式法 ---
+    const strategy2 = detectByRegex(html);
+    
+    // --- 策略3: 特征组合法 ---
+    const strategy3 = detectByFeatureCombination(html);
+    
+    console.log(`[特征检测器-策略结果] 策略1:${strategy1}, 策略2:${strategy2}, 策略3:${strategy3}`);
+    
+    // --- 综合决策逻辑 ---
+    const scores = {
+      deleted: 0,
+      normal: 0,
+      unknown: 0
+    };
+    
+    // 统计各策略结果
+    [strategy1, strategy2, strategy3].forEach(result => {
+      scores[result]++;
+    });
+    
+    console.log(`[特征检测器-得分] 删除:${scores.deleted}, 正常:${scores.normal}, 未知:${scores.unknown}`);
+    
+    // 决策规则：至少有两个策略给出相同结论
+    if (scores.deleted >= 2) {
+      console.log(`[特征检测器-结论] 高置信度：页面已删除`);
+      return {
+        valid: false,
+        status: response.status,
+        timestamp: new Date().toISOString(),
+        message: 'This item has been deleted (based on PAGE_INIT_DATA features).',
+        reason: 'PAGE_FEATURE_DELETED',
+        confidence: 'HIGH',
+        detection_method: 'page_feature_analysis'
+      };
+    } else if (scores.normal >= 2) {
+      console.log(`[特征检测器-结论] 高置信度：页面正常`);
       return {
         valid: true,
         status: response.status,
         timestamp: new Date().toISOString(),
-        message: 'Link is accessible and appears valid.',
-        reason: 'CONTENT_VALID'
+        message: 'Link is valid and contains normal file content.',
+        reason: 'PAGE_FEATURE_NORMAL',
+        confidence: 'HIGH',
+        detection_method: 'page_feature_analysis'
       };
+    } else if (scores.deleted === 1 && scores.normal === 0 && scores.unknown === 2) {
+      // 只有一个策略检测到删除，但其他策略未知
+      console.log(`[特征检测器-结论] 中等置信度：可能已删除`);
+      return {
+        valid: false,
+        status: response.status,
+        timestamp: new Date().toISOString(),
+        message: 'This item appears to be deleted (partial feature match).',
+        reason: 'PAGE_FEATURE_POSSIBLY_DELETED',
+        confidence: 'MEDIUM',
+        detection_method: 'page_feature_analysis'
+      };
+    } else if (scores.normal === 1 && scores.deleted === 0 && scores.unknown === 2) {
+      // 只有一个策略检测到正常，但其他策略未知
+      console.log(`[特征检测器-结论] 中等置信度：可能正常`);
+      return {
+        valid: true,
+        status: response.status,
+        timestamp: new Date().toISOString(),
+        message: 'Link appears to be valid (partial feature match).',
+        reason: 'PAGE_FEATURE_POSSIBLY_NORMAL',
+        confidence: 'MEDIUM',
+        detection_method: 'page_feature_analysis'
+      };
+    } else {
+      // 无法确定，回退到HTTP状态检查
+      console.log(`[特征检测器-结论] 置信度低：无法确定页面状态`);
+      
+      if (response.status >= 200 && response.status < 300) {
+        return {
+          valid: true,
+          status: response.status,
+          timestamp: new Date().toISOString(),
+          message: 'Link is accessible, but page type could not be determined.',
+          reason: 'ACCESSIBLE_BUT_UNDETERMINED',
+          confidence: 'LOW',
+          detection_method: 'http_status_only'
+        };
+      } else {
+        return {
+          valid: false,
+          status: response.status,
+          timestamp: new Date().toISOString(),
+          message: `Link returned error status ${response.status}`,
+          reason: `HTTP_${response.status}`,
+          confidence: 'LOW',
+          detection_method: 'http_status_only'
+        };
+      }
     }
 
-    return {
-      valid: false,
-      status: response.status,
-      timestamp: new Date().toISOString(),
-      message: `Link returned error status ${response.status}`,
-      reason: `HTTP_${response.status}`
-    };
-
   } catch (error) {
-    console.error(`[检测器-错误] ${error.message}`);
+    console.error(`[特征检测器-错误] ${error.message}`);
     
     let reason = 'NETWORK_ERROR';
     let message = 'Network request failed.';
@@ -121,8 +163,184 @@ async function checkLinkValidity(url) {
       status: error.response?.status || 0,
       timestamp: new Date().toISOString(),
       message: message,
-      reason: reason
+      reason: reason,
+      confidence: 'LOW',
+      detection_method: 'error_fallback'
     };
+  }
+}
+
+/**
+ * 策略1: 字符串搜索法
+ * 搜索HTML中是否同时包含特定字符串特征
+ */
+function detectByStringSearch(html) {
+  // 删除页面特征
+  const deletedPageFeatures = [
+    '"file_viewer"',  // edison_atlasservlet
+    'scl_oboe_folder' // edison_page_name
+  ];
+  
+  // 正常页面特征
+  const normalPageFeatures = [
+    '"files_app"',        // edison_atlasservlet
+    'edison_browse_atlas' // edison_page_name
+  ];
+  
+  // 检查删除页面特征
+  const deletedMatches = deletedPageFeatures.filter(feature => html.includes(feature));
+  const deletedMatchCount = deletedMatches.length;
+  
+  // 检查正常页面特征
+  const normalMatches = normalPageFeatures.filter(feature => html.includes(feature));
+  const normalMatchCount = normalMatches.length;
+  
+  console.log(`[策略1-字符串搜索] 删除特征匹配: ${deletedMatchCount}/${deletedPageFeatures.length}, 正常特征匹配: ${normalMatchCount}/${normalPageFeatures.length}`);
+  
+  if (deletedMatchCount >= 2) {
+    return 'deleted';
+  } else if (normalMatchCount >= 2) {
+    return 'normal';
+  } else {
+    return 'unknown';
+  }
+}
+
+/**
+ * 策略2: 正则表达式法
+ * 使用正则表达式匹配PAGE_INIT_DATA中的特征值
+ */
+function detectByRegex(html) {
+  // 定义特征正则表达式
+  const featurePatterns = {
+    edison_atlasservlet: /"edison_atlasservlet"\s*:\s*"([^"]+)"/i,
+    edison_page_name: /"edison_page_name"\s*:\s*"([^"]+)"/i,
+    yaps_project: /"yaps_project"\s*:\s*"([^"]+)"/i
+  };
+  
+  const features = {};
+  let matchCount = 0;
+  
+  // 提取特征
+  for (const [key, pattern] of Object.entries(featurePatterns)) {
+    const match = html.match(pattern);
+    if (match && match[1]) {
+      features[key] = match[1];
+      matchCount++;
+    }
+  }
+  
+  console.log(`[策略2-正则匹配] 匹配到 ${matchCount} 个特征:`, features);
+  
+  if (matchCount === 0) {
+    return 'unknown';
+  }
+  
+  // 删除页面特征组合
+  const deletedFeatureCombinations = [
+    { edison_atlasservlet: 'file_viewer', edison_page_name: 'scl_oboe_folder' },
+    { yaps_project: 'edison_atlasservlet.file_viewer-edison' }
+  ];
+  
+  // 正常页面特征组合
+  const normalFeatureCombinations = [
+    { edison_atlasservlet: 'files_app', edison_page_name: 'edison_browse_atlas' },
+    { yaps_project: 'edison_atlasservlet.files_app-edison' }
+  ];
+  
+  // 检查删除页面特征
+  let deletedScore = 0;
+  for (const combo of deletedFeatureCombinations) {
+    let matches = 0;
+    for (const [key, value] of Object.entries(combo)) {
+      if (features[key] === value) {
+        matches++;
+      }
+    }
+    if (matches === Object.keys(combo).length) {
+      deletedScore++;
+    }
+  }
+  
+  // 检查正常页面特征
+  let normalScore = 0;
+  for (const combo of normalFeatureCombinations) {
+    let matches = 0;
+    for (const [key, value] of Object.entries(combo)) {
+      if (features[key] === value) {
+        matches++;
+      }
+    }
+    if (matches === Object.keys(combo).length) {
+      normalScore++;
+    }
+  }
+  
+  console.log(`[策略2-得分] 删除:${deletedScore}, 正常:${normalScore}`);
+  
+  if (deletedScore > normalScore) {
+    return 'deleted';
+  } else if (normalScore > deletedScore) {
+    return 'normal';
+  } else {
+    return 'unknown';
+  }
+}
+
+/**
+ * 策略3: 特征组合法
+ * 提取页面中的关键特征组合，计算得分
+ */
+function detectByFeatureCombination(html) {
+  // 特征权重定义
+  const featureWeights = {
+    // 删除页面特征
+    deleted: {
+      'file_viewer': 3,  // edison_atlasservlet
+      'scl_oboe_folder': 3,  // edison_page_name
+      'scl_oboe_folder_bundle_amd': 2,  // 模块路径
+      'edison_atlasservlet.file_viewer-edison': 2  // yaps_project
+    },
+    // 正常页面特征
+    normal: {
+      'files_app': 3,  // edison_atlasservlet
+      'edison_browse_atlas': 3,  // edison_page_name
+      'edison_browse_atlas_bundle_amd': 2,  // 模块路径
+      'edison_atlasservlet.files_app-edison': 2  // yaps_project
+    }
+  };
+  
+  // 计算得分
+  let deletedScore = 0;
+  let normalScore = 0;
+  
+  // 检查删除页面特征
+  for (const [feature, weight] of Object.entries(featureWeights.deleted)) {
+    if (html.includes(feature)) {
+      deletedScore += weight;
+      console.log(`[策略3] 删除特征匹配: ${feature} (+${weight})`);
+    }
+  }
+  
+  // 检查正常页面特征
+  for (const [feature, weight] of Object.entries(featureWeights.normal)) {
+    if (html.includes(feature)) {
+      normalScore += weight;
+      console.log(`[策略3] 正常特征匹配: ${feature} (+${weight})`);
+    }
+  }
+  
+  console.log(`[策略3-得分] 删除:${deletedScore}, 正常:${normalScore}`);
+  
+  // 决策阈值
+  const THRESHOLD = 3;
+  
+  if (deletedScore >= THRESHOLD && deletedScore > normalScore) {
+    return 'deleted';
+  } else if (normalScore >= THRESHOLD && normalScore > deletedScore) {
+    return 'normal';
+  } else {
+    return 'unknown';
   }
 }
 
@@ -152,18 +370,16 @@ async function getLinkStatus(folderId) {
 }
 
 // ----- API 端点 -----
-// 健康检查端点
 app.get('/api/health', (req, res) => {
   res.json({
     status: 'healthy',
     service: 'dropbox-file-center',
-    mode: 'noscript_enhanced_detection',
+    mode: 'page_feature_detection_v1',
     timestamp: new Date().toISOString(),
     available_folders: Object.keys(MANUAL_SHARE_LINKS)
   });
 });
 
-// 获取特定文件夹链接状态
 app.get('/api/link/:folderId', async (req, res) => {
   const folderId = req.params.folderId;
   
@@ -185,7 +401,6 @@ app.get('/api/link/:folderId', async (req, res) => {
   });
 });
 
-// 获取所有链接状态
 app.get('/api/links/status', async (req, res) => {
   try {
     const linkStatus = {};
@@ -217,11 +432,13 @@ app.use(express.static(path.join(__dirname, 'public')));
 // 启动服务器
 app.listen(PORT, () => {
   console.log('='.repeat(50));
-  console.log('🚀 Dropbox 文件中心 - 增强检测版');
+  console.log('🚀 Dropbox 文件中心 - 页面特征检测版');
   console.log(`📡 端口: ${PORT}`);
-  console.log(`🔍 检测模式: Noscript重定向 + 文本特征`);
+  console.log(`🔍 模式: 基于PAGE_INIT_DATA特征的页面状态识别`);
   console.log('='.repeat(50));
-  console.log(`👉 前端访问: http://localhost:${PORT}`);
-  console.log(`🩺 健康检查: http://localhost:${PORT}/api/health`);
+  console.log('📊 检测策略:');
+  console.log('  1. 字符串搜索法 - 搜索关键特征字符串');
+  console.log('  2. 正则表达式法 - 匹配特征值组合');
+  console.log('  3. 特征组合法 - 加权得分系统');
   console.log('='.repeat(50));
 });
