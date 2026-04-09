@@ -13,304 +13,259 @@ app.use(express.json());
 
 // 手动配置的Dropbox永久分享链接
 const MANUAL_SHARE_LINKS = {
-    // 原来的 whalesbot 和 test 文件夹保持不变
-    whalesbot: "https://www.dropbox.com/scl/fo/xxx/xxx?rlkey=xxx&dl=0", // 您原来的 whalesbot 链接
-    
-    // 新增三个 ENJOY AI 文件夹
-    enjoy_ai_2024: "https://www.dropbox.com/scl/fo/eeqc5juvic7n5zk53brsg/AO2GEQnqWO7YYf51XIG9ges?rlkey=kuzygnod4zlqkdi6w7xo362ke&st=hdnsbxtc&dl=0",
-    enjoy_ai_2025: "https://www.dropbox.com/scl/fo/luu9d5ouxb6t20nw854kj/AGngS2DwNoUnduQ6CkmX_fA?rlkey=wyddybmqhek79tltq2jt85b3a&st=i07qs1f5&dl=0",
-    enjoy_ai_2026: "https://www.dropbox.com/scl/fo/luu9d5ouxb6t20nw854kj/AGngS2DwNoUnduQ6CkmX_fA?rlkey=wyddybmqhek79tltq2jt85b3a&st=ex63b32v&dl=0",
-    
-    // 原来的 test 文件夹保持不变
-    test: "https://www.dropbox.com/scl/fo/xxx/xxx?rlkey=xxx&dl=0" // 您原来的 test 链接
+  'enjoy_ai': 'https://www.dropbox.com/scl/fo/xhuafhd7lvzct5qou5exc/APsv0VSGbS0sL2h5q86sxrE?rlkey=wulgqtxyjifm67ymdhj881u66&st=h5z3paub&dl=0',
+  'whalesbot': 'https://www.dropbox.com/scl/fo/dm9mk69c56v8o554r11wv/AGjzYhC_2KXZ6xXkLc88k_g?rlkey=67t99jd9gms79e2ato24ee727&st=rhn2cwhy&dl=0',
+  'test': 'https://www.dropbox.com/scl/fo/jfm93u99iubtds6w4vg4w/AO7Ht-rwUHc7W5oaojNep2o?rlkey=bjvwfmx9tq8oa6v67iw3zyapp&st=o03vu2pi&dl=0'
 };
 
 // 链接状态缓存
 let linkStatusCache = {};
 const CACHE_DURATION = 5 * 60 * 1000; // 5分钟缓存
 
-// 检测单个链接是否有效的函数 (增强版 - 适配Dropbox新失效界面)
+// 检测单个链接是否有效的函数 (增强版)
 async function checkLinkValidity(url) {
-    try {
-        console.log(`正在检测链接有效性: ${url}`);
-        
-        const response = await axios.get(url, {
-            timeout: 15000, // 15秒超时
-            maxRedirects: 10,
-            headers: {
-                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-                'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
-                'Accept-Language': 'en-US,en;q=0.9',
-                'Accept-Encoding': 'gzip, deflate, br',
-                'Cache-Control': 'no-cache',
-                'Pragma': 'no-cache'
-            }
-        });
-        
-        const statusCode = response.status;
-        const htmlContent = response.data;
-        const lowerCaseHtml = htmlContent.toLowerCase();
-        
-        // 检查是否是 Dropbox 页面
-        const isDropboxPage = lowerCaseHtml.includes('dropbox.com') || 
-                              lowerCaseHtml.includes('dropbox') ||
-                              htmlContent.includes('Dropbox');
-        
-        if (!isDropboxPage) {
-            console.log('链接不指向 Dropbox 页面');
-            return {
-                valid: false,
-                status: statusCode,
-                timestamp: Date.now(),
-                message: '链接不指向有效的 Dropbox 页面',
-                reason: 'NOT_DROPBOX'
-            };
-        }
-        
-        // 检查是否包含常见的失效提示关键词 (中英文) - 更新版
-        const failureIndicators = [
-            // 中文失效提示（针对Dropbox新界面）
-            '这个链接有点问题',
-            '链接未完全正确复制',
-            '返回文件',
-            '此项目已删除', '该项目已删除', '已删除', '不存在', 
-            '您没有访问权限', '找不到此文件', '文件不存在',
-            '已取消分享', '分享已取消', '链接失效', '访问被拒绝',
-            '页面不存在', '文件或文件夹不存在', '分享链接已失效',
-            '链接无效', '无法访问', '错误', '该项目已不存在',
-            
-            // 英文失效提示
-            'This link isn\'t working',
-            'link wasn\'t copied completely correctly',
-            'Back to files',
-            'not found', 'deleted', 'no longer available', 
-            'don\'t have permission', 'shared link has been disabled', 
-            'couldn\'t be found', 'This file was deleted', 
-            'The file you\'re looking for', 'removed', 'access denied',
-            'file not found', 'folder not found', 'page not found',
-            'doesn\'t exist', 'invalid link', 'expired', 'unavailable',
-            'shared link is not valid', 'The shared link is malformed',
-            'The shared link has expired', 'The owner has disabled the link',
-            'The owner has removed the file',
-            
-            // 通用的错误消息
-            'Error (404)', '404 Not Found', 'Nothing here',
-            'The file you\'re looking for has been deleted or moved',
-            'This file is no longer available',
-            'You don\'t have permission to view this file',
-            'The folder you\'re looking for doesn\'t exist',
-            'The requested file could not be found'
-        ];
-        
-        const isContentDeleted = failureIndicators.some(indicator => 
-            htmlContent.includes(indicator) || lowerCaseHtml.includes(indicator.toLowerCase())
-        );
-        
-        if (isContentDeleted) {
-            console.log('链接检测为失效');
-            
-            // 根据关键词确定更具体的失败原因
-            let failureReason = 'CONTENT_DELETED_OR_NO_PERMISSION';
-            if (htmlContent.includes('这个链接有点问题') || htmlContent.includes('This link isn\'t working')) {
-                failureReason = 'LINK_PROBLEM';
-            } else if (htmlContent.includes('您没有访问权限') || htmlContent.includes('access denied') || htmlContent.includes('don\'t have permission')) {
-                failureReason = 'ACCESS_DENIED';
-            } else if (htmlContent.includes('链接失效') || htmlContent.includes('expired') || htmlContent.includes('invalid link')) {
-                failureReason = 'LINK_EXPIRED_OR_INVALID';
-            } else if (htmlContent.includes('取消') || htmlContent.includes('disabled')) {
-                failureReason = 'LINK_DISABLED';
-            }
-            
-            return {
-                valid: false,
-                status: response.status,
-                timestamp: Date.now(),
-                message: '链接可能已失效或无权访问',
-                reason: failureReason
-            };
-        }
-        
-        // 额外检查：Dropbox特定的成功标识
-        const successIndicators = [
-            '正在加载', 'loading', '查看文件夹', 'view folder', 
-            '下载', 'download', '文件', 'files', '文件夹', 'folder',
-            '预览', 'preview', 'items', '个项目', '共享文件夹', 
-            'shared folder', 'Dropbox', 'dropbox', 'Open in Dropbox',
-            'Sign in to Dropbox'
-        ];
-        
-        const hasSuccessIndicator = successIndicators.some(indicator =>
-            htmlContent.toLowerCase().includes(indicator.toLowerCase())
-        );
-        
-        if (hasSuccessIndicator) {
-            console.log('链接检测为有效');
-            return {
-                valid: true,
-                status: response.status,
-                timestamp: Date.now(),
-                message: '链接内容有效'
-            };
-        }
-        
-        // 默认情况下，如果页面是Dropbox但没有明显失败或成功标识，我们假设有效
-        console.log('链接状态不确定，默认判定为有效');
-        return {
-            valid: true,
-            status: response.status,
-            timestamp: Date.now(),
-            message: '链接可访问',
-            note: '未检测到明确的有效性标识，但页面可访问'
-        };
-        
-    } catch (error) {
-        console.error(`链接检测失败: ${url}`, error.message);
-        
-        // 根据错误类型提供更具体的失效原因
-        let reason = 'NETWORK_ERROR';
-        let message = '网络请求失败';
-        
-        if (error.code === 'ECONNABORTED') {
-            reason = 'TIMEOUT';
-            message = '请求超时';
-        } else if (error.response) {
-            reason = `HTTP_${error.response.status}`;
-            message = `服务器返回错误: ${error.response.status}`;
-        }
-        
-        return {
-            valid: false,
-            error: error.message,
-            status: error.response?.status || 0,
-            timestamp: Date.now(),
-            message: message,
-            reason: reason
-        };
+  try {
+    // 发送GET请求，获取页面内容以便分析
+    const response = await axios.get(url, {
+      timeout: 15000, // 15秒超时
+      maxRedirects: 5,
+      validateStatus: function (status) {
+        return status < 500; // 接受除服务器错误外的所有状态码
+      }
+    });
+    
+    const htmlContent = response.data;
+    const isDropboxPage = htmlContent.includes('dropbox.com') || htmlContent.includes('Dropbox');
+    
+    if (!isDropboxPage) {
+      // 如果不是Dropbox页面，可能重定向到了错误页
+      return {
+        valid: false,
+        status: response.status,
+        timestamp: new Date().toISOString(),
+        message: '链接未指向Dropbox有效页面',
+        reason: 'NOT_DROPBOX'
+      };
     }
+    
+    // 检查是否包含常见的失效提示关键词 (中英文)
+    const failureIndicators = [
+      '此项目已删除',
+      '该项目已删除',
+      '已删除',
+      '不存在',
+      'not found',
+      'deleted',
+      'removed',
+      'no longer available',
+      '您没有访问权限',
+      'don\'t have permission',
+      '找不到此文件',
+      '文件不存在',
+      'This file was deleted',
+      'The file you\'re looking for',
+      'couldn\'t be found',
+      '已取消分享',
+      '分享已取消',
+      'shared link has been disabled',
+      'shared link is not valid'
+    ];
+    
+    const isContentDeleted = failureIndicators.some(indicator => 
+      htmlContent.toLowerCase().includes(indicator.toLowerCase())
+    );
+    
+    if (isContentDeleted) {
+      return {
+        valid: false,
+        status: response.status,
+        timestamp: new Date().toISOString(),
+        message: '链接指向的内容可能已被删除或无权访问',
+        reason: 'CONTENT_DELETED_OR_NO_PERMISSION'
+      };
+    }
+    
+    // 额外检查：Dropbox特定的成功标识
+    const successIndicators = [
+      '正在加载',
+      'loading',
+      '查看文件夹',
+      'view folder',
+      '下载',
+      'download',
+      '文件',
+      'files',
+      '文件夹',
+      'folder'
+    ];
+    
+    const hasSuccessIndicator = successIndicators.some(indicator =>
+      htmlContent.toLowerCase().includes(indicator.toLowerCase())
+    );
+    
+    if (hasSuccessIndicator) {
+      return {
+        valid: true,
+        status: response.status,
+        timestamp: new Date().toISOString(),
+        message: '链接内容有效'
+      };
+    }
+    
+    // 默认情况下，如果页面是Dropbox但没有明显失败或成功标识，我们假设有效
+    return {
+      valid: true,
+      status: response.status,
+      timestamp: new Date().toISOString(),
+      message: '链接可访问',
+      note: '未检测到明确的有效性标识，但页面可访问'
+    };
+    
+  } catch (error) {
+    console.error(`链接检测失败: ${url}`, error.message);
+    
+    // 根据错误类型提供更具体的失效原因
+    let reason = 'NETWORK_ERROR';
+    let message = '网络请求失败';
+    
+    if (error.code === 'ECONNABORTED') {
+      reason = 'TIMEOUT';
+      message = '请求超时';
+    } else if (error.response) {
+      reason = `HTTP_${error.response.status}`;
+      message = `服务器返回错误: ${error.response.status}`;
+    }
+    
+    return {
+      valid: false,
+      error: error.message,
+      status: error.response?.status || 0,
+      timestamp: new Date().toISOString(),
+      message: message,
+      reason: reason
+    };
+  }
 }
 
 // 获取链接状态（带缓存）
 async function getLinkStatus(folderId) {
-    const url = MANUAL_SHARE_LINKS[folderId];
-    if (!url) {
-        return { 
-            valid: false, 
-            error: '链接未配置', 
-            timestamp: Date.now(),
-            reason: 'NOT_CONFIGURED'
-        };
-    }
+  const url = MANUAL_SHARE_LINKS[folderId];
+  if (!url) {
+    return { 
+      valid: false, 
+      error: '链接未配置', 
+      timestamp: new Date().toISOString(),
+      reason: 'NOT_CONFIGURED'
+    };
+  }
 
-    const cacheKey = folderId;
-    const now = Date.now();
-    
-    // 检查缓存
-    if (linkStatusCache[cacheKey] && 
-        now - linkStatusCache[cacheKey].timestamp < CACHE_DURATION) {
-        console.log(`使用缓存中的链接状态: ${folderId}`);
-        return linkStatusCache[cacheKey];
-    }
+  const cacheKey = folderId;
+  const now = Date.now();
+  
+  // 检查缓存
+  if (linkStatusCache[cacheKey] && 
+      now - linkStatusCache[cacheKey].timestamp < CACHE_DURATION) {
+    return linkStatusCache[cacheKey];
+  }
 
-    // 重新检测
-    console.log(`重新检测链接状态: ${folderId}`);
-    const status = await checkLinkValidity(url);
-    linkStatusCache[cacheKey] = status;
-    return status;
+  // 重新检测
+  const status = await checkLinkValidity(url);
+  linkStatusCache[cacheKey] = status;
+  return status;
 }
 
 // 健康检查端点
 app.get('/api/health', (req, res) => {
-    res.json({
-        status: 'healthy',
-        service: 'dropbox-permanent-link-service',
-        mode: 'manual_links_with_validation',
-        timestamp: new Date().toISOString(),
-        available_folders: Object.keys(MANUAL_SHARE_LINKS)
-    });
+  res.json({
+    status: 'healthy',
+    service: 'dropbox-permanent-link-service',
+    mode: 'manual_links_with_validation',
+    timestamp: new Date().toISOString(),
+    available_folders: Object.keys(MANUAL_SHARE_LINKS)
+  });
 });
 
 // 获取链接的主要API
 app.get('/api/link/:folderId', async (req, res) => {
-    const folderId = req.params.folderId;
-    
-    console.log(`请求链接: ${folderId} (IP: ${req.ip})`);
-    
-    if (!MANUAL_SHARE_LINKS[folderId]) {
-        return res.status(404).json({ 
-            error: '文件夹不存在',
-            message: `未配置的文件夹ID: '${folderId}'`,
-            available_ids: Object.keys(MANUAL_SHARE_LINKS)
-        });
-    }
-    
-    // 检测链接是否有效
-    const validity = await getLinkStatus(folderId);
-    
-    if (!validity.valid) {
-        return res.status(503).json({
-            error: '当前文件链接已失效',
-            code: 'LINK_EXPIRED',
-            status: validity.status,
-            details: validity.message,
-            reason: validity.reason,
-            timestamp: new Date().toISOString()
-        });
-    }
-    
-    const dropboxLink = MANUAL_SHARE_LINKS[folderId];
-    
-    res.json({
-        folderId,
-        url: dropboxLink,
-        source: 'manual_preconfigured',
-        note: '此链接为手动生成并预配置的Dropbox永久分享链接',
-        timestamp: new Date().toISOString()
+  const folderId = req.params.folderId;
+  
+  console.log(`请求链接: ${folderId} (IP: ${req.ip})`);
+  
+  if (!MANUAL_SHARE_LINKS[folderId]) {
+    return res.status(404).json({ 
+      error: '文件夹不存在',
+      message: `未配置的文件夹ID: '${folderId}'`,
+      available_ids: Object.keys(MANUAL_SHARE_LINKS)
     });
+  }
+  
+  // 检测链接是否有效
+  const validity = await getLinkStatus(folderId);
+  
+  if (!validity.valid) {
+    return res.status(503).json({
+      error: '当前文件链接已失效',
+      code: 'LINK_EXPIRED',
+      status: validity.status,
+      details: validity.error,
+      timestamp: new Date().toISOString()
+    });
+  }
+  
+  const dropboxLink = MANUAL_SHARE_LINKS[folderId];
+  
+  res.json({
+    folderId,
+    url: dropboxLink,
+    source: 'manual_preconfigured',
+    note: '此链接为手动生成并预配置的Dropbox永久分享链接',
+    timestamp: new Date().toISOString()
+  });
 });
 
 // 新增：获取所有链接状态
 app.get('/api/links/status', async (req, res) => {
-    try {
-        const linkStatus = {};
-        
-        // 并行检查所有链接
-        const promises = Object.keys(MANUAL_SHARE_LINKS).map(async (key) => {
-            linkStatus[key] = await getLinkStatus(key);
-        });
-        
-        await Promise.all(promises);
-        
-        res.json({
-            success: true,
-            data: linkStatus,
-            timestamp: new Date().toISOString(),
-            cache: Object.keys(linkStatusCache).length > 0
-        });
-    } catch (error) {
-        console.error('检测链接状态时出错:', error);
-        res.status(500).json({
-            success: false,
-            error: '检测链接状态时出错',
-            timestamp: new Date().toISOString()
-        });
-    }
+  try {
+    const linkStatus = {};
+    
+    // 并行检查所有链接
+    const promises = Object.keys(MANUAL_SHARE_LINKS).map(async (key) => {
+      linkStatus[key] = await getLinkStatus(key);
+    });
+    
+    await Promise.all(promises);
+    
+    res.json({
+      success: true,
+      data: linkStatus,
+      timestamp: new Date().toISOString(),
+      cache: Object.keys(linkStatusCache).length > 0
+    });
+  } catch (error) {
+    console.error('检测链接状态时出错:', error);
+    res.status(500).json({
+      success: false,
+      error: '检测链接状态时出错',
+      timestamp: new Date().toISOString()
+    });
+  }
 });
 
 // 列出所有可用文件夹
 app.get('/api/folders', (req, res) => {
-    const folderInfo = Object.keys(MANUAL_SHARE_LINKS).map(folderId => ({
-        id: folderId,
-        name: getFolderName(folderId),
-        url: `/api/link/${folderId}`,
-        configured: true
-    }));
-    
-    res.json({
-        folders: folderInfo,
-        count: folderInfo.length,
-        mode: 'manual_preconfigured_links',
-        timestamp: new Date().toISOString()
-    });
+  const folderInfo = Object.keys(MANUAL_SHARE_LINKS).map(folderId => ({
+    id: folderId,
+    name: getFolderName(folderId),
+    url: `/api/link/${folderId}`,
+    configured: true
+  }));
+  
+  res.json({
+    folders: folderInfo,
+    count: folderInfo.length,
+    mode: 'manual_preconfigured_links',
+    timestamp: new Date().toISOString()
+  });
 });
 
 // 静态文件服务 - 放在所有API路由之后
@@ -318,46 +273,44 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 // 重定向根路径到前端页面
 app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'index.html'));
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
 // 辅助函数：获取文件夹友好名称
 function getFolderName(folderId) {
-    const names = {
-        'whalesbot': 'WhalesBot',
-        'enjoy_ai_2024': 'ENJOY AI 2024',
-        'enjoy_ai_2025': 'ENJOY AI 2025',
-        'enjoy_ai_2026': 'ENJOY AI 2026',
-        'test': 'Test 文件夹'
-    };
-    return names[folderId] || folderId;
+  const names = {
+    'enjoy_ai': 'ENJOY AI',
+    'whalesbot': 'WhalesBot',
+    'test': 'Test 文件夹'
+  };
+  return names[folderId] || folderId;
 }
 
 // 处理未匹配的路由
 app.use((req, res) => {
-    res.status(404).json({
-        error: '端点不存在',
-        availableEndpoints: {
-            health: '/api/health',
-            getLink: '/api/link/:folderId',
-            linksStatus: '/api/links/status',
-            listFolders: '/api/folders',
-            frontend: '/ (前端页面)'
-        }
-    });
+  res.status(404).json({
+    error: '端点不存在',
+    availableEndpoints: {
+      health: '/api/health',
+      getLink: '/api/link/:folderId',
+      linksStatus: '/api/links/status',
+      listFolders: '/api/folders',
+      frontend: '/ (前端页面)'
+    }
+  });
 });
 
 // 启动服务器
 app.listen(PORT, () => {
-    console.log(`=========================================`);
-    console.log(`🚀 Dropbox永久链接服务已启动`);
-    console.log(`📡 端口: ${PORT}`);
-    console.log(`🔗 已配置 ${Object.keys(MANUAL_SHARE_LINKS).length} 个永久链接`);
-    console.log(`🔍 链接验证: 增强版（适配Dropbox新界面）`);
-    console.log(`=========================================`);
-    console.log(`前端页面: http://localhost:${PORT}`);
-    console.log(`健康检查: http://localhost:${PORT}/api/health`);
-    console.log(`链接状态: http://localhost:${PORT}/api/links/status`);
-    console.log(`测试链接: http://localhost:${PORT}/api/link/test`);
-    console.log(`=========================================`);
+  console.log(`=========================================`);
+  console.log(`🚀 Dropbox永久链接服务已启动`);
+  console.log(`📡 端口: ${PORT}`);
+  console.log(`🔗 已配置 ${Object.keys(MANUAL_SHARE_LINKS).length} 个永久链接`);
+  console.log(`🔍 链接验证: 增强版（检测页面内容有效性）`);
+  console.log(`=========================================`);
+  console.log(`前端页面: http://localhost:${PORT}`);
+  console.log(`健康检查: http://localhost:${PORT}/api/health`);
+  console.log(`链接状态: http://localhost:${PORT}/api/links/status`);
+  console.log(`测试链接: http://localhost:${PORT}/api/link/test`);
+  console.log(`=========================================`);
 });
