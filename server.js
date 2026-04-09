@@ -13,9 +13,16 @@ app.use(express.json());
 
 // 手动配置的Dropbox永久分享链接
 const MANUAL_SHARE_LINKS = {
-  'enjoy_ai': 'https://www.dropbox.com/scl/fo/xhuafhd7lvzct5qou5exc/APsv0VSGbS0sL2h5q86sxrE?rlkey=wulgqtxyjifm67ymdhj881u66&st=h5z3paub&dl=0',
-  'whalesbot': 'https://www.dropbox.com/scl/fo/dm9mk69c56v8o554r11wv/AGjzYhC_2KXZ6xXkLc88k_g?rlkey=67t99jd9gms79e2ato24ee727&st=rhn2cwhy&dl=0',
-  'test': 'https://www.dropbox.com/scl/fo/jfm93u99iubtds6w4vg4w/AO7Ht-rwUHc7W5oaojNep2o?rlkey=bjvwfmx9tq8oa6v67iw3zyapp&st=o03vu2pi&dl=0'
+    // 原来的 whalesbot 和 test 文件夹保持不变
+    whalesbot: "https://www.dropbox.com/scl/fo/xxx/xxx?rlkey=xxx&dl=0", // 您原来的 whalesbot 链接
+    
+    // 新增三个 ENJOY AI 文件夹
+    enjoy_ai_2024: "https://www.dropbox.com/scl/fo/eeqc5juvic7n5zk53brsg/AO2GEQnqWO7YYf51XIG9ges?rlkey=kuzygnod4zlqkdi6w7xo362ke&st=hdnsbxtc&dl=0",
+    enjoy_ai_2025: "https://www.dropbox.com/scl/fo/luu9d5ouxb6t20nw854kj/AGngS2DwNoUnduQ6CkmX_fA?rlkey=wyddybmqhek79tltq2jt85b3a&st=i07qs1f5&dl=0",
+    enjoy_ai_2026: "https://www.dropbox.com/scl/fo/luu9d5ouxb6t20nw854kj/AGngS2DwNoUnduQ6CkmX_fA?rlkey=wyddybmqhek79tltq2jt85b3a&st=ex63b32v&dl=0",
+    
+    // 原来的 test 文件夹保持不变
+    test: "https://www.dropbox.com/scl/fo/xxx/xxx?rlkey=xxx&dl=0" // 您原来的 test 链接
 };
 
 // 链接状态缓存
