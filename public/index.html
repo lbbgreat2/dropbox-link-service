@@ -361,46 +361,90 @@
         </header>
         
         <main id="card-container" class="card-grid">
-            <!-- ENJOY AI 共享文件夹 -->
-            <div class="folder-card" data-folder-id="enjoy_ai">
+            <!-- ENJOY AI 2024 文件夹 -->
+            <div class="folder-card" data-folder-id="enjoy_ai_2024">
                 <div class="card-icon">
-                    <i class="fas fa-share-alt"></i>
+                    <i class="fas fa-calendar-alt"></i>
                 </div>
-                <h3 class="card-title"><span data-i18n-key="folder_enjoy">ENJOY AI</span>
-                    <span class="shared-badge" data-i18n-key="badge_shared">共享 • 5个项目</span>
+                <h3 class="card-title">ENJOY AI 2024
+                    <span class="shared-badge">共享 • 13个项目</span>
                 </h3>
-                <p class="card-desc" data-i18n-key="desc_enjoy_ai">ENJOY AI项目的共享文件夹。包含5个项目，包括项目文件、数据集和资源。</p>
+                <p class="card-desc">ENJOY AI 2024年全球总决赛材料。包含13个项目文件、数据集和资源。</p>
                 <div class="card-meta">
-                    <i class="fas fa-users"></i> <span data-i18n-key="meta_shared">共享文件夹</span>
+                    <i class="fas fa-users"></i> 共享文件夹
                 </div>
-                <button class="access-btn" onclick="handleFolderClick('enjoy_ai')">
+                <button class="access-btn" onclick="handleFolderClick('enjoy_ai_2024')">
                     <span class="btn-text" data-i18n-key="btn_open">打开文件夹</span>
                 </button>
                 <div class="link-status">
-                    <span id="status-enjoy_ai" class="status-text status-checking">
-                        <i class="fas fa-spinner fa-spin"></i> <span data-i18n-key="status_checking_short">检测中...</span>
+                    <span id="status-enjoy_ai_2024" class="status-text status-checking">
+                        <i class="fas fa-spinner fa-spin"></i> 检测中...
                     </span>
                 </div>
             </div>
             
-            <!-- WhalesBot 共享文件夹 -->
+            <!-- ENJOY AI 2025 文件夹 -->
+            <div class="folder-card" data-folder-id="enjoy_ai_2025">
+                <div class="card-icon">
+                    <i class="fas fa-calendar-alt"></i>
+                </div>
+                <h3 class="card-title">ENJOY AI 2025
+                    <span class="shared-badge">共享 • 11个项目</span>
+                </h3>
+                <p class="card-desc">ENJOY AI 2025年项目材料。包含11个项目文件、代码和资源。</p>
+                <div class="card-meta">
+                    <i class="fas fa-users"></i> 共享文件夹
+                </div>
+                <button class="access-btn" onclick="handleFolderClick('enjoy_ai_2025')">
+                    <span class="btn-text" data-i18n-key="btn_open">打开文件夹</span>
+                </button>
+                <div class="link-status">
+                    <span id="status-enjoy_ai_2025" class="status-text status-checking">
+                        <i class="fas fa-spinner fa-spin"></i> 检测中...
+                    </span>
+                </div>
+            </div>
+            
+            <!-- ENJOY AI 2026 文件夹 -->
+            <div class="folder-card" data-folder-id="enjoy_ai_2026">
+                <div class="card-icon">
+                    <i class="fas fa-calendar-alt"></i>
+                </div>
+                <h3 class="card-title">ENJOY AI 2026
+                    <span class="shared-badge">共享 • 3个项目</span>
+                </h3>
+                <p class="card-desc">ENJOY AI 2026年项目材料。包含3个项目文件和资源。</p>
+                <div class="card-meta">
+                    <i class="fas fa-users"></i> 共享文件夹
+                </div>
+                <button class="access-btn" onclick="handleFolderClick('enjoy_ai_2026')">
+                    <span class="btn-text" data-i18n-key="btn_open">打开文件夹</span>
+                </button>
+                <div class="link-status">
+                    <span id="status-enjoy_ai_2026" class="status-text status-checking">
+                        <i class="fas fa-spinner fa-spin"></i> 检测中...
+                    </span>
+                </div>
+            </div>
+            
+            <!-- WhalesBot 共享文件夹（保持不变） -->
             <div class="folder-card" data-folder-id="whalesbot">
                 <div class="card-icon">
                     <i class="fas fa-robot"></i>
                 </div>
-                <h3 class="card-title"><span data-i18n-key="folder_whale">WhalesBot</span>
-                    <span class="shared-badge" data-i18n-key="badge_shared">共享 • 5个项目</span>
+                <h3 class="card-title">WhalesBot
+                    <span class="shared-badge">共享 • 5个项目</span>
                 </h3>
-                <p class="card-desc" data-i18n-key="desc_whalesbot">WhalesBot项目的共享文件夹。包含14个项目，包括代码、资源和项目文件。</p>
+                <p class="card-desc">WhalesBot项目的共享文件夹。包含14个项目，包括代码、资源和项目文件。</p>
                 <div class="card-meta">
-                    <i class="fas fa-users"></i> <span data-i18n-key="meta_shared">共享文件夹</span>
+                    <i class="fas fa-users"></i> 共享文件夹
                 </div>
                 <button class="access-btn" onclick="handleFolderClick('whalesbot')">
                     <span class="btn-text" data-i18n-key="btn_open">打开文件夹</span>
                 </button>
                 <div class="link-status">
                     <span id="status-whalesbot" class="status-text status-checking">
-                        <i class="fas fa-spinner fa-spin"></i> <span data-i18n-key="status_checking_short">检测中...</span>
+                        <i class="fas fa-spinner fa-spin"></i> 检测中...
                     </span>
                 </div>
             </div>
@@ -410,19 +454,19 @@
                 <div class="card-icon">
                     <i class="fas fa-vial"></i>
                 </div>
-                <h3 class="card-title"><span data-i18n-key="folder_test">Test 文件夹</span>
-                    <span class="test-badge" data-i18n-key="badge_test">测试 • 检测功能</span>
+                <h3 class="card-title">Test 文件夹
+                    <span class="test-badge">测试 • 检测功能</span>
                 </h3>
-                <p class="card-desc" data-i18n-key="desc_test">用于测试链接失效检测功能的文件夹。您可以删除Dropbox中的分享链接来测试检测功能。</p>
+                <p class="card-desc">用于测试链接失效检测功能的文件夹。您可以删除Dropbox中的分享链接来测试检测功能。</p>
                 <div class="card-meta">
-                    <i class="fas fa-flask"></i> <span data-i18n-key="meta_test">测试文件夹</span>
+                    <i class="fas fa-flask"></i> 测试文件夹
                 </div>
                 <button class="access-btn" onclick="handleFolderClick('test')">
                     <span class="btn-text" data-i18n-key="btn_open_test">打开测试文件夹</span>
                 </button>
                 <div class="link-status">
                     <span id="status-test" class="status-text status-checking">
-                        <i class="fas fa-spinner fa-spin"></i> <span data-i18n-key="status_checking_short">检测中...</span>
+                        <i class="fas fa-spinner fa-spin"></i> 检测中...
                     </span>
                 </div>
             </div>
@@ -441,7 +485,8 @@
     <script>
         const API_BASE_URL = window.location.origin;
         let linkStatusCache = {};
-        const CURRENT_FOLDER_IDS = ['enjoy_ai', 'whalesbot', 'test'];
+        // 更新文件夹ID列表，移除 enjoy_ai，添加三个新的文件夹
+        const CURRENT_FOLDER_IDS = ['enjoy_ai_2024', 'enjoy_ai_2025', 'enjoy_ai_2026', 'whalesbot', 'test'];
         
         // ==================== 语言资源定义 ====================
         const i18nResources = {
@@ -468,17 +513,21 @@
                 'status_network_error': '网络错误',
                 'status_unknown': '状态未知',
                 'status_fallback': '直接访问',
-                'desc_enjoy_ai': 'ENJOY AI项目的共享文件夹。包含5个项目，包括项目文件、数据集和资源。',
+                'desc_enjoy_ai_2024': 'ENJOY AI 2024年全球总决赛材料。包含13个项目文件、数据集和资源。',
+                'desc_enjoy_ai_2025': 'ENJOY AI 2025年项目材料。包含11个项目文件、代码和资源。',
+                'desc_enjoy_ai_2026': 'ENJOY AI 2026年项目材料。包含3个项目文件和资源。',
                 'desc_whalesbot': 'WhalesBot项目的共享文件夹。包含14个项目，包括代码、资源和项目文件。',
                 'desc_test': '用于测试链接失效检测功能的文件夹。您可以删除Dropbox中的分享链接来测试检测功能。',
                 'meta_shared': '共享文件夹',
                 'meta_test': '测试文件夹',
                 'badge_shared': '共享 • 5个项目',
                 'badge_test': '测试 • 检测功能',
-                'folder_enjoy': 'ENJOY AI',
+                'folder_enjoy_2024': 'ENJOY AI 2024',
+                'folder_enjoy_2025': 'ENJOY AI 2025',
+                'folder_enjoy_2026': 'ENJOY AI 2026',
                 'folder_whale': 'WhalesBot',
                 'folder_test': 'Test 文件夹',
-                'footer_copyright': '© 2026 Dropbox永久链接服务 | 智能链接验证版',
+                'footer_copyright': '© 2024 Dropbox永久链接服务 | 智能链接验证版',
                 'footer_note': '系统每5分钟自动检测链接状态，失效链接将被禁用并提示。',
                 'last_checked': '最后检测',
                 'error_link_expired': '链接已失效',
@@ -513,17 +562,21 @@
                 'status_network_error': 'Network Error',
                 'status_unknown': 'Status Unknown',
                 'status_fallback': 'Direct Access',
-                'desc_enjoy_ai': 'Shared folder for ENJOY AI projects. Contains 5 items including project files, datasets, and resources.',
+                'desc_enjoy_ai_2024': 'ENJOY AI 2024 Global Final Materials. Contains 13 project files, datasets, and resources.',
+                'desc_enjoy_ai_2025': 'ENJOY AI 2025 project materials. Contains 11 project files, code, and resources.',
+                'desc_enjoy_ai_2026': 'ENJOY AI 2026 project materials. Contains 3 project files and resources.',
                 'desc_whalesbot': 'Shared folder for WhalesBot projects. Contains 14 items including code, resources, and project files.',
                 'desc_test': 'Folder for testing link validation. You can delete the share link in Dropbox to test the detection feature.',
                 'meta_shared': 'Shared Folder',
                 'meta_test': 'Test Folder',
                 'badge_shared': 'Shared • 5 items',
                 'badge_test': 'Test • Validation',
-                'folder_enjoy': 'ENJOY AI',
+                'folder_enjoy_2024': 'ENJOY AI 2024',
+                'folder_enjoy_2025': 'ENJOY AI 2025',
+                'folder_enjoy_2026': 'ENJOY AI 2026',
                 'folder_whale': 'WhalesBot',
                 'folder_test': 'Test Folder',
-                'footer_copyright': '© 2026 Dropbox Permanent Link Service | Smart Validation',
+                'footer_copyright': '© 2024 Dropbox Permanent Link Service | Smart Validation',
                 'footer_note': 'The system automatically checks link status every 5 minutes. Invalid links are disabled.',
                 'last_checked': 'Last checked',
                 'error_link_expired': 'Link has expired',
@@ -577,7 +630,6 @@
             
             if (spinner) {
                 // 按钮处于加载状态，需要更新"验证中..."文本
-                // 找到spinner后面的文本节点
                 const allSpans = refreshBtn.querySelectorAll('span');
                 allSpans.forEach(span => {
                     if (span !== spinner && !span.hasAttribute('data-i18n-key')) {
