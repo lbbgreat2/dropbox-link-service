@@ -607,27 +607,7 @@
                 </div>
             </div>
             
-            <!-- Test 文件夹 (用于测试链接失效检测) -->
-            <div class="folder-card" data-folder-id="test">
-                <div class="card-icon">
-                    <i class="fas fa-vial"></i>
-                </div>
-                <h3 class="card-title"><span data-i18n-key="folder_test">Test 文件夹</span>
-                    <span class="test-badge" data-i18n-key="badge_test">测试 • 检测功能</span>
-                </h3>
-                <p class="card-desc" data-i18n-key="desc_test">用于测试链接失效检测功能的文件夹。您可以删除Dropbox中的分享链接来测试检测功能。</p>
-                <div class="card-meta">
-                    <i class="fas fa-flask"></i> <span data-i18n-key="meta_test">测试文件夹</span>
-                </div>
-                <button class="access-btn" onclick="handleFolderClick('test')">
-                    <span class="btn-text" data-i18n-key="btn_open_test">打开测试文件夹</span>
-                </button>
-                <div class="link-status">
-                    <span id="status-test" class="status-text status-checking">
-                        <i class="fas fa-spinner fa-spin"></i> <span data-i18n-key="status_checking_short">检测中...</span>
-                    </span>
-                </div>
-            </div>
+            <!-- Test 文件夹已移除，此处不显示任何Test文件夹卡片 -->
         </main>
         
         <button id="refresh-btn" class="refresh-btn" onclick="checkAllLinks()">
@@ -643,7 +623,9 @@
     <script>
         const API_BASE_URL = window.location.origin;
         let linkStatusCache = {};
-        const CURRENT_FOLDER_IDS = ['whalesbot', 'test']; // 移除enjoy_ai，只包含需要检测状态的文件夹
+        
+        // 修改关键点：CURRENT_FOLDER_IDS 只包含whalesbot，test已移除
+        const CURRENT_FOLDER_IDS = ['whalesbot']; // 只包含需要检测状态的文件夹，test已移除
         
         // ==================== 语言资源定义 ====================
         const i18nResources = {
@@ -808,7 +790,7 @@
         
         // 打开文档链接
         async function openDocument(year, project, docType) {
-            const button = document.querySelector(`.doc-btn[onclick*="${year}', '${project}', '${docType}']`);
+            const button = document.querySelector(`.doc-btn[onclick*="${year}', '${project}', '${docType}"]`);
             let originalText = '';
             if (button) {
                 originalText = button.textContent;
@@ -1051,9 +1033,7 @@
                         showError(`${i18nResources[currentLang]['error_link_expired']}: ${data.error}`);
                         statusEl.innerHTML = `<i class="fas fa-times-circle"></i> ${i18nResources[currentLang]['status_expired']}`;
                         statusEl.className = 'status-text status-invalid';
-                        btnText.textContent = folderId === 'test' ? 
-                            i18nResources[currentLang]['btn_open_test'] : 
-                            i18nResources[currentLang]['btn_open'];
+                        btnText.textContent = i18nResources[currentLang]['btn_open'];
                         return;
                     } else if (response.status === 404) {
                         throw new Error(i18nResources[currentLang]['error_not_found']);
@@ -1071,9 +1051,7 @@
                     statusEl.innerHTML = `<i class="fas fa-check-circle"></i> ${i18nResources[currentLang]['status_live']}`;
                     statusEl.className = 'status-text status-valid';
                     
-                    btnText.textContent = folderId === 'test' ? 
-                        i18nResources[currentLang]['btn_open_test'] : 
-                        i18nResources[currentLang]['btn_open'];
+                    btnText.textContent = i18nResources[currentLang]['btn_open'];
                     setTimeout(() => {
                         button.disabled = false;
                     }, 1000);
@@ -1088,9 +1066,7 @@
                 statusEl.className = 'status-text status-invalid';
                 
                 showError(`${i18nResources[currentLang]['error_network']}: ${error.message}`);
-                btnText.textContent = folderId === 'test' ? 
-                    i18nResources[currentLang]['btn_open_test'] : 
-                    i18nResources[currentLang]['btn_open'];
+                btnText.textContent = i18nResources[currentLang]['btn_open'];
                 button.disabled = false;
             }
         }
@@ -1161,9 +1137,7 @@
                                 button.title = currentLang === 'zh-CN' ? '点击打开链接' : 'Click to open link';
                                 
                                 // 更新按钮文本
-                                btnText.textContent = folderId === 'test' ? 
-                                    i18nResources[currentLang]['btn_open_test'] : 
-                                    i18nResources[currentLang]['btn_open'];
+                                btnText.textContent = i18nResources[currentLang]['btn_open'];
                             } else {
                                 // 链接失效
                                 button.disabled = true;
@@ -1187,9 +1161,7 @@
                                 button.title = `${currentLang === 'zh-CN' ? '失效原因: ' : 'Reason: '}${status.message || 'Unknown error'}`;
                                 
                                 // 更新按钮文本
-                                btnText.textContent = folderId === 'test' ? 
-                                    i18nResources[currentLang]['btn_open_test'] : 
-                                    i18nResources[currentLang]['btn_open'];
+                                btnText.textContent = i18nResources[currentLang]['btn_open'];
                             }
                         } else {
                             // 状态未知
@@ -1199,9 +1171,7 @@
                             button.title = currentLang === 'zh-CN' ? '状态检测失败' : 'Status check failed';
                             
                             // 更新按钮文本
-                            btnText.textContent = folderId === 'test' ? 
-                                i18nResources[currentLang]['btn_open_test'] : 
-                                i18nResources[currentLang]['btn_open'];
+                            btnText.textContent = i18nResources[currentLang]['btn_open'];
                         }
                     });
                     
@@ -1256,9 +1226,7 @@
                 button.title = currentLang === 'zh-CN' ? '状态检测不可用，点击尝试访问' : 'Status check unavailable, click to try access';
                 
                 // 更新按钮文本
-                btnText.textContent = folderId === 'test' ? 
-                    i18nResources[currentLang]['btn_open_test'] : 
-                    i18nResources[currentLang]['btn_open'];
+                btnText.textContent = i18nResources[currentLang]['btn_open'];
             });
             
             // ENJOY AI卡片保持分级菜单就绪状态
