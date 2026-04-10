@@ -1366,6 +1366,284 @@
             // 重新检测链接状态
             checkAllLinks();
         });
+        
+        // ==================== ENJOY AI 链接状态检测功能 ====================
+        
+        // 获取ENJOY AI所有链接状态
+        async function checkEnjoyAiLinks() {
+            const statusCountEl = document.getElementById('enjoy-ai-status-count');
+            if (statusCountEl) {
+                statusCountEl.textContent = '检测中...';
+                statusCountEl.className = 'status-count';
+            }
+            
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/hierarchical/all_status`);
+                
+                if (!response.ok) {
+                    if (statusCountEl) {
+                        statusCountEl.textContent = '检测失败';
+                        statusCountEl.className = 'status-count error';
+                    }
+                    throw new Error(`ENJOY AI状态检测失败: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                
+                if (data.success && data.data) {
+                    const statusData = data.data;
+                    
+                    // 统计有效和无效链接数量
+                    let totalLinks = 0;
+                    let validLinks = 0;
+                    let invalidLinks = 0;
+                    
+                    // 遍历所有年份、项目和文档类型
+                    for (const year in statusData) {
+                        for (const project in statusData[year]) {
+                            for (const docType in statusData[year][project]) {
+                                totalLinks++;
+                                const linkStatus = statusData[year][project][docType];
+                                
+                                if (linkStatus.valid === true) {
+                                    validLinks++;
+                                } else {
+                                    invalidLinks++;
+                                }
+                                
+                                // 更新对应按钮的状态
+                                updateDocumentButtonStatus(year, project, docType, linkStatus);
+                            }
+                        }
+                    }
+                    
+                    // 更新状态计数显示
+                    if (statusCountEl) {
+                        if (invalidLinks === 0) {
+                            statusCountEl.textContent = `${validLinks}/${totalLinks} 正常`;
+                            statusCountEl.className = 'status-count valid';
+                        } else if (validLinks === 0) {
+                            statusCountEl.textContent = `${invalidLinks}/${totalLinks} 失效`;
+                            statusCountEl.className = 'status-count error';
+                        } else {
+                            statusCountEl.textContent = `${validLinks}/${totalLinks} 正常`;
+                            statusCountEl.className = 'status-count warning';
+                        }
+                    }
+                    
+                    // 更新ENJOY AI卡片的总体状态
+                    const enjoyAiStatus = document.getElementById('status-enjoy_ai');
+                    if (enjoyAiStatus) {
+                        if (invalidLinks === 0) {
+                            enjoyAiStatus.innerHTML = `<i class="fas fa-check-circle"></i> ${i18nResources[currentLang]['status_live']} (${validLinks}/${totalLinks})`;
+                            enjoyAiStatus.className = 'status-text status-valid';
+                        } else {
+                            enjoyAiStatus.innerHTML = `<i class="fas fa-exclamation-triangle"></i> ${i18nResources[currentLang]['status_checking']} (${validLinks}/${totalLinks})`;
+                            enjoyAiStatus.className = 'status-text status-checking';
+                        }
+                    }
+                    
+                    console.log(`ENJOY AI链接检测完成: ${validLinks}个有效, ${invalidLinks}个失效, 总共${totalLinks}个链接`);
+                    return { valid: validLinks, invalid: invalidLinks, total: totalLinks };
+                } else {
+                    throw new Error('ENJOY AI状态数据格式错误');
+                }
+            } catch (error) {
+                console.error('检测ENJOY AI链接状态失败:', error);
+                if (statusCountEl) {
+                    statusCountEl.textContent = '检测失败';
+                    statusCountEl.className = 'status-count error';
+                }
+                
+                const enjoyAiStatus = document.getElementById('status-enjoy_ai');
+                if (enjoyAiStatus) {
+                    enjoyAiStatus.innerHTML = `<i class="fas fa-times-circle"></i> ${i18nResources[currentLang]['status_failed']}`;
+                    enjoyAiStatus.className = 'status-text status-invalid';
+                }
+                
+                return { valid: 0, invalid: 0, total: 0, error: true };
+            }
+        }
+        
+        // 更新文档按钮状态
+        function updateDocumentButtonStatus(year, project, docType, linkStatus) {
+            // 查找对应的按钮
+            const button = document.querySelector(`.doc-btn[data-year="${year}"][data-project="${project}"][data-doctype="${docType}"]`);
+            
+            if (button) {
+                if (linkStatus.valid === true) {
+                    // 链接有效
+                    button.disabled = false;
+                    button.classList.remove('invalid');
+                    button.title = currentLang === 'zh-CN' ? '链接正常，点击打开' : 'Link active, click to open';
+                    
+                    // 添加悬停提示显示链接状态信息
+                    if (linkStatus.message) {
+                        button.title += `\n${currentLang === 'zh-CN' ? '状态: ' : 'Status: '}${linkStatus.message}`;
+                    }
+                } else {
+                    // 链接失效
+                    button.disabled = true;
+                    button.classList.add('invalid');
+                    
+                    // 根据失效原因设置不同的提示
+                    let reasonText = i18nResources[currentLang]['status_expired'];
+                    if (linkStatus.reason === 'CONTENT_DELETED_OR_NO_PERMISSION') {
+                        reasonText = i18nResources[currentLang]['status_deleted'];
+                    } else if (linkStatus.reason === 'NOT_DROPBOX') {
+                        reasonText = i18nResources[currentLang]['status_abnormal'];
+                    } else if (linkStatus.reason === 'TIMEOUT') {
+                        reasonText = i18nResources[currentLang]['status_timeout'];
+                    } else if (linkStatus.reason === 'NETWORK_ERROR') {
+                        reasonText = i18nResources[currentLang]['status_network_error'];
+                    } else if (linkStatus.reason === 'EMPTY_URL') {
+                        reasonText = currentLang === 'zh-CN' ? '链接为空' : 'Link is empty';
+                    } else if (linkStatus.reason === 'NOT_CONFIGURED') {
+                        reasonText = currentLang === 'zh-CN' ? '链接未配置' : 'Link not configured';
+                    }
+                    
+                    button.title = `${currentLang === 'zh-CN' ? '链接已失效: ' : 'Link expired: '}${reasonText}`;
+                    
+                    if (linkStatus.message) {
+                        button.title += `\n${currentLang === 'zh-CN' ? '详情: ' : 'Details: '}${linkStatus.message}`;
+                    }
+                }
+            }
+        }
+        
+        // 检查所有链接（包括ENJOY AI）
+        async function checkAllLinksEnhanced() {
+            const refreshBtn = document.getElementById('refresh-btn');
+            const originalHtml = refreshBtn.innerHTML;
+            const statusIndicator = document.getElementById('system-status-indicator');
+            const statusText = document.getElementById('status-text');
+            
+            // 更新按钮状态
+            refreshBtn.disabled = true;
+            refreshBtn.innerHTML = `<span class="loading-spinner"></span>${i18nResources[currentLang]['btn_checking']}`;
+            statusText.textContent = i18nResources[currentLang]['status_checking'];
+            statusIndicator.style.backgroundColor = '#f6ad55';
+            
+            // 重置所有状态为检测中
+            CURRENT_FOLDER_IDS.forEach(folderId => {
+                const statusEl = document.getElementById(`status-${folderId}`);
+                if (statusEl) {
+                    statusEl.innerHTML = `<i class="fas fa-spinner fa-spin"></i> ${i18nResources[currentLang]['status_checking_short']}`;
+                    statusEl.className = 'status-text status-checking';
+                }
+            });
+            
+            // 重置ENJOY AI状态计数
+            const statusCountEl = document.getElementById('enjoy-ai-status-count');
+            if (statusCountEl) {
+                statusCountEl.textContent = '检测中...';
+                statusCountEl.className = 'status-count';
+            }
+            
+            try {
+                // 并行检测所有链接
+                const [whalesbotStatus, enjoyAiStatus] = await Promise.allSettled([
+                    fetch(`${API_BASE_URL}/api/links/status`).then(res => res.ok ? res.json() : null),
+                    checkEnjoyAiLinks()
+                ]);
+                
+                // 处理whalesbot状态
+                if (whalesbotStatus.status === 'fulfilled' && whalesbotStatus.value && whalesbotStatus.value.success) {
+                    linkStatusCache = whalesbotStatus.value.data;
+                    
+                    // 更新whalesbot按钮状态
+                    CURRENT_FOLDER_IDS.forEach(folderId => {
+                        const button = document.querySelector(`[data-folder-id="${folderId}"] .access-btn`);
+                        const statusEl = document.getElementById(`status-${folderId}`);
+                        const btnText = button.querySelector('.btn-text');
+                        
+                        if (linkStatusCache[folderId]) {
+                            const status = linkStatusCache[folderId];
+                            
+                            if (status.valid) {
+                                button.disabled = false;
+                                statusEl.innerHTML = `<i class="fas fa-check-circle"></i> ${i18nResources[currentLang]['status_live']}`;
+                                statusEl.className = 'status-text status-valid';
+                                button.title = currentLang === 'zh-CN' ? '点击打开链接' : 'Click to open link';
+                            } else {
+                                button.disabled = true;
+                                statusEl.innerHTML = `<i class="fas fa-times-circle"></i> ${i18nResources[currentLang]['status_expired']}`;
+                                statusEl.className = 'status-text status-invalid';
+                                button.title = `${currentLang === 'zh-CN' ? '失效原因: ' : 'Reason: '}${status.message || 'Unknown error'}`;
+                            }
+                        }
+                    });
+                }
+                
+                // 统计总体状态
+                let totalValid = 0;
+                let totalInvalid = 0;
+                let totalCount = 0;
+                
+                // 统计whalesbot
+                CURRENT_FOLDER_IDS.forEach(folderId => {
+                    totalCount++;
+                    if (linkStatusCache[folderId] && linkStatusCache[folderId].valid) {
+                        totalValid++;
+                    } else {
+                        totalInvalid++;
+                    }
+                });
+                
+                // 统计ENJOY AI
+                if (enjoyAiStatus.status === 'fulfilled' && enjoyAiStatus.value) {
+                    totalValid += enjoyAiStatus.value.valid;
+                    totalInvalid += enjoyAiStatus.value.invalid;
+                    totalCount += enjoyAiStatus.value.total;
+                }
+                
+                // 更新系统状态
+                if (totalInvalid === 0) {
+                    statusText.textContent = `${i18nResources[currentLang]['status_all_good']} (${totalValid}/${totalCount})`;
+                    statusIndicator.style.backgroundColor = '#48bb78';
+                } else if (totalValid > 0) {
+                    statusText.textContent = `${totalValid}/${totalCount} ${i18nResources[currentLang]['status_some_good']}`;
+                    statusIndicator.style.backgroundColor = '#f6ad55';
+                } else {
+                    statusText.textContent = i18nResources[currentLang]['status_all_bad'];
+                    statusIndicator.style.backgroundColor = '#f56565';
+                    showError(i18nResources[currentLang]['warning_all_links_down'], 10000);
+                }
+                
+            } catch (error) {
+                console.error('检测链接状态失败:', error);
+                useFallbackMode();
+                statusText.textContent = i18nResources[currentLang]['status_check_failed'];
+                statusIndicator.style.backgroundColor = '#f56565';
+                showError(`${i18nResources[currentLang]['error_network']}: ${error.message}`);
+            } finally {
+                // 恢复按钮状态
+                setTimeout(() => {
+                    refreshBtn.innerHTML = `<i class="fas fa-sync-alt"></i> <span data-i18n-key="btn_refresh">${i18nResources[currentLang]['btn_refresh']}</span>`;
+                    refreshBtn.disabled = false;
+                }, 1000);
+                
+                // 更新最后检测时间
+                updateLastCheckedTime();
+            }
+        }
+        
+        // 页面加载时检测ENJOY AI链接
+        document.addEventListener('DOMContentLoaded', function() {
+            // 页面加载后稍等片刻再检测ENJOY AI链接
+            setTimeout(() => {
+                checkEnjoyAiLinks();
+            }, 2000);
+            
+            // 修改刷新按钮的点击事件，使用增强版的检测功能
+            const refreshBtn = document.getElementById('refresh-btn');
+            refreshBtn.onclick = checkAllLinksEnhanced;
+        });
+        
+        // 定期检测ENJOY AI链接状态（每5分钟一次）
+        setInterval(() => {
+            checkEnjoyAiLinks();
+        }, 5 * 60 * 1000);
     </script>
 </body>
 </html>
