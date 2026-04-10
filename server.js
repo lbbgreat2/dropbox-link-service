@@ -23,24 +23,24 @@ const MANUAL_SHARE_LINKS = {
 const ENJOY_AI_HIERARCHICAL_LINKS = {
   '2025': {
     'battle_of_tribes': {
-      'competition_rule': '', // TODO: 请在此处替换为实际的Dropbox链接
-      'field_setup_guide': ''  // TODO: 请在此处替换为实际的Dropbox链接
+      'competition_rule': 'https://www.dropbox.com/scl/fi/pbj8vegug489ur8bwpl70/Battle-of-Tribes_Competition-Rule.pdf?rlkey=3z4eeul5yxsx6nxipy4r4dlen&st=hhxyouae&dl=0', // TODO: 请在此处替换为实际的Dropbox链接
+      'field_setup_guide': 'https://www.dropbox.com/scl/fi/259f0847zk3vu32h7cz0g/Battle-of-Tribes_Field-Setup-Guide.pdf?rlkey=j9d8ldm5pc3h7fj60pjcy09xq&st=pfs252wz&dl=0'  // TODO: 请在此处替换为实际的Dropbox链接
     },
     'cyber_city': {
-      'competition_rule': '', // TODO: 请在此处替换为实际的Dropbox链接
-      'field_setup_guide': ''  // TODO: 请在此处替换为实际的Dropbox链接
+      'competition_rule': 'https://www.dropbox.com/scl/fi/r0jo3jkwlgeh7k8p0o7w6/Cyber-City_Competition-Rule.pdf?rlkey=cqwjdgtyy7csx1eckv8ga3q4u&st=nfbsytf3&dl=0', // TODO: 请在此处替换为实际的Dropbox链接
+      'field_setup_guide': 'https://www.dropbox.com/scl/fi/ysvasz9s1disf8zogwwl2/Cyber-City_Field-Setup-Guide.pdf?rlkey=8xea6hi4mmgov6dn5x446u5gd&st=gf8zwt2f&dl=0'  // TODO: 请在此处替换为实际的Dropbox链接
     },
     'geometric_forest': {
-      'competition_rule': '', // TODO: 请在此处替换为实际的Dropbox链接
-      'field_setup_guide': ''  // TODO: 请在此处替换为实际的Dropbox链接
+      'competition_rule': 'https://www.dropbox.com/scl/fi/an9zebpfmqwr3xyby997n/Geometric-Forest_Competition-Rule.pdf?rlkey=femmzsm1boubkwinz5kjfjpe5&st=mxoc7mgj&dl=0', // TODO: 请在此处替换为实际的Dropbox链接
+      'field_setup_guide': 'https://www.dropbox.com/scl/fi/bzhlxz9zt27v7d91wyrzd/Geometric-Forest_Field-Setup-Guide.pdf?rlkey=y6q032umevx2i9d27ezs09z5k&st=eyrrviuq&dl=0'  // TODO: 请在此处替换为实际的Dropbox链接
     },
     'sample_solution': {
       'competition_rule': '', // TODO: 请在此处替换为实际的Dropbox链接
       'field_setup_guide': ''  // TODO: 请在此处替换为实际的Dropbox链接
     },
     'skyline_adventures': {
-      'competition_rule': '', // TODO: 请在此处替换为实际的Dropbox链接
-      'field_setup_guide': ''  // TODO: 请在此处替换为实际的Dropbox链接
+      'competition_rule': 'https://www.dropbox.com/scl/fi/ckmmfz1485hyp6ci0whtv/Skyline-Adventures_Competition-Rule.pdf?rlkey=g3x7abbi7g1a0id0omqtv4wor&st=18c7bdqs&dl=0', // TODO: 请在此处替换为实际的Dropbox链接
+      'field_setup_guide': 'https://www.dropbox.com/scl/fi/qe5178gkwy975vpf0qutw/Skyline-Adventures_Field-Setup-Guide.pdf?rlkey=rpz2kbnby7udqp8moen05o980&st=rpq6hdu3&dl=0'  // TODO: 请在此处替换为实际的Dropbox链接
     }
   },
   '2026': {
