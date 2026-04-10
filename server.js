@@ -11,10 +11,10 @@ const PORT = process.env.PORT || 3000;
 app.use(cors());
 app.use(express.json());
 
-// 手动配置的Dropbox永久分享链接
+// 手动配置的Dropbox永久分享链接 - 已移除test文件夹
 const MANUAL_SHARE_LINKS = {
-  'whalesbot': 'https://www.dropbox.com/scl/fo/dm9mk69c56v8o554r11wv/AGjzYhC_2KXZ6xXkLc88k_g?rlkey=67t99jd9gms79e2ato24ee727&st=rhn2cwhy&dl=0',
-  'test': 'https://www.dropbox.com/scl/fo/jfm93u99iubtds6w4vg4w/AO7Ht-rwUHc7W5oaojNep2o?rlkey=bjvwfmx9tq8oa6v67iw3zyapp&st=o03vu2pi&dl=0'
+  'whalesbot': 'https://www.dropbox.com/scl/fo/dm9mk69c56v8o554r11wv/AGjzYhC_2KXZ6xXkLc88k_g?rlkey=67t99jd9gms79e2ato24ee727&st=rhn2cwhy&dl=0'
+  // test文件夹已移除
 };
 
 // ============ ENJOY AI 分级链接配置 ============
@@ -261,7 +261,7 @@ app.get('/api/health', (req, res) => {
     service: 'dropbox-permanent-link-service',
     mode: 'manual_links_with_validation',
     timestamp: new Date().toISOString(),
-    available_folders: Object.keys(MANUAL_SHARE_LINKS),
+    available_folders: Object.keys(MANUAL_SHARE_LINKS), // 现在只包含whalesbot
     hierarchical_links_available: true
   });
 });
@@ -276,7 +276,7 @@ app.get('/api/link/:folderId', async (req, res) => {
     return res.status(404).json({ 
       error: '文件夹不存在',
       message: `未配置的文件夹ID: '${folderId}'`,
-      available_ids: Object.keys(MANUAL_SHARE_LINKS)
+      available_ids: Object.keys(MANUAL_SHARE_LINKS) // 现在只包含whalesbot
     });
   }
   
@@ -438,8 +438,8 @@ app.get('/', (req, res) => {
 // 辅助函数：获取文件夹友好名称
 function getFolderName(folderId) {
   const names = {
-    'whalesbot': 'WhalesBot',
-    'test': 'Test 文件夹'
+    'whalesbot': 'WhalesBot'
+    // test已移除
   };
   return names[folderId] || folderId;
 }
@@ -502,7 +502,7 @@ app.listen(PORT, () => {
   console.log(`=========================================`);
   console.log(`🚀 Dropbox永久链接服务已启动`);
   console.log(`📡 端口: ${PORT}`);
-  console.log(`🔗 已配置 ${Object.keys(MANUAL_SHARE_LINKS).length} 个永久链接`);
+  console.log(`🔗 已配置 ${Object.keys(MANUAL_SHARE_LINKS).length} 个永久链接`); // 现在显示1个
   console.log(`📁 2025年ENJOY AI项目: ${Object.keys(ENJOY_AI_HIERARCHICAL_LINKS['2025']).length} 个`);
   console.log(`📁 2026年ENJOY AI项目: ${Object.keys(ENJOY_AI_HIERARCHICAL_LINKS['2026']).length} 个`);
   console.log(`🔍 链接验证: 已启用`);
