@@ -43,6 +43,7 @@ const ENJOY_AI_HIERARCHICAL_LINKS = {
       'field_setup_guide': 'https://www.dropbox.com/scl/fi/qe5178gkwy975vpf0qutw/Skyline-Adventures_Field-Setup-Guide.pdf?rlkey=rpz2kbnby7udqp8moen05o980&st=rpq6hdu3&dl=0'  // TODO: 请在此处替换为实际的Dropbox链接
     }
   },
+  
   '2026': {
   'drone_cup': {
     'parts_list': 'https://www.dropbox.com/scl/fi/2cokg585k9ayyu41mykun/EA-P10-25-PART-LIST.pdf?rlkey=rl87rg1cn11lbyuhngaicugee&st=uqv13tvs&dl=0',
