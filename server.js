@@ -34,7 +34,7 @@ const ENJOY_AI_HIERARCHICAL_LINKS = {
       'competition_rule_scoring_sheet': 'https://www.dropbox.com/scl/fi/pbj8vegug489ur8bwpl70/Battle-of-Tribes_Competition-Rule.pdf?rlkey=3z4eeul5yxsx6nxipy4r4dlen&st=5e4qgui0&dl=0',
       'field_setup_guide': 'https://www.dropbox.com/scl/fi/259f0847zk3vu32h7cz0g/Battle-of-Tribes_Field-Setup-Guide.pdf?rlkey=j9d8ldm5pc3h7fj60pjcy09xq&st=xenqmnhk&dl=0',
       'sample_solution_ppt': 'https://www.dropbox.com/scl/fi/z2g2qypkwza2s2hpxi9ce/ENJOY-AI-2025_Battle-of-Tribes_Sample-Solution.pptx?rlkey=iqis8sxu92wc7p5wvkxhzwvfl&st=iyogbkly&dl=0',
-      'courses': 'https://www.dropbox.com/scl/fo/eb9zgocez60dcv6soco52/AH7UhHhh073eVCqnIbfPCTc?rlkey=yunsmdztsnava89jqmhjm09i9&st=jbyct336&dl=0'
+      'courses': 'https://www.dropbox.com/scl/fo/ll0fstx5kfbujbtyv5578/AJOr3HCzX6YPDgjj6mgSfvI?rlkey=ja9g0indwukshe52gxjqetpg9&st=xvq7cnmj&dl=0'
     },
     'skyline_adventures': {
       'competition_rule_scoring_sheet': 'https://www.dropbox.com/scl/fi/ckmmfz1485hyp6ci0whtv/Skyline-Adventures_Competition-Rule.pdf?rlkey=g3x7abbi7g1a0id0omqtv4wor&st=r0so0dj7&dl=0',
