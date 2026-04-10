@@ -14,7 +14,6 @@ app.use(express.json());
 // 手动配置的Dropbox永久分享链接 - 已移除test文件夹
 const MANUAL_SHARE_LINKS = {
   'whalesbot': 'https://www.dropbox.com/scl/fo/dm9mk69c56v8o554r11wv/AGjzYhC_2KXZ6xXkLc88k_g?rlkey=67t99jd9gms79e2ato24ee727&st=rhn2cwhy&dl=0'
-  // test文件夹已移除
 };
 
 // ============ ENJOY AI 分级链接配置 ============
@@ -102,10 +101,20 @@ const ENJOY_AI_HIERARCHICAL_LINKS = {
 
 // 链接状态缓存
 let linkStatusCache = {};
+let enjoyAiLinkStatusCache = {};
 const CACHE_DURATION = 5 * 60 * 1000; // 5分钟缓存
 
 // 检测单个链接是否有效的函数
 async function checkLinkValidity(url) {
+  if (!url || url.trim() === '') {
+    return {
+      valid: false,
+      timestamp: new Date().toISOString(),
+      message: '链接为空或未配置',
+      reason: 'EMPTY_URL'
+    };
+  }
+
   try {
     // 发送GET请求，获取页面内容以便分析
     const response = await axios.get(url, {
@@ -254,6 +263,81 @@ async function getLinkStatus(folderId) {
   return status;
 }
 
+// 获取ENJOY AI所有链接状态
+async function getEnjoyAiAllLinksStatus() {
+  const now = Date.now();
+  const cacheKey = 'enjoy_ai_all';
+  
+  // 检查缓存
+  if (enjoyAiLinkStatusCache[cacheKey] && 
+      now - enjoyAiLinkStatusCache[cacheKey].timestamp < CACHE_DURATION) {
+    return enjoyAiLinkStatusCache[cacheKey];
+  }
+  
+  const result = {
+    '2025': {},
+    '2026': {},
+    timestamp: new Date().toISOString()
+  };
+  
+  // 并行检测所有链接
+  const allPromises = [];
+  const allLinks = [];
+  
+  // 收集所有链接
+  Object.keys(ENJOY_AI_HIERARCHICAL_LINKS).forEach(year => {
+    result[year] = {};
+    Object.keys(ENJOY_AI_HIERARCHICAL_LINKS[year]).forEach(project => {
+      result[year][project] = {};
+      Object.keys(ENJOY_AI_HIERARCHICAL_LINKS[year][project]).forEach(docType => {
+        const url = ENJOY_AI_HIERARCHICAL_LINKS[year][project][docType];
+        allLinks.push({ year, project, docType, url });
+      });
+    });
+  });
+  
+  // 创建检测任务
+  allLinks.forEach(link => {
+    allPromises.push(
+      checkLinkValidity(link.url).then(status => {
+        return { ...link, status };
+      })
+    );
+  });
+  
+  // 等待所有检测完成
+  const results = await Promise.all(allPromises);
+  
+  // 整理结果
+  results.forEach(item => {
+    if (!result[item.year][item.project]) {
+      result[item.year][item.project] = {};
+    }
+    result[item.year][item.project][item.docType] = item.status;
+  });
+  
+  // 缓存结果
+  enjoyAiLinkStatusCache[cacheKey] = {
+    data: result,
+    timestamp: new Date().toISOString()
+  };
+  
+  return enjoyAiLinkStatusCache[cacheKey];
+}
+
+// 获取ENJOY AI特定年份和项目的链接状态
+async function getEnjoyAiLinksStatus(year, project) {
+  const allStatus = await getEnjoyAiAllLinksStatus();
+  
+  if (year && project) {
+    return allStatus.data[year]?.[project] || {};
+  } else if (year) {
+    return allStatus.data[year] || {};
+  } else {
+    return allStatus.data;
+  }
+}
+
 // 健康检查端点
 app.get('/api/health', (req, res) => {
   res.json({
@@ -261,7 +345,7 @@ app.get('/api/health', (req, res) => {
     service: 'dropbox-permanent-link-service',
     mode: 'manual_links_with_validation',
     timestamp: new Date().toISOString(),
-    available_folders: Object.keys(MANUAL_SHARE_LINKS), // 现在只包含whalesbot
+    available_folders: Object.keys(MANUAL_SHARE_LINKS),
     hierarchical_links_available: true
   });
 });
@@ -276,7 +360,7 @@ app.get('/api/link/:folderId', async (req, res) => {
     return res.status(404).json({ 
       error: '文件夹不存在',
       message: `未配置的文件夹ID: '${folderId}'`,
-      available_ids: Object.keys(MANUAL_SHARE_LINKS) // 现在只包含whalesbot
+      available_ids: Object.keys(MANUAL_SHARE_LINKS)
     });
   }
   
@@ -312,6 +396,71 @@ app.get('/api/hierarchical/enjoy_ai', (req, res) => {
     timestamp: new Date().toISOString(),
     note: '分级链接结构，请通过 /api/hierarchical/link 端点获取具体链接'
   });
+});
+
+// 获取ENJOY AI所有链接状态
+app.get('/api/hierarchical/all_status', async (req, res) => {
+  try {
+    const status = await getEnjoyAiAllLinksStatus();
+    res.json({
+      success: true,
+      data: status.data,
+      timestamp: status.timestamp,
+      cache: true
+    });
+  } catch (error) {
+    console.error('获取ENJOY AI链接状态失败:', error);
+    res.status(500).json({
+      success: false,
+      error: '获取ENJOY AI链接状态失败',
+      timestamp: new Date().toISOString()
+    });
+  }
+});
+
+// 获取ENJOY AI特定年份的链接状态
+app.get('/api/hierarchical/status/:year', async (req, res) => {
+  try {
+    const { year } = req.params;
+    const status = await getEnjoyAiLinksStatus(year);
+    
+    res.json({
+      success: true,
+      year,
+      data: status,
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    console.error(`获取ENJOY AI ${req.params.year} 链接状态失败:`, error);
+    res.status(500).json({
+      success: false,
+      error: '获取ENJOY AI链接状态失败',
+      timestamp: new Date().toISOString()
+    });
+  }
+});
+
+// 获取ENJOY AI特定年份和项目的链接状态
+app.get('/api/hierarchical/status/:year/:project', async (req, res) => {
+  try {
+    const { year, project } = req.params;
+    const status = await getEnjoyAiLinksStatus(year, project);
+    
+    res.json({
+      success: true,
+      year,
+      project,
+      data: status,
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    console.error(`获取ENJOY AI ${req.params.year}/${req.params.project} 链接状态失败:`, error);
+    res.status(500).json({
+      success: false,
+      error: '获取ENJOY AI链接状态失败',
+      timestamp: new Date().toISOString()
+    });
+  }
 });
 
 // 获取分级链接的具体文档
@@ -439,7 +588,6 @@ app.get('/', (req, res) => {
 function getFolderName(folderId) {
   const names = {
     'whalesbot': 'WhalesBot'
-    // test已移除
   };
   return names[folderId] || folderId;
 }
@@ -490,6 +638,9 @@ app.use((req, res) => {
       getLink: '/api/link/:folderId',
       hierarchicalStructure: '/api/hierarchical/enjoy_ai',
       hierarchicalLink: '/api/hierarchical/link?year=X&project=Y&docType=Z',
+      hierarchicalAllStatus: '/api/hierarchical/all_status',
+      hierarchicalYearStatus: '/api/hierarchical/status/:year',
+      hierarchicalProjectStatus: '/api/hierarchical/status/:year/:project',
       linksStatus: '/api/links/status',
       listFolders: '/api/folders',
       frontend: '/ (前端页面)'
@@ -502,14 +653,16 @@ app.listen(PORT, () => {
   console.log(`=========================================`);
   console.log(`🚀 Dropbox永久链接服务已启动`);
   console.log(`📡 端口: ${PORT}`);
-  console.log(`🔗 已配置 ${Object.keys(MANUAL_SHARE_LINKS).length} 个永久链接`); // 现在显示1个
+  console.log(`🔗 已配置 ${Object.keys(MANUAL_SHARE_LINKS).length} 个永久链接`);
   console.log(`📁 2025年ENJOY AI项目: ${Object.keys(ENJOY_AI_HIERARCHICAL_LINKS['2025']).length} 个`);
   console.log(`📁 2026年ENJOY AI项目: ${Object.keys(ENJOY_AI_HIERARCHICAL_LINKS['2026']).length} 个`);
   console.log(`🔍 链接验证: 已启用`);
+  console.log(`🔍 ENJOY AI状态检测: 已启用`);
   console.log(`=========================================`);
   console.log(`前端页面: http://localhost:${PORT}`);
   console.log(`健康检查: http://localhost:${PORT}/api/health`);
   console.log(`链接状态: http://localhost:${PORT}/api/links/status`);
   console.log(`ENJOY AI结构: http://localhost:${PORT}/api/hierarchical/enjoy_ai`);
+  console.log(`ENJOY AI状态: http://localhost:${PORT}/api/hierarchical/all_status`);
   console.log(`=========================================`);
 });
