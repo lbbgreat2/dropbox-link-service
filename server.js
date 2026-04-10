@@ -20,25 +20,27 @@ const MANUAL_SHARE_LINKS = {
 // ============ ENJOY AI 分级链接配置 ============
 const ENJOY_AI_HIERARCHICAL_LINKS = {
   '2025': {
-    'battle_of_tribes': {
-      'competition_rule': '',
-      'field_setup_guide': ''
-    },
     'cyber_city': {
-      'competition_rule': '',
-      'field_setup_guide': ''
+      'competition_rule_scoring_sheet': 'https://www.dropbox.com/scl/fi/r0jo3jkwlgeh7k8p0o7w6/Cyber-City_Competition-Rule.pdf?rlkey=cqwjdgtyy7csx1eckv8ga3q4u&st=jz9plkf6&dl=0',
+      'field_setup_guide': 'https://www.dropbox.com/scl/fi/ysvasz9s1disf8zogwwl2/Cyber-City_Field-Setup-Guide.pdf?rlkey=8xea6hi4mmgov6dn5x446u5gd&st=k7eisgjy&dl=0',
+      'sample_solution_ppt': 'https://www.dropbox.com/scl/fi/yoe5wohhqkjtixyzkoemd/ENJOY-AI-2025_Cyber-City_Sample-Solution.pptx?rlkey=zu3pphz2hfb5s8wza0wu30266&st=t73u5exq&dl=0',
+      'courses': 'https://www.dropbox.com/scl/fo/tqjsozecdypo8pa0t34yg/ANepzE0bWz3Q3jGXviMt0tg?rlkey=a8h3vdthhz1e6sq4s6re2l4kc&st=n15qnmum&dl=0'
     },
     'geometric_forest': {
-      'competition_rule': '',
-      'field_setup_guide': ''
+      'competition_rule_scoring_sheet': 'https://www.dropbox.com/scl/fi/an9zebpfmqwr3xyby997n/Geometric-Forest_Competition-Rule.pdf?rlkey=femmzsm1boubkwinz5kjfjpe5&st=sb1y4ssi&dl=0',
+      'field_setup_guide': 'https://www.dropbox.com/scl/fi/bzhlxz9zt27v7d91wyrzd/Geometric-Forest_Field-Setup-Guide.pdf?rlkey=y6q032umevx2i9d27ezs09z5k&st=rv3wr2wb&dl=0',
+      'sample_solution_ppt': 'https://www.dropbox.com/scl/fi/6efna90my55ba3pyxfecf/ENJOY-AI-2025_Geometric-Forest_Sample-Solution.pptx?rlkey=6wiwxmv1va9neo5cmgv6x0jdq&st=prvb7wl2&dl=0'
     },
-    'sample_solution': {
-      'competition_rule': '',
-      'field_setup_guide': ''
+    'battle_of_tribes': {
+      'competition_rule_scoring_sheet': 'https://www.dropbox.com/scl/fi/pbj8vegug489ur8bwpl70/Battle-of-Tribes_Competition-Rule.pdf?rlkey=3z4eeul5yxsx6nxipy4r4dlen&st=5e4qgui0&dl=0',
+      'field_setup_guide': 'https://www.dropbox.com/scl/fi/259f0847zk3vu32h7cz0g/Battle-of-Tribes_Field-Setup-Guide.pdf?rlkey=j9d8ldm5pc3h7fj60pjcy09xq&st=xenqmnhk&dl=0',
+      'sample_solution_ppt': 'https://www.dropbox.com/scl/fi/z2g2qypkwza2s2hpxi9ce/ENJOY-AI-2025_Battle-of-Tribes_Sample-Solution.pptx?rlkey=iqis8sxu92wc7p5wvkxhzwvfl&st=iyogbkly&dl=0',
+      'courses': 'https://www.dropbox.com/scl/fo/eb9zgocez60dcv6soco52/AH7UhHhh073eVCqnIbfPCTc?rlkey=yunsmdztsnava89jqmhjm09i9&st=jbyct336&dl=0'
     },
     'skyline_adventures': {
-      'competition_rule': '',
-      'field_setup_guide': ''
+      'competition_rule_scoring_sheet': 'https://www.dropbox.com/scl/fi/ckmmfz1485hyp6ci0whtv/Skyline-Adventures_Competition-Rule.pdf?rlkey=g3x7abbi7g1a0id0omqtv4wor&st=r0so0dj7&dl=0',
+      'field_setup_guide': 'https://www.dropbox.com/scl/fi/qe5178gkwy975vpf0qutw/Skyline-Adventures_Field-Setup-Guide.pdf?rlkey=rpz2kbnby7udqp8moen05o980&st=kwanxll4&dl=0',
+      'sample_solution_ppt': 'https://www.dropbox.com/scl/fi/jefxr87i9177zxt0ggkmv/ENJOY-AI-2025_Skyline-Adventures_Sample-Solution.pptx?rlkey=k2t17kjogafbmvyi6k0nx7rlm&st=p7xcqvd0&dl=0'
     }
   },
   '2026': {
@@ -320,7 +322,7 @@ app.get('/api/hierarchical/link', async (req, res) => {
     return res.status(400).json({
       error: '缺少必要参数',
       message: '需要year, project, docType参数',
-      example: '/api/hierarchical/link?year=2026&project=drone_cup&docType=parts_list',
+      example: '/api/hierarchical/link?year=2025&project=cyber_city&docType=competition_rule_scoring_sheet',
       available_years: Object.keys(ENJOY_AI_HIERARCHICAL_LINKS)
     });
   }
@@ -445,10 +447,9 @@ function getFolderName(folderId) {
 // 辅助函数：获取文档友好名称
 function getDocumentName(year, project, docType) {
   const projectNames = {
-    'battle_of_tribes': 'Battle of Tribes',
     'cyber_city': 'Cyber City',
     'geometric_forest': 'Geometric Forest',
-    'sample_solution': 'Sample Solution',
+    'battle_of_tribes': 'Battle of Tribes',
     'skyline_adventures': 'Skyline Adventures',
     'drone_cup': 'Drone Cup',
     'mining_expedition': 'Mining Expedition',
@@ -459,10 +460,11 @@ function getDocumentName(year, project, docType) {
   };
   
   const docTypeNames = {
-    'competition_rule': 'Competition Rule',
-    'field_setup_guide': 'Field Setup Guide',
-    'parts_list': 'Parts List',
     'competition_rule_scoring_sheet': 'Competition Rule & Scoring Sheet',
+    'field_setup_guide': 'Field Setup Guide',
+    'sample_solution_ppt': 'Sample Solution PPT',
+    'courses': 'Courses',
+    'parts_list': 'Parts List',
     'video_full_competition_round': 'Video: Full Competition Round',
     'program_reference': 'Program Reference',
     'video_competition_rules': 'Video: Competition Rules',
@@ -472,7 +474,8 @@ function getDocumentName(year, project, docType) {
     'competition_rules': 'Competition Rules',
     'controller_user_manual': 'Controller User Manual',
     'competition_rules_field_setup_guide': 'Competition Rules & Field Setup Guide',
-    'parts_list2': 'Parts List 2'
+    'parts_list2': 'Parts List 2',
+    'competition_rule': 'Competition Rule'
   };
   
   return `${year} - ${projectNames[project] || project} - ${docTypeNames[docType] || docType}`;
