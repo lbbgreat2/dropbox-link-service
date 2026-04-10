@@ -176,6 +176,76 @@
             margin-right: 8px;
         }
         
+        /* 分级菜单按钮样式 */
+        .year-selection {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+        
+        .year-btn, .project-btn, .doc-btn {
+            background: linear-gradient(135deg, #f0f4ff, #e6f7ff);
+            border: 1px solid #d1e9ff;
+            border-radius: 8px;
+            padding: 10px 12px;
+            margin: 5px 0;
+            cursor: pointer;
+            font-size: 0.9rem;
+            color: #0061ff;
+            transition: all 0.3s ease;
+            width: 100%;
+            text-align: left;
+        }
+        
+        .year-btn:hover, .project-btn:hover, .doc-btn:hover {
+            background: linear-gradient(135deg, #e0e9ff, #d6f2ff);
+            border-color: #0061ff;
+        }
+        
+        .year-btn {
+            background: linear-gradient(135deg, #0061ff, #60efff);
+            color: white;
+            border: none;
+            padding: 12px 15px;
+            font-weight: 600;
+        }
+        
+        .year-btn:hover {
+            background: linear-gradient(135deg, #0052d4, #4fd8ff);
+        }
+        
+        .project-selection {
+            margin-bottom: 10px;
+        }
+        
+        .project-btn {
+            background: linear-gradient(135deg, #f8f9ff, #f0f9ff);
+            margin: 3px 0;
+        }
+        
+        .doc-menu {
+            margin-left: 15px;
+            border-left: 2px solid #e0e0e0;
+            padding-left: 10px;
+        }
+        
+        .doc-btn {
+            background: white;
+            margin: 2px 0;
+            font-size: 0.85rem;
+            padding: 8px 10px;
+        }
+        
+        .year-menu, .doc-menu {
+            animation: slideDown 0.3s ease;
+        }
+        
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        /* 原始按钮样式保留 */
         .access-btn {
             background: linear-gradient(135deg, #0061ff, #60efff);
             color: white;
@@ -330,6 +400,16 @@
             margin-left: 10px;
         }
         
+        .hierarchical-badge {
+            background-color: #e8f4ff;
+            color: #0061ff;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            display: inline-block;
+            margin-left: 10px;
+        }
+        
         .last-checked {
             font-size: 0.8rem;
             color: rgba(255, 255, 255, 0.6);
@@ -361,24 +441,102 @@
         </header>
         
         <main id="card-container" class="card-grid">
-            <!-- ENJOY AI 共享文件夹 -->
-            <div class="folder-card" data-folder-id="enjoy_ai">
+            <!-- ENJOY AI 分级菜单卡片 -->
+            <div class="folder-card enjoy-ai-card">
                 <div class="card-icon">
-                    <i class="fas fa-share-alt"></i>
+                    <i class="fas fa-layer-group"></i>
                 </div>
                 <h3 class="card-title"><span data-i18n-key="folder_enjoy">ENJOY AI</span>
-                    <span class="shared-badge" data-i18n-key="badge_shared">共享 • 5个项目</span>
+                    <span class="hierarchical-badge" data-i18n-key="badge_hierarchical">分级 • 两级菜单</span>
                 </h3>
-                <p class="card-desc" data-i18n-key="desc_enjoy_ai">ENJOY AI项目的共享文件夹。包含5个项目，包括项目文件、数据集和资源。</p>
+                <p class="card-desc" data-i18n-key="desc_enjoy_ai_hierarchical">ENJOY AI项目的分级文档中心。按年份和项目分类，包含竞赛规则和场地设置指南。</p>
                 <div class="card-meta">
-                    <i class="fas fa-users"></i> <span data-i18n-key="meta_shared">共享文件夹</span>
+                    <i class="fas fa-sitemap"></i> <span data-i18n-key="meta_hierarchical">分级文档中心</span>
                 </div>
-                <button class="access-btn" onclick="handleFolderClick('enjoy_ai')">
-                    <span class="btn-text" data-i18n-key="btn_open">打开文件夹</span>
-                </button>
+                
+                <!-- 第一级菜单：年份选择 -->
+                <div class="year-selection">
+                    <button class="year-btn" onclick="toggleYearMenu('2025'); event.stopPropagation();">2025</button>
+                    <button class="year-btn" onclick="toggleYearMenu('2026'); event.stopPropagation();">2026</button>
+                </div>
+                
+                <!-- 2025年项目菜单 -->
+                <div id="year-2025-menu" class="year-menu" style="display: none; margin-bottom: 15px;">
+                    <div class="project-selection">
+                        <button class="project-btn" onclick="toggleProjectMenu('2025', 'battle_of_tribes'); event.stopPropagation();">Battle of Tribes</button>
+                        <button class="project-btn" onclick="toggleProjectMenu('2025', 'cyber_city'); event.stopPropagation();">Cyber City</button>
+                        <button class="project-btn" onclick="toggleProjectMenu('2025', 'geometric_forest'); event.stopPropagation();">Geometric Forest</button>
+                        <button class="project-btn" onclick="toggleProjectMenu('2025', 'sample_solution'); event.stopPropagation();">Sample Solution</button>
+                        <button class="project-btn" onclick="toggleProjectMenu('2025', 'skyline_adventures'); event.stopPropagation();">Skyline Adventures</button>
+                    </div>
+                    
+                    <!-- 各项目的文档菜单 -->
+                    <div id="project-2025-battle_of_tribes" class="doc-menu" style="display: none;">
+                        <button class="doc-btn" onclick="openDocument('2025', 'battle_of_tribes', 'competition_rule'); event.stopPropagation();">Competition Rule</button>
+                        <button class="doc-btn" onclick="openDocument('2025', 'battle_of_tribes', 'field_setup_guide'); event.stopPropagation();">Field Setup Guide</button>
+                    </div>
+                    
+                    <div id="project-2025-cyber_city" class="doc-menu" style="display: none;">
+                        <button class="doc-btn" onclick="openDocument('2025', 'cyber_city', 'competition_rule'); event.stopPropagation();">Competition Rule</button>
+                        <button class="doc-btn" onclick="openDocument('2025', 'cyber_city', 'field_setup_guide'); event.stopPropagation();">Field Setup Guide</button>
+                    </div>
+                    
+                    <div id="project-2025-geometric_forest" class="doc-menu" style="display: none;">
+                        <button class="doc-btn" onclick="openDocument('2025', 'geometric_forest', 'competition_rule'); event.stopPropagation();">Competition Rule</button>
+                        <button class="doc-btn" onclick="openDocument('2025', 'geometric_forest', 'field_setup_guide'); event.stopPropagation();">Field Setup Guide</button>
+                    </div>
+                    
+                    <div id="project-2025-sample_solution" class="doc-menu" style="display: none;">
+                        <button class="doc-btn" onclick="openDocument('2025', 'sample_solution', 'competition_rule'); event.stopPropagation();">Competition Rule</button>
+                        <button class="doc-btn" onclick="openDocument('2025', 'sample_solution', 'field_setup_guide'); event.stopPropagation();">Field Setup Guide</button>
+                    </div>
+                    
+                    <div id="project-2025-skyline_adventures" class="doc-menu" style="display: none;">
+                        <button class="doc-btn" onclick="openDocument('2025', 'skyline_adventures', 'competition_rule'); event.stopPropagation();">Competition Rule</button>
+                        <button class="doc-btn" onclick="openDocument('2025', 'skyline_adventures', 'field_setup_guide'); event.stopPropagation();">Field Setup Guide</button>
+                    </div>
+                </div>
+                
+                <!-- 2026年项目菜单 -->
+                <div id="year-2026-menu" class="year-menu" style="display: none; margin-bottom: 15px;">
+                    <div class="project-selection">
+                        <button class="project-btn" onclick="toggleProjectMenu('2026', 'battle_of_tribes'); event.stopPropagation();">Battle of Tribes</button>
+                        <button class="project-btn" onclick="toggleProjectMenu('2026', 'cyber_city'); event.stopPropagation();">Cyber City</button>
+                        <button class="project-btn" onclick="toggleProjectMenu('2026', 'geometric_forest'); event.stopPropagation();">Geometric Forest</button>
+                        <button class="project-btn" onclick="toggleProjectMenu('2026', 'sample_solution'); event.stopPropagation();">Sample Solution</button>
+                        <button class="project-btn" onclick="toggleProjectMenu('2026', 'skyline_adventures'); event.stopPropagation();">Skyline Adventures</button>
+                    </div>
+                    
+                    <!-- 各项目的文档菜单 -->
+                    <div id="project-2026-battle_of_tribes" class="doc-menu" style="display: none;">
+                        <button class="doc-btn" onclick="openDocument('2026', 'battle_of_tribes', 'competition_rule'); event.stopPropagation();">Competition Rule</button>
+                        <button class="doc-btn" onclick="openDocument('2026', 'battle_of_tribes', 'field_setup_guide'); event.stopPropagation();">Field Setup Guide</button>
+                    </div>
+                    
+                    <div id="project-2026-cyber_city" class="doc-menu" style="display: none;">
+                        <button class="doc-btn" onclick="openDocument('2026', 'cyber_city', 'competition_rule'); event.stopPropagation();">Competition Rule</button>
+                        <button class="doc-btn" onclick="openDocument('2026', 'cyber_city', 'field_setup_guide'); event.stopPropagation();">Field Setup Guide</button>
+                    </div>
+                    
+                    <div id="project-2026-geometric_forest" class="doc-menu" style="display: none;">
+                        <button class="doc-btn" onclick="openDocument('2026', 'geometric_forest', 'competition_rule'); event.stopPropagation();">Competition Rule</button>
+                        <button class="doc-btn" onclick="openDocument('2026', 'geometric_forest', 'field_setup_guide'); event.stopPropagation();">Field Setup Guide</button>
+                    </div>
+                    
+                    <div id="project-2026-sample_solution" class="doc-menu" style="display: none;">
+                        <button class="doc-btn" onclick="openDocument('2026', 'sample_solution', 'competition_rule'); event.stopPropagation();">Competition Rule</button>
+                        <button class="doc-btn" onclick="openDocument('2026', 'sample_solution', 'field_setup_guide'); event.stopPropagation();">Field Setup Guide</button>
+                    </div>
+                    
+                    <div id="project-2026-skyline_adventures" class="doc-menu" style="display: none;">
+                        <button class="doc-btn" onclick="openDocument('2026', 'skyline_adventures', 'competition_rule'); event.stopPropagation();">Competition Rule</button>
+                        <button class="doc-btn" onclick="openDocument('2026', 'skyline_adventures', 'field_setup_guide'); event.stopPropagation();">Field Setup Guide</button>
+                    </div>
+                </div>
+                
                 <div class="link-status">
                     <span id="status-enjoy_ai" class="status-text status-checking">
-                        <i class="fas fa-spinner fa-spin"></i> <span data-i18n-key="status_checking_short">检测中...</span>
+                        <i class="fas fa-spinner fa-spin"></i> <span data-i18n-key="status_hierarchical_ready">分级菜单就绪</span>
                     </span>
                 </div>
             </div>
@@ -441,7 +599,7 @@
     <script>
         const API_BASE_URL = window.location.origin;
         let linkStatusCache = {};
-        const CURRENT_FOLDER_IDS = ['enjoy_ai', 'whalesbot', 'test'];
+        const CURRENT_FOLDER_IDS = ['whalesbot', 'test']; // 移除enjoy_ai，只包含需要检测状态的文件夹
         
         // ==================== 语言资源定义 ====================
         const i18nResources = {
@@ -468,13 +626,16 @@
                 'status_network_error': '网络错误',
                 'status_unknown': '状态未知',
                 'status_fallback': '直接访问',
-                'desc_enjoy_ai': 'ENJOY AI项目的共享文件夹。包含5个项目，包括项目文件、数据集和资源。',
+                'status_hierarchical_ready': '分级菜单就绪',
+                'desc_enjoy_ai_hierarchical': 'ENJOY AI项目的分级文档中心。按年份和项目分类，包含竞赛规则和场地设置指南。',
                 'desc_whalesbot': 'WhalesBot项目的共享文件夹。包含14个项目，包括代码、资源和项目文件。',
                 'desc_test': '用于测试链接失效检测功能的文件夹。您可以删除Dropbox中的分享链接来测试检测功能。',
                 'meta_shared': '共享文件夹',
                 'meta_test': '测试文件夹',
+                'meta_hierarchical': '分级文档中心',
                 'badge_shared': '共享 • 5个项目',
                 'badge_test': '测试 • 检测功能',
+                'badge_hierarchical': '分级 • 两级菜单',
                 'folder_enjoy': 'ENJOY AI',
                 'folder_whale': 'WhalesBot',
                 'folder_test': 'Test 文件夹',
@@ -513,13 +674,16 @@
                 'status_network_error': 'Network Error',
                 'status_unknown': 'Status Unknown',
                 'status_fallback': 'Direct Access',
-                'desc_enjoy_ai': 'Shared folder for ENJOY AI projects. Contains 5 items including project files, datasets, and resources.',
+                'status_hierarchical_ready': 'Hierarchical Menu Ready',
+                'desc_enjoy_ai_hierarchical': 'Hierarchical document center for ENJOY AI projects. Organized by year and project, includes competition rules and field setup guides.',
                 'desc_whalesbot': 'Shared folder for WhalesBot projects. Contains 14 items including code, resources, and project files.',
                 'desc_test': 'Folder for testing link validation. You can delete the share link in Dropbox to test the detection feature.',
                 'meta_shared': 'Shared Folder',
                 'meta_test': 'Test Folder',
+                'meta_hierarchical': 'Hierarchical Document Center',
                 'badge_shared': 'Shared • 5 items',
                 'badge_test': 'Test • Validation',
+                'badge_hierarchical': 'Hierarchical • Two-Level Menu',
                 'folder_enjoy': 'ENJOY AI',
                 'folder_whale': 'WhalesBot',
                 'folder_test': 'Test Folder',
@@ -539,6 +703,117 @@
         
         // 当前语言设置
         let currentLang = localStorage.getItem('preferredLang') || 'zh-CN';
+        
+        // ==================== 分级菜单控制 ====================
+        let activeYear = null;
+        let activeProject = null;
+        
+        function toggleYearMenu(year) {
+            const menu2025 = document.getElementById('year-2025-menu');
+            const menu2026 = document.getElementById('year-2026-menu');
+            
+            // 如果点击的是当前已激活的年份，则关闭菜单
+            if (activeYear === year) {
+                if (year === '2025') menu2025.style.display = 'none';
+                if (year === '2026') menu2026.style.display = 'none';
+                activeYear = null;
+                
+                // 关闭所有项目子菜单
+                document.querySelectorAll('.doc-menu').forEach(menu => {
+                    menu.style.display = 'none';
+                });
+                activeProject = null;
+            } else {
+                // 关闭其他年份菜单
+                menu2025.style.display = 'none';
+                menu2026.style.display = 'none';
+                
+                // 显示当前年份菜单
+                if (year === '2025') menu2025.style.display = 'block';
+                if (year === '2026') menu2026.style.display = 'block';
+                
+                activeYear = year;
+                
+                // 关闭所有项目子菜单
+                document.querySelectorAll('.doc-menu').forEach(menu => {
+                    menu.style.display = 'none';
+                });
+                activeProject = null;
+            }
+        }
+        
+        function toggleProjectMenu(year, project) {
+            const menuId = `project-${year}-${project}`;
+            const projectMenu = document.getElementById(menuId);
+            
+            // 如果点击的是当前已激活的项目，则关闭菜单
+            if (activeProject === `${year}-${project}`) {
+                projectMenu.style.display = 'none';
+                activeProject = null;
+            } else {
+                // 关闭同一年的其他项目菜单
+                document.querySelectorAll(`.year-menu#year-${year}-menu .doc-menu`).forEach(menu => {
+                    menu.style.display = 'none';
+                });
+                
+                // 显示当前项目菜单
+                projectMenu.style.display = 'block';
+                activeProject = `${year}-${project}`;
+            }
+        }
+        
+        // 打开文档链接
+        async function openDocument(year, project, docType) {
+            const button = document.querySelector(`.doc-btn[onclick*="${year}', '${project}', '${docType}']`);
+            let originalText = '';
+            if (button) {
+                originalText = button.textContent;
+                button.innerHTML = `<span class="loading-spinner"></span>${currentLang === 'zh-CN' ? '打开中...' : 'Opening...'}`;
+                button.disabled = true;
+            }
+            
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/hierarchical/link?year=${year}&project=${project}&docType=${docType}`);
+                
+                if (!response.ok) {
+                    if (response.status === 404) {
+                        throw new Error(currentLang === 'zh-CN' ? '文档链接未配置，请在server.js中配置链接' : 'Document link not configured, please configure link in server.js');
+                    } else if (response.status === 503) {
+                        const data = await response.json();
+                        throw new Error(`${currentLang === 'zh-CN' ? '链接已失效' : 'Link expired'}: ${data.error}`);
+                    } else {
+                        throw new Error(`${currentLang === 'zh-CN' ? '服务器错误' : 'Server error'}: ${response.status}`);
+                    }
+                }
+                
+                const data = await response.json();
+                
+                if (data && data.url) {
+                    window.open(data.url, '_blank');
+                    
+                    // 更新状态显示
+                    const statusEl = document.getElementById('status-enjoy_ai');
+                    statusEl.innerHTML = `<i class="fas fa-check-circle"></i> ${i18nResources[currentLang]['status_live']} (${docType})`;
+                    statusEl.className = 'status-text status-valid';
+                } else {
+                    throw new Error(currentLang === 'zh-CN' ? '无效的链接数据' : 'Invalid link data');
+                }
+            } catch (error) {
+                console.error('打开文档失败:', error);
+                
+                // 更新状态显示
+                const statusEl = document.getElementById('status-enjoy_ai');
+                statusEl.innerHTML = `<i class="fas fa-times-circle"></i> ${error.message.substring(0, 30)}...`;
+                statusEl.className = 'status-text status-invalid';
+                
+                showError(`${currentLang === 'zh-CN' ? '打开失败' : 'Open failed'}: ${error.message}`);
+            } finally {
+                if (button) {
+                    button.textContent = originalText;
+                    button.disabled = false;
+                }
+            }
+        }
         
         // ==================== 语言切换功能 ====================
         function switchLanguage(langCode) {
@@ -566,58 +841,29 @@
             console.log(`Language switched to: ${langCode}`);
         }
         
-        // 更新刷新按钮文本（修复按钮翻译问题）
+        // 更新刷新按钮文本
         function updateRefreshButtonText() {
             const refreshBtn = document.getElementById('refresh-btn');
             if (!refreshBtn) return;
             
-            // 检查按钮是否处于加载状态（有loading-spinner）
             const spinner = refreshBtn.querySelector('.loading-spinner');
-            const btnTextSpan = refreshBtn.querySelector('[data-i18n-key="btn_refresh"]');
-            
             if (spinner) {
-                // 按钮处于加载状态，需要更新"验证中..."文本
-                // 找到spinner后面的文本节点
-                const allSpans = refreshBtn.querySelectorAll('span');
-                allSpans.forEach(span => {
-                    if (span !== spinner && !span.hasAttribute('data-i18n-key')) {
-                        // 这个span是动态添加的文本
-                        span.textContent = i18nResources[currentLang]['btn_checking'];
-                    }
-                });
-                
-                // 如果找不到动态文本，就创建一个
-                let foundTextSpan = false;
+                // 按钮处于加载状态
+                const textNodes = [];
                 refreshBtn.childNodes.forEach(node => {
-                    if (node.nodeType === 3 && node.textContent.trim()) { // 文本节点
-                        node.textContent = i18nResources[currentLang]['btn_checking'];
-                        foundTextSpan = true;
+                    if (node.nodeType === 3 && node.textContent.trim()) {
+                        textNodes.push(node);
                     }
                 });
                 
-                if (!foundTextSpan) {
-                    // 如果没有文本节点，创建一个新的
-                    const textSpan = document.createElement('span');
-                    textSpan.textContent = i18nResources[currentLang]['btn_checking'];
-                    refreshBtn.appendChild(textSpan);
+                if (textNodes.length > 0) {
+                    textNodes[0].textContent = i18nResources[currentLang]['btn_checking'];
                 }
-            } else if (btnTextSpan) {
-                // 正常状态，更新按钮文本
-                btnTextSpan.textContent = i18nResources[currentLang]['btn_refresh'];
             } else {
-                // 如果按钮结构被改变，重建它
-                const icon = refreshBtn.querySelector('i');
-                if (icon) {
-                    const newText = document.createElement('span');
-                    newText.setAttribute('data-i18n-key', 'btn_refresh');
-                    newText.textContent = i18nResources[currentLang]['btn_refresh'];
-                    
-                    // 清除现有内容，保留图标
-                    const existingIcon = icon.cloneNode(true);
-                    refreshBtn.innerHTML = '';
-                    refreshBtn.appendChild(existingIcon);
-                    refreshBtn.appendChild(document.createTextNode(' '));
-                    refreshBtn.appendChild(newText);
+                // 正常状态
+                const btnTextSpan = refreshBtn.querySelector('[data-i18n-key="btn_refresh"]');
+                if (btnTextSpan) {
+                    btnTextSpan.textContent = i18nResources[currentLang]['btn_refresh'];
                 }
             }
         }
@@ -632,7 +878,6 @@
                     const prefix = i18nResources[currentLang]['last_checked'] + ': ';
                     lastCheckedEl.textContent = prefix + timeMatch[0];
                 } else if (!lastCheckedEl.textContent.includes(':')) {
-                    // 如果没有时间格式，直接更新前缀
                     const prefix = i18nResources[currentLang]['last_checked'] + ': ';
                     lastCheckedEl.textContent = prefix;
                 }
@@ -642,22 +887,20 @@
             const statusTextEl = document.getElementById('status-text');
             if (statusTextEl && statusTextEl.textContent) {
                 const currentText = statusTextEl.textContent;
-                if (currentText.includes('所有链接正常')) {
+                if (currentText.includes('所有链接正常') || currentText.includes('All links active')) {
                     statusTextEl.textContent = i18nResources[currentLang]['status_all_good'];
-                } else if (currentText.includes('个链接正常')) {
+                } else if (currentText.includes('个链接正常') || currentText.includes('links active')) {
                     const match = currentText.match(/(\d+)\/(\d+)/);
                     if (match) {
                         statusTextEl.textContent = `${match[1]}/${match[2]} ${i18nResources[currentLang]['status_some_good']}`;
                     }
-                } else if (currentText.includes('所有链接均已失效')) {
+                } else if (currentText.includes('所有链接均已失效') || currentText.includes('All links are down')) {
                     statusTextEl.textContent = i18nResources[currentLang]['status_all_bad'];
-                } else if (currentText.includes('链接状态检测服务不可用')) {
+                } else if (currentText.includes('链接状态检测服务不可用') || currentText.includes('Link status service unavailable')) {
                     statusTextEl.textContent = i18nResources[currentLang]['status_service_error'];
-                } else if (currentText.includes('链接状态检测失败')) {
+                } else if (currentText.includes('链接状态检测失败') || currentText.includes('Link status check failed')) {
                     statusTextEl.textContent = i18nResources[currentLang]['status_check_failed'];
-                } else if (currentText.includes('正在检测链接状态')) {
-                    statusTextEl.textContent = i18nResources[currentLang]['status_checking'];
-                } else if (currentText.includes('Checking link status')) {
+                } else if (currentText.includes('正在检测链接状态') || currentText.includes('Checking link status')) {
                     statusTextEl.textContent = i18nResources[currentLang]['status_checking'];
                 }
             }
@@ -667,37 +910,37 @@
                 const statusEl = document.getElementById(`status-${folderId}`);
                 if (statusEl) {
                     const currentStatus = statusEl.textContent;
-                    if (currentStatus.includes('链接正常')) {
+                    if (currentStatus.includes('链接正常') || currentStatus.includes('Link Active')) {
                         statusEl.innerHTML = `<i class="fas fa-check-circle"></i> ${i18nResources[currentLang]['status_live']}`;
-                    } else if (currentStatus.includes('检测中')) {
+                    } else if (currentStatus.includes('检测中') || currentStatus.includes('Checking')) {
                         statusEl.innerHTML = `<i class="fas fa-spinner fa-spin"></i> ${i18nResources[currentLang]['status_checking_short']}`;
-                    } else if (currentStatus.includes('Checking')) {
-                        statusEl.innerHTML = `<i class="fas fa-spinner fa-spin"></i> ${i18nResources[currentLang]['status_checking_short']}`;
-                    } else if (currentStatus.includes('链接验证失败')) {
+                    } else if (currentStatus.includes('链接验证失败') || currentStatus.includes('Link Check Failed')) {
                         statusEl.innerHTML = `<i class="fas fa-times-circle"></i> ${i18nResources[currentLang]['status_failed']}`;
-                    } else if (currentStatus.includes('链接已失效')) {
+                    } else if (currentStatus.includes('链接已失效') || currentStatus.includes('Link Expired')) {
                         statusEl.innerHTML = `<i class="fas fa-times-circle"></i> ${i18nResources[currentLang]['status_expired']}`;
-                    } else if (currentStatus.includes('内容已删除')) {
+                    } else if (currentStatus.includes('内容已删除') || currentStatus.includes('Content Deleted')) {
                         statusEl.innerHTML = `<i class="fas fa-times-circle"></i> ${i18nResources[currentLang]['status_deleted']}`;
-                    } else if (currentStatus.includes('链接异常')) {
+                    } else if (currentStatus.includes('链接异常') || currentStatus.includes('Link Abnormal')) {
                         statusEl.innerHTML = `<i class="fas fa-times-circle"></i> ${i18nResources[currentLang]['status_abnormal']}`;
-                    } else if (currentStatus.includes('检测超时')) {
+                    } else if (currentStatus.includes('检测超时') || currentStatus.includes('Check Timeout')) {
                         statusEl.innerHTML = `<i class="fas fa-times-circle"></i> ${i18nResources[currentLang]['status_timeout']}`;
-                    } else if (currentStatus.includes('网络错误')) {
+                    } else if (currentStatus.includes('网络错误') || currentStatus.includes('Network Error')) {
                         statusEl.innerHTML = `<i class="fas fa-times-circle"></i> ${i18nResources[currentLang]['status_network_error']}`;
-                    } else if (currentStatus.includes('状态未知')) {
+                    } else if (currentStatus.includes('状态未知') || currentStatus.includes('Status Unknown')) {
                         statusEl.innerHTML = `<i class="fas fa-question-circle"></i> ${i18nResources[currentLang]['status_unknown']}`;
-                    } else if (currentStatus.includes('直接访问')) {
-                        statusEl.innerHTML = `<i class="fas fa-exclamation-triangle"></i> ${i18nResources[currentLang]['status_fallback']}`;
-                    } else if (currentStatus.includes('Link Check Failed')) {
-                        statusEl.innerHTML = `<i class="fas fa-times-circle"></i> ${i18nResources[currentLang]['status_failed']}`;
-                    } else if (currentStatus.includes('Link Expired')) {
-                        statusEl.innerHTML = `<i class="fas fa-times-circle"></i> ${i18nResources[currentLang]['status_expired']}`;
-                    } else if (currentStatus.includes('Direct Access')) {
+                    } else if (currentStatus.includes('直接访问') || currentStatus.includes('Direct Access')) {
                         statusEl.innerHTML = `<i class="fas fa-exclamation-triangle"></i> ${i18nResources[currentLang]['status_fallback']}`;
                     }
                 }
             });
+            
+            // 更新ENJOY AI状态文本
+            const enjoyAiStatus = document.getElementById('status-enjoy_ai');
+            if (enjoyAiStatus) {
+                if (enjoyAiStatus.textContent.includes('分级菜单就绪') || enjoyAiStatus.textContent.includes('Hierarchical Menu Ready')) {
+                    enjoyAiStatus.innerHTML = `<i class="fas fa-check-circle"></i> ${i18nResources[currentLang]['status_hierarchical_ready']}`;
+                }
+            }
         }
         
         // 绑定语言切换按钮事件
@@ -918,6 +1161,13 @@
                         }
                     });
                     
+                    // 更新ENJOY AI状态显示
+                    const enjoyAiStatus = document.getElementById('status-enjoy_ai');
+                    if (enjoyAiStatus) {
+                        enjoyAiStatus.innerHTML = `<i class="fas fa-check-circle"></i> ${i18nResources[currentLang]['status_hierarchical_ready']}`;
+                        enjoyAiStatus.className = 'status-text status-valid';
+                    }
+                    
                     // 更新系统状态
                     if (validCount === totalCount) {
                         statusText.textContent = `${i18nResources[currentLang]['status_all_good']} (${validCount}/${totalCount})`;
@@ -967,6 +1217,13 @@
                     i18nResources[currentLang]['btn_open'];
             });
             
+            // ENJOY AI卡片保持分级菜单就绪状态
+            const enjoyAiStatus = document.getElementById('status-enjoy_ai');
+            if (enjoyAiStatus) {
+                enjoyAiStatus.innerHTML = `<i class="fas fa-check-circle"></i> ${i18nResources[currentLang]['status_hierarchical_ready']}`;
+                enjoyAiStatus.className = 'status-text status-valid';
+            }
+            
             console.log('使用降级模式：跳过链接状态检测');
         }
         
@@ -978,6 +1235,13 @@
                     const data = await response.json();
                     document.getElementById('system-status-indicator').style.backgroundColor = '#48bb78';
                     document.getElementById('status-text').textContent = i18nResources[currentLang]['status_all_good'].split(' (')[0];
+                    
+                    // 设置ENJOY AI初始状态
+                    const enjoyAiStatus = document.getElementById('status-enjoy_ai');
+                    if (enjoyAiStatus) {
+                        enjoyAiStatus.innerHTML = `<i class="fas fa-check-circle"></i> ${i18nResources[currentLang]['status_hierarchical_ready']}`;
+                        enjoyAiStatus.className = 'status-text status-valid';
+                    }
                     
                     // 自动检测一次链接状态
                     setTimeout(() => checkAllLinks(), 1000);
