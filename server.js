@@ -11,11 +11,60 @@ const PORT = process.env.PORT || 3000;
 app.use(cors());
 app.use(express.json());
 
-// 手动配置的Dropbox永久分享链接
+// 手动配置的Dropbox永久分享链接 - 移除enjoy_ai
 const MANUAL_SHARE_LINKS = {
-  'enjoy_ai': 'https://www.dropbox.com/scl/fo/xhuafhd7lvzct5qou5exc/APsv0VSGbS0sL2h5q86sxrE?rlkey=wulgqtxyjifm67ymdhj881u66&st=h5z3paub&dl=0',
   'whalesbot': 'https://www.dropbox.com/scl/fo/dm9mk69c56v8o554r11wv/AGjzYhC_2KXZ6xXkLc88k_g?rlkey=67t99jd9gms79e2ato24ee727&st=rhn2cwhy&dl=0',
   'test': 'https://www.dropbox.com/scl/fo/jfm93u99iubtds6w4vg4w/AO7Ht-rwUHc7W5oaojNep2o?rlkey=bjvwfmx9tq8oa6v67iw3zyapp&st=o03vu2pi&dl=0'
+  // enjoy_ai 已完全移除，改为分级菜单结构
+};
+
+// ============ ENJOY AI 分级链接配置 ============
+// 这里用嵌套结构替代原来的扁平链接
+const ENJOY_AI_HIERARCHICAL_LINKS = {
+  '2025': {
+    'battle_of_tribes': {
+      'competition_rule': '', // TODO: 请在此处替换为实际的Dropbox链接
+      'field_setup_guide': ''  // TODO: 请在此处替换为实际的Dropbox链接
+    },
+    'cyber_city': {
+      'competition_rule': '', // TODO: 请在此处替换为实际的Dropbox链接
+      'field_setup_guide': ''  // TODO: 请在此处替换为实际的Dropbox链接
+    },
+    'geometric_forest': {
+      'competition_rule': '', // TODO: 请在此处替换为实际的Dropbox链接
+      'field_setup_guide': ''  // TODO: 请在此处替换为实际的Dropbox链接
+    },
+    'sample_solution': {
+      'competition_rule': '', // TODO: 请在此处替换为实际的Dropbox链接
+      'field_setup_guide': ''  // TODO: 请在此处替换为实际的Dropbox链接
+    },
+    'skyline_adventures': {
+      'competition_rule': '', // TODO: 请在此处替换为实际的Dropbox链接
+      'field_setup_guide': ''  // TODO: 请在此处替换为实际的Dropbox链接
+    }
+  },
+  '2026': {
+    'battle_of_tribes': {
+      'competition_rule': '', // TODO: 请在此处替换为实际的Dropbox链接
+      'field_setup_guide': ''  // TODO: 请在此处替换为实际的Dropbox链接
+    },
+    'cyber_city': {
+      'competition_rule': '', // TODO: 请在此处替换为实际的Dropbox链接
+      'field_setup_guide': ''  // TODO: 请在此处替换为实际的Dropbox链接
+    },
+    'geometric_forest': {
+      'competition_rule': '', // TODO: 请在此处替换为实际的Dropbox链接
+      'field_setup_guide': ''  // TODO: 请在此处替换为实际的Dropbox链接
+    },
+    'sample_solution': {
+      'competition_rule': '', // TODO: 请在此处替换为实际的Dropbox链接
+      'field_setup_guide': ''  // TODO: 请在此处替换为实际的Dropbox链接
+    },
+    'skyline_adventures': {
+      'competition_rule': '', // TODO: 请在此处替换为实际的Dropbox链接
+      'field_setup_guide': ''  // TODO: 请在此处替换为实际的Dropbox链接
+    }
+  }
 };
 
 // 链接状态缓存
@@ -181,7 +230,8 @@ app.get('/api/health', (req, res) => {
     service: 'dropbox-permanent-link-service',
     mode: 'manual_links_with_validation',
     timestamp: new Date().toISOString(),
-    available_folders: Object.keys(MANUAL_SHARE_LINKS)
+    available_folders: Object.keys(MANUAL_SHARE_LINKS),
+    hierarchical_links_available: true
   });
 });
 
@@ -219,6 +269,83 @@ app.get('/api/link/:folderId', async (req, res) => {
     url: dropboxLink,
     source: 'manual_preconfigured',
     note: '此链接为手动生成并预配置的Dropbox永久分享链接',
+    timestamp: new Date().toISOString()
+  });
+});
+
+// 新增：获取ENJOY AI分级链接结构
+app.get('/api/hierarchical/enjoy_ai', (req, res) => {
+  res.json({
+    success: true,
+    data: ENJOY_AI_HIERARCHICAL_LINKS,
+    timestamp: new Date().toISOString(),
+    note: '分级链接结构，请通过 /api/hierarchical/link 端点获取具体链接'
+  });
+});
+
+// 新增：获取分级链接的具体文档
+app.get('/api/hierarchical/link', async (req, res) => {
+  const { year, project, docType } = req.query;
+  
+  if (!year || !project || !docType) {
+    return res.status(400).json({
+      error: '缺少必要参数',
+      message: '需要year, project, docType参数',
+      example: '/api/hierarchical/link?year=2025&project=battle_of_tribes&docType=competition_rule',
+      available_years: Object.keys(ENJOY_AI_HIERARCHICAL_LINKS)
+    });
+  }
+  
+  // 检查年份参数有效性
+  if (!ENJOY_AI_HIERARCHICAL_LINKS[year]) {
+    return res.status(404).json({
+      error: '年份不存在',
+      available_years: Object.keys(ENJOY_AI_HIERARCHICAL_LINKS)
+    });
+  }
+  
+  // 检查项目参数有效性
+  if (!ENJOY_AI_HIERARCHICAL_LINKS[year][project]) {
+    return res.status(404).json({
+      error: '项目不存在',
+      available_projects: Object.keys(ENJOY_AI_HIERARCHICAL_LINKS[year])
+    });
+  }
+  
+  const url = ENJOY_AI_HIERARCHICAL_LINKS[year][project][docType];
+  
+  // 检查链接是否已配置
+  if (!url) {
+    return res.status(404).json({
+      error: '文档类型不存在或链接未配置',
+      available_docTypes: Object.keys(ENJOY_AI_HIERARCHICAL_LINKS[year][project]),
+      note: '请在server.js的ENJOY_AI_HIERARCHICAL_LINKS中配置此链接'
+    });
+  }
+  
+  // 检测链接有效性
+  const validity = await checkLinkValidity(url);
+  
+  if (!validity.valid) {
+    return res.status(503).json({
+      error: '当前文件链接已失效',
+      code: 'LINK_EXPIRED',
+      year,
+      project,
+      docType,
+      status: validity.status,
+      details: validity.error,
+      timestamp: new Date().toISOString()
+    });
+  }
+  
+  res.json({
+    year,
+    project,
+    docType,
+    url,
+    name: getDocumentName(year, project, docType),
+    validity: validity,
     timestamp: new Date().toISOString()
   });
 });
@@ -264,6 +391,7 @@ app.get('/api/folders', (req, res) => {
     folders: folderInfo,
     count: folderInfo.length,
     mode: 'manual_preconfigured_links',
+    hierarchical_available: true,
     timestamp: new Date().toISOString()
   });
 });
@@ -279,11 +407,29 @@ app.get('/', (req, res) => {
 // 辅助函数：获取文件夹友好名称
 function getFolderName(folderId) {
   const names = {
-    'enjoy_ai': 'ENJOY AI',
     'whalesbot': 'WhalesBot',
     'test': 'Test 文件夹'
+    // enjoy_ai 已移除
   };
   return names[folderId] || folderId;
+}
+
+// 辅助函数：获取文档友好名称
+function getDocumentName(year, project, docType) {
+  const projectNames = {
+    'battle_of_tribes': 'Battle of Tribes',
+    'cyber_city': 'Cyber City',
+    'geometric_forest': 'Geometric Forest',
+    'sample_solution': 'Sample Solution',
+    'skyline_adventures': 'Skyline Adventures'
+  };
+  
+  const docTypeNames = {
+    'competition_rule': 'Competition Rule',
+    'field_setup_guide': 'Field Setup Guide'
+  };
+  
+  return `${year} - ${projectNames[project] || project} - ${docTypeNames[docType] || docType}`;
 }
 
 // 处理未匹配的路由
@@ -293,6 +439,8 @@ app.use((req, res) => {
     availableEndpoints: {
       health: '/api/health',
       getLink: '/api/link/:folderId',
+      hierarchicalStructure: '/api/hierarchical/enjoy_ai',
+      hierarchicalLink: '/api/hierarchical/link?year=X&project=Y&docType=Z',
       linksStatus: '/api/links/status',
       listFolders: '/api/folders',
       frontend: '/ (前端页面)'
@@ -306,11 +454,13 @@ app.listen(PORT, () => {
   console.log(`🚀 Dropbox永久链接服务已启动`);
   console.log(`📡 端口: ${PORT}`);
   console.log(`🔗 已配置 ${Object.keys(MANUAL_SHARE_LINKS).length} 个永久链接`);
+  console.log(`🌳 ENJOY AI已改为分级菜单结构 (${Object.keys(ENJOY_AI_HIERARCHICAL_LINKS).length} 个年份)`);
   console.log(`🔍 链接验证: 增强版（检测页面内容有效性）`);
   console.log(`=========================================`);
   console.log(`前端页面: http://localhost:${PORT}`);
   console.log(`健康检查: http://localhost:${PORT}/api/health`);
   console.log(`链接状态: http://localhost:${PORT}/api/links/status`);
   console.log(`测试链接: http://localhost:${PORT}/api/link/test`);
+  console.log(`ENJOY AI分级结构: http://localhost:${PORT}/api/hierarchical/enjoy_ai`);
   console.log(`=========================================`);
 });
