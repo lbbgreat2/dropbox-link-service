@@ -23,7 +23,7 @@
         .container {
             max-width: 1200px;
             margin: 0 auto;
-            padding: 0 20px; /* 新增：添加左右内边距确保在小屏幕上不贴边 */
+            padding: 0 20px;
         }
         
         header {
@@ -98,18 +98,18 @@
         
         .card-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 400px)); /* 修改此处 */
+            grid-template-columns: repeat(auto-fit, minmax(300px, 400px));
             gap: 25px;
             margin-bottom: 30px;
-            justify-content: center;  /* 添加此行：网格内容居中 */
-            justify-items: center;    /* 添加此行：网格项在单元格内居中 */
+            justify-content: center;
+            justify-items: center;
         }
         
         @media (max-width: 768px) {
             .card-grid {
                 grid-template-columns: 1fr;
                 gap: 20px;
-                padding: 0 10px; /* 在移动端添加内边距 */
+                padding: 0 10px;
             }
             
             header h1 {
@@ -129,7 +129,6 @@
                 margin-top: 15px;
             }
             
-            /* 新增：移动端优化年份按钮 */
             .year-selection {
                 flex-wrap: wrap;
             }
@@ -140,7 +139,6 @@
             }
         }
         
-        /* 新增：针对中等屏幕的优化 */
         @media (min-width: 769px) and (max-width: 1200px) {
             .card-grid {
                 grid-template-columns: repeat(2, minmax(300px, 400px));
@@ -148,7 +146,6 @@
             }
         }
         
-        /* 新增：针对大屏幕的优化 */
         @media (min-width: 1201px) {
             .card-grid {
                 grid-template-columns: repeat(2, 400px);
@@ -165,8 +162,8 @@
             display: flex;
             flex-direction: column;
             position: relative;
-            max-width: 400px;  /* 添加此行：限制卡片最大宽度 */
-            width: 100%;       /* 添加此行：确保卡片填满网格单元格 */
+            max-width: 400px;
+            width: 100%;
         }
         
         .folder-card:hover {
@@ -221,8 +218,7 @@
             display: flex;
             justify-content: space-between;
             margin-bottom: 10px;
-            /* 新增居中和对齐优化 */
-            gap: 10px; /* 使用gap替代margin控制间距 */
+            gap: 10px;
         }
         
         .year-btn, .project-btn, .doc-btn {
@@ -239,9 +235,17 @@
             text-align: left;
         }
         
-        .year-btn:hover, .project-btn:hover, .doc-btn:hover {
+        .year-btn:hover:not(:disabled), .project-btn:hover:not(:disabled), .doc-btn:hover:not(:disabled) {
             background: linear-gradient(135deg, #e0e9ff, #d6f2ff);
             border-color: #0061ff;
+        }
+        
+        .year-btn:disabled, .project-btn:disabled, .doc-btn:disabled {
+            background: linear-gradient(135deg, #f5f5f5, #eeeeee);
+            color: #999;
+            border-color: #ddd;
+            cursor: not-allowed;
+            opacity: 0.7;
         }
         
         .year-btn {
@@ -253,13 +257,19 @@
             font-weight: 600;
             cursor: pointer;
             transition: all 0.3s ease;
-            flex: 1; /* 使按钮等宽分布 */
-            text-align: center; /* 文字居中 */
-            min-width: 100px; /* 设置最小宽度 */
+            flex: 1;
+            text-align: center;
+            min-width: 100px;
         }
         
-        .year-btn:hover {
+        .year-btn:hover:not(:disabled) {
             background: linear-gradient(135deg, #0052d4, #4fd8ff);
+        }
+        
+        .year-btn:disabled {
+            background: linear-gradient(135deg, #cccccc, #aaaaaa);
+            color: #666;
+            cursor: not-allowed;
         }
         
         .project-selection {
@@ -279,8 +289,24 @@
             margin-top: 5px;
             margin-bottom: 10px;
             box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-            display: none; /* 默认隐藏 */
-            width: 100%; /* 与父容器同宽 */
+            display: none;
+            width: 100%;
+        }
+        
+        .doc-btn {
+            background: white;
+            margin: 2px 0;
+            font-size: 0.85rem;
+            padding: 8px 10px;
+            position: relative;
+        }
+        
+        .doc-btn.invalid::after {
+            content: "⚠";
+            position: absolute;
+            right: 8px;
+            color: #f56565;
+            font-weight: bold;
         }
         
         .year-menu, .doc-menu {
@@ -427,26 +453,6 @@
             margin-left: 10px;
         }
         
-        .test-badge {
-            background-color: #fff3cd;
-            color: #856404;
-            padding: 4px 10px;
-            border-radius: 20px;
-            font-size: 0.8rem;
-            display: inline-block;
-            margin-left: 10px;
-        }
-        
-        .warning-badge {
-            background-color: #fff3cd;
-            color: #856404;
-            padding: 4px 10px;
-            border-radius: 20px;
-            font-size: 0.8rem;
-            display: inline-block;
-            margin-left: 10px;
-        }
-        
         .hierarchical-badge {
             background-color: #e8f4ff;
             color: #0061ff;
@@ -463,17 +469,39 @@
             margin-top: 5px;
         }
         
-        /* 新增：项目项容器，用于将项目按钮与其文档菜单关联 */
         .project-item {
             position: relative;
             width: 100%;
+        }
+        
+        .status-count {
+            display: inline-block;
+            margin-left: 10px;
+            font-size: 0.8rem;
+            padding: 2px 6px;
+            border-radius: 10px;
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+        
+        .status-count.valid {
+            background-color: rgba(76, 175, 80, 0.2);
+            color: #2e7d32;
+        }
+        
+        .status-count.warning {
+            background-color: rgba(245, 158, 11, 0.2);
+            color: #d97706;
+        }
+        
+        .status-count.error {
+            background-color: rgba(239, 68, 68, 0.2);
+            color: #dc2626;
         }
     </style>
 </head>
 <body>
     <div class="container">
         <header>
-            <!-- 语言切换器 -->
             <div class="language-switcher">
                 <button id="lang-zh" class="lang-btn active">中文</button>
                 <button id="lang-en" class="lang-btn">English</button>
@@ -500,9 +528,9 @@
                     <i class="fas fa-layer-group"></i>
                 </div>
                 <h3 class="card-title"><span data-i18n-key="folder_enjoy">ENJOY AI</span>
-                    <span class="hierarchical-badge" data-i18n-key="badge_hierarchical">分级 • 两级菜单</span>
+                    <span class="hierarchical-badge" data-i18n-key="badge_hierarchical">分级 • 自动检测</span>
                 </h3>
-                <p class="card-desc" data-i18n-key="desc_enjoy_ai_hierarchical">ENJOY AI项目的分级文档中心。按年份和项目分类，包含竞赛规则和场地设置指南。</p>
+                <p class="card-desc" data-i18n-key="desc_enjoy_ai_hierarchical">ENJOY AI项目的分级文档中心。按年份和项目分类，包含竞赛规则和场地设置指南。<span id="enjoy-ai-status-count" class="status-count">检测中...</span></p>
                 <div class="card-meta">
                     <i class="fas fa-sitemap"></i> <span data-i18n-key="meta_hierarchical">分级文档中心</span>
                 </div>
@@ -516,43 +544,41 @@
                 <!-- 2025年项目菜单 -->
                 <div id="year-2025-menu" class="year-menu" style="display: none; margin-bottom: 15px;">
                     <div class="project-selection">
-                        <!-- 使用项目项容器包裹每个项目按钮和其文档菜单 -->
                         <div class="project-item">
                             <button class="project-btn" onclick="toggleProjectMenu('2025', 'cyber_city', this); event.stopPropagation();">Cyber City</button>
-                            <!-- 文档菜单放在项目按钮的容器内，在项目按钮下方显示 -->
                             <div id="project-2025-cyber_city" class="doc-menu" style="display: none;">
-                                <button class="doc-btn" onclick="openDocument('2025', 'cyber_city', 'competition_rule_scoring_sheet'); event.stopPropagation();">Competition Rule & Scoring Sheet</button>
-                                <button class="doc-btn" onclick="openDocument('2025', 'cyber_city', 'field_setup_guide'); event.stopPropagation();">Field Setup Guide</button>
-                                <button class="doc-btn" onclick="openDocument('2025', 'cyber_city', 'sample_solution_ppt'); event.stopPropagation();">Sample Solution PPT</button>
-                                <button class="doc-btn" onclick="openDocument('2025', 'cyber_city', 'courses'); event.stopPropagation();">Courses</button>
+                                <button class="doc-btn" data-year="2025" data-project="cyber_city" data-doctype="competition_rule_scoring_sheet" onclick="openDocument('2025', 'cyber_city', 'competition_rule_scoring_sheet'); event.stopPropagation();">Competition Rule & Scoring Sheet</button>
+                                <button class="doc-btn" data-year="2025" data-project="cyber_city" data-doctype="field_setup_guide" onclick="openDocument('2025', 'cyber_city', 'field_setup_guide'); event.stopPropagation();">Field Setup Guide</button>
+                                <button class="doc-btn" data-year="2025" data-project="cyber_city" data-doctype="sample_solution_ppt" onclick="openDocument('2025', 'cyber_city', 'sample_solution_ppt'); event.stopPropagation();">Sample Solution PPT</button>
+                                <button class="doc-btn" data-year="2025" data-project="cyber_city" data-doctype="courses" onclick="openDocument('2025', 'cyber_city', 'courses'); event.stopPropagation();">Courses</button>
                             </div>
                         </div>
                         
                         <div class="project-item">
                             <button class="project-btn" onclick="toggleProjectMenu('2025', 'geometric_forest', this); event.stopPropagation();">Geometric Forest</button>
                             <div id="project-2025-geometric_forest" class="doc-menu" style="display: none;">
-                                <button class="doc-btn" onclick="openDocument('2025', 'geometric_forest', 'competition_rule_scoring_sheet'); event.stopPropagation();">Competition Rule & Scoring Sheet</button>
-                                <button class="doc-btn" onclick="openDocument('2025', 'geometric_forest', 'field_setup_guide'); event.stopPropagation();">Field Setup Guide</button>
-                                <button class="doc-btn" onclick="openDocument('2025', 'geometric_forest', 'sample_solution_ppt'); event.stopPropagation();">Sample Solution PPT</button>
+                                <button class="doc-btn" data-year="2025" data-project="geometric_forest" data-doctype="competition_rule_scoring_sheet" onclick="openDocument('2025', 'geometric_forest', 'competition_rule_scoring_sheet'); event.stopPropagation();">Competition Rule & Scoring Sheet</button>
+                                <button class="doc-btn" data-year="2025" data-project="geometric_forest" data-doctype="field_setup_guide" onclick="openDocument('2025', 'geometric_forest', 'field_setup_guide'); event.stopPropagation();">Field Setup Guide</button>
+                                <button class="doc-btn" data-year="2025" data-project="geometric_forest" data-doctype="sample_solution_ppt" onclick="openDocument('2025', 'geometric_forest', 'sample_solution_ppt'); event.stopPropagation();">Sample Solution PPT</button>
                             </div>
                         </div>
                         
                         <div class="project-item">
                             <button class="project-btn" onclick="toggleProjectMenu('2025', 'battle_of_tribes', this); event.stopPropagation();">Battle of Tribes</button>
                             <div id="project-2025-battle_of_tribes" class="doc-menu" style="display: none;">
-                                <button class="doc-btn" onclick="openDocument('2025', 'battle_of_tribes', 'competition_rule_scoring_sheet'); event.stopPropagation();">Competition Rule & Scoring Sheet</button>
-                                <button class="doc-btn" onclick="openDocument('2025', 'battle_of_tribes', 'field_setup_guide'); event.stopPropagation();">Field Setup Guide</button>
-                                <button class="doc-btn" onclick="openDocument('2025', 'battle_of_tribes', 'sample_solution_ppt'); event.stopPropagation();">Sample Solution PPT</button>
-                                <button class="doc-btn" onclick="openDocument('2025', 'battle_of_tribes', 'courses'); event.stopPropagation();">Courses</button>
+                                <button class="doc-btn" data-year="2025" data-project="battle_of_tribes" data-doctype="competition_rule_scoring_sheet" onclick="openDocument('2025', 'battle_of_tribes', 'competition_rule_scoring_sheet'); event.stopPropagation();">Competition Rule & Scoring Sheet</button>
+                                <button class="doc-btn" data-year="2025" data-project="battle_of_tribes" data-doctype="field_setup_guide" onclick="openDocument('2025', 'battle_of_tribes', 'field_setup_guide'); event.stopPropagation();">Field Setup Guide</button>
+                                <button class="doc-btn" data-year="2025" data-project="battle_of_tribes" data-doctype="sample_solution_ppt" onclick="openDocument('2025', 'battle_of_tribes', 'sample_solution_ppt'); event.stopPropagation();">Sample Solution PPT</button>
+                                <button class="doc-btn" data-year="2025" data-project="battle_of_tribes" data-doctype="courses" onclick="openDocument('2025', 'battle_of_tribes', 'courses'); event.stopPropagation();">Courses</button>
                             </div>
                         </div>
                         
                         <div class="project-item">
                             <button class="project-btn" onclick="toggleProjectMenu('2025', 'skyline_adventures', this); event.stopPropagation();">Skyline Adventures</button>
                             <div id="project-2025-skyline_adventures" class="doc-menu" style="display: none;">
-                                <button class="doc-btn" onclick="openDocument('2025', 'skyline_adventures', 'competition_rule_scoring_sheet'); event.stopPropagation();">Competition Rule & Scoring Sheet</button>
-                                <button class="doc-btn" onclick="openDocument('2025', 'skyline_adventures', 'field_setup_guide'); event.stopPropagation();">Field Setup Guide</button>
-                                <button class="doc-btn" onclick="openDocument('2025', 'skyline_adventures', 'sample_solution_ppt'); event.stopPropagation();">Sample Solution PPT</button>
+                                <button class="doc-btn" data-year="2025" data-project="skyline_adventures" data-doctype="competition_rule_scoring_sheet" onclick="openDocument('2025', 'skyline_adventures', 'competition_rule_scoring_sheet'); event.stopPropagation();">Competition Rule & Scoring Sheet</button>
+                                <button class="doc-btn" data-year="2025" data-project="skyline_adventures" data-doctype="field_setup_guide" onclick="openDocument('2025', 'skyline_adventures', 'field_setup_guide'); event.stopPropagation();">Field Setup Guide</button>
+                                <button class="doc-btn" data-year="2025" data-project="skyline_adventures" data-doctype="sample_solution_ppt" onclick="openDocument('2025', 'skyline_adventures', 'sample_solution_ppt'); event.stopPropagation();">Sample Solution PPT</button>
                             </div>
                         </div>
                     </div>
@@ -565,77 +591,77 @@
                         <div class="project-item">
                             <button class="project-btn" onclick="toggleProjectMenu('2026', 'drone_cup', this); event.stopPropagation();">Drone Cup</button>
                             <div id="project-2026-drone_cup" class="doc-menu" style="display: none;">
-                                <button class="doc-btn" onclick="openDocument('2026', 'drone_cup', 'parts_list'); event.stopPropagation();">Parts List</button>
-                                <button class="doc-btn" onclick="openDocument('2026', 'drone_cup', 'competition_rule_scoring_sheet'); event.stopPropagation();">Competition Rule & Scoring Sheet</button>
+                                <button class="doc-btn" data-year="2026" data-project="drone_cup" data-doctype="parts_list" onclick="openDocument('2026', 'drone_cup', 'parts_list'); event.stopPropagation();">Parts List</button>
+                                <button class="doc-btn" data-year="2026" data-project="drone_cup" data-doctype="competition_rule_scoring_sheet" onclick="openDocument('2026', 'drone_cup', 'competition_rule_scoring_sheet'); event.stopPropagation();">Competition Rule & Scoring Sheet</button>
                             </div>
                         </div>
                         
                         <div class="project-item">
                             <button class="project-btn" onclick="toggleProjectMenu('2026', 'mining_expedition', this); event.stopPropagation();">Mining Expedition</button>
                             <div id="project-2026-mining_expedition" class="doc-menu" style="display: none;">
-                                <button class="doc-btn" onclick="openDocument('2026', 'mining_expedition', 'competition_rule_scoring_sheet'); event.stopPropagation();">Competition Rule & Scoring Sheet</button>
-                                <button class="doc-btn" onclick="openDocument('2026', 'mining_expedition', 'field_setup_guide'); event.stopPropagation();">Field Setup Guide</button>
-                                <button class="doc-btn" onclick="openDocument('2026', 'mining_expedition', 'parts_list'); event.stopPropagation();">Parts List</button>
-                                <button class="doc-btn" onclick="openDocument('2026', 'mining_expedition', 'video_full_competition_round'); event.stopPropagation();">Video: Full Competition Round</button>
-                                <button class="doc-btn" onclick="openDocument('2026', 'mining_expedition', 'program_reference'); event.stopPropagation();">Program Reference</button>
-                                <button class="doc-btn" onclick="openDocument('2026', 'mining_expedition', 'parts_list2'); event.stopPropagation();">Parts List 2</button>
+                                <button class="doc-btn" data-year="2026" data-project="mining_expedition" data-doctype="competition_rule_scoring_sheet" onclick="openDocument('2026', 'mining_expedition', 'competition_rule_scoring_sheet'); event.stopPropagation();">Competition Rule & Scoring Sheet</button>
+                                <button class="doc-btn" data-year="2026" data-project="mining_expedition" data-doctype="field_setup_guide" onclick="openDocument('2026', 'mining_expedition', 'field_setup_guide'); event.stopPropagation();">Field Setup Guide</button>
+                                <button class="doc-btn" data-year="2026" data-project="mining_expedition" data-doctype="parts_list" onclick="openDocument('2026', 'mining_expedition', 'parts_list'); event.stopPropagation();">Parts List</button>
+                                <button class="doc-btn" data-year="2026" data-project="mining_expedition" data-doctype="video_full_competition_round" onclick="openDocument('2026', 'mining_expedition', 'video_full_competition_round'); event.stopPropagation();">Video: Full Competition Round</button>
+                                <button class="doc-btn" data-year="2026" data-project="mining_expedition" data-doctype="program_reference" onclick="openDocument('2026', 'mining_expedition', 'program_reference'); event.stopPropagation();">Program Reference</button>
+                                <button class="doc-btn" data-year="2026" data-project="mining_expedition" data-doctype="parts_list2" onclick="openDocument('2026', 'mining_expedition', 'parts_list2'); event.stopPropagation();">Parts List 2</button>
                             </div>
                         </div>
                         
                         <div class="project-item">
                             <button class="project-btn" onclick="toggleProjectMenu('2026', 'inventions_trail', this); event.stopPropagation();">Inventions Trail</button>
                             <div id="project-2026-inventions_trail" class="doc-menu" style="display: none;">
-                                <button class="doc-btn" onclick="openDocument('2026', 'inventions_trail', 'competition_rule_scoring_sheet'); event.stopPropagation();">Competition Rule & Scoring Sheet</button>
-                                <button class="doc-btn" onclick="openDocument('2026', 'inventions_trail', 'parts_list'); event.stopPropagation();">Parts List</button>
-                                <button class="doc-btn" onclick="openDocument('2026', 'inventions_trail', 'video_competition_rules'); event.stopPropagation();">Video: Competition Rules</button>
-                                <button class="doc-btn" onclick="openDocument('2026', 'inventions_trail', 'video_full_competition_round'); event.stopPropagation();">Video: Full Competition Round</button>
-                                <button class="doc-btn" onclick="openDocument('2026', 'inventions_trail', 'field_setup_guide'); event.stopPropagation();">Field Setup Guide</button>
-                                <button class="doc-btn" onclick="openDocument('2026', 'inventions_trail', 'product_list'); event.stopPropagation();">Product List</button>
-                                <button class="doc-btn" onclick="openDocument('2026', 'inventions_trail', 'program_reference'); event.stopPropagation();">Program Reference</button>
-                                <button class="doc-btn" onclick="openDocument('2026', 'inventions_trail', 'solution_construction_manual'); event.stopPropagation();">Solution Construction Manual</button>
-                                <button class="doc-btn" onclick="openDocument('2026', 'inventions_trail', 'air_pump_user_manual'); event.stopPropagation();">Air Pump User Manual</button>
+                                <button class="doc-btn" data-year="2026" data-project="inventions_trail" data-doctype="competition_rule_scoring_sheet" onclick="openDocument('2026', 'inventions_trail', 'competition_rule_scoring_sheet'); event.stopPropagation();">Competition Rule & Scoring Sheet</button>
+                                <button class="doc-btn" data-year="2026" data-project="inventions_trail" data-doctype="parts_list" onclick="openDocument('2026', 'inventions_trail', 'parts_list'); event.stopPropagation();">Parts List</button>
+                                <button class="doc-btn" data-year="2026" data-project="inventions_trail" data-doctype="video_competition_rules" onclick="openDocument('2026', 'inventions_trail', 'video_competition_rules'); event.stopPropagation();">Video: Competition Rules</button>
+                                <button class="doc-btn" data-year="2026" data-project="inventions_trail" data-doctype="video_full_competition_round" onclick="openDocument('2026', 'inventions_trail', 'video_full_competition_round'); event.stopPropagation();">Video: Full Competition Round</button>
+                                <button class="doc-btn" data-year="2026" data-project="inventions_trail" data-doctype="field_setup_guide" onclick="openDocument('2026', 'inventions_trail', 'field_setup_guide'); event.stopPropagation();">Field Setup Guide</button>
+                                <button class="doc-btn" data-year="2026" data-project="inventions_trail" data-doctype="product_list" onclick="openDocument('2026', 'inventions_trail', 'product_list'); event.stopPropagation();">Product List</button>
+                                <button class="doc-btn" data-year="2026" data-project="inventions_trail" data-doctype="program_reference" onclick="openDocument('2026', 'inventions_trail', 'program_reference'); event.stopPropagation();">Program Reference</button>
+                                <button class="doc-btn" data-year="2026" data-project="inventions_trail" data-doctype="solution_construction_manual" onclick="openDocument('2026', 'inventions_trail', 'solution_construction_manual'); event.stopPropagation();">Solution Construction Manual</button>
+                                <button class="doc-btn" data-year="2026" data-project="inventions_trail" data-doctype="air_pump_user_manual" onclick="openDocument('2026', 'inventions_trail', 'air_pump_user_manual'); event.stopPropagation();">Air Pump User Manual</button>
                             </div>
                         </div>
                         
                         <div class="project-item">
                             <button class="project-btn" onclick="toggleProjectMenu('2026', 'battle_of_stars', this); event.stopPropagation();">Battle of Stars</button>
                             <div id="project-2026-battle_of_stars" class="doc-menu" style="display: none;">
-                                <button class="doc-btn" onclick="openDocument('2026', 'battle_of_stars', 'competition_rules'); event.stopPropagation();">Competition Rules</button>
-                                <button class="doc-btn" onclick="openDocument('2026', 'battle_of_stars', 'field_setup_guide'); event.stopPropagation();">Field Setup Guide</button>
-                                <button class="doc-btn" onclick="openDocument('2026', 'battle_of_stars', 'parts_list'); event.stopPropagation();">Parts List</button>
-                                <button class="doc-btn" onclick="openDocument('2026', 'battle_of_stars', 'video_competition_rules'); event.stopPropagation();">Video: Competition Rules</button>
-                                <button class="doc-btn" onclick="openDocument('2026', 'battle_of_stars', 'video_full_competition_round'); event.stopPropagation();">Video: Full Competition Round</button>
-                                <button class="doc-btn" onclick="openDocument('2026', 'battle_of_stars', 'controller_user_manual'); event.stopPropagation();">Controller User Manual</button>
-                                <button class="doc-btn" onclick="openDocument('2026', 'battle_of_stars', 'product_list'); event.stopPropagation();">Product List</button>
-                                <button class="doc-btn" onclick="openDocument('2026', 'battle_of_stars', 'program_reference'); event.stopPropagation();">Program Reference</button>
-                                <button class="doc-btn" onclick="openDocument('2026', 'battle_of_stars', 'solution_construction_manual'); event.stopPropagation();">Solution Construction Manual</button>
+                                <button class="doc-btn" data-year="2026" data-project="battle_of_stars" data-doctype="competition_rules" onclick="openDocument('2026', 'battle_of_stars', 'competition_rules'); event.stopPropagation();">Competition Rules</button>
+                                <button class="doc-btn" data-year="2026" data-project="battle_of_stars" data-doctype="field_setup_guide" onclick="openDocument('2026', 'battle_of_stars', 'field_setup_guide'); event.stopPropagation();">Field Setup Guide</button>
+                                <button class="doc-btn" data-year="2026" data-project="battle_of_stars" data-doctype="parts_list" onclick="openDocument('2026', 'battle_of_stars', 'parts_list'); event.stopPropagation();">Parts List</button>
+                                <button class="doc-btn" data-year="2026" data-project="battle_of_stars" data-doctype="video_competition_rules" onclick="openDocument('2026', 'battle_of_stars', 'video_competition_rules'); event.stopPropagation();">Video: Competition Rules</button>
+                                <button class="doc-btn" data-year="2026" data-project="battle_of_stars" data-doctype="video_full_competition_round" onclick="openDocument('2026', 'battle_of_stars', 'video_full_competition_round'); event.stopPropagation();">Video: Full Competition Round</button>
+                                <button class="doc-btn" data-year="2026" data-project="battle_of_stars" data-doctype="controller_user_manual" onclick="openDocument('2026', 'battle_of_stars', 'controller_user_manual'); event.stopPropagation();">Controller User Manual</button>
+                                <button class="doc-btn" data-year="2026" data-project="battle_of_stars" data-doctype="product_list" onclick="openDocument('2026', 'battle_of_stars', 'product_list'); event.stopPropagation();">Product List</button>
+                                <button class="doc-btn" data-year="2026" data-project="battle_of_stars" data-doctype="program_reference" onclick="openDocument('2026', 'battle_of_stars', 'program_reference'); event.stopPropagation();">Program Reference</button>
+                                <button class="doc-btn" data-year="2026" data-project="battle_of_stars" data-doctype="solution_construction_manual" onclick="openDocument('2026', 'battle_of_stars', 'solution_construction_manual'); event.stopPropagation();">Solution Construction Manual</button>
                             </div>
                         </div>
                         
                         <div class="project-item">
                             <button class="project-btn" onclick="toggleProjectMenu('2026', 'skyline_adventure', this); event.stopPropagation();">Skyline Adventure</button>
                             <div id="project-2026-skyline_adventure" class="doc-menu" style="display: none;">
-                                <button class="doc-btn" onclick="openDocument('2026', 'skyline_adventure', 'competition_rule'); event.stopPropagation();">Competition Rule</button>
-                                <button class="doc-btn" onclick="openDocument('2026', 'skyline_adventure', 'field_setup_guide'); event.stopPropagation();">Field Setup Guide</button>
-                                <button class="doc-btn" onclick="openDocument('2026', 'skyline_adventure', 'parts_list'); event.stopPropagation();">Parts List</button>
-                                <button class="doc-btn" onclick="openDocument('2026', 'skyline_adventure', 'video_competition_rules'); event.stopPropagation();">Video: Competition Rules</button>
-                                <button class="doc-btn" onclick="openDocument('2026', 'skyline_adventure', 'video_full_competition_round'); event.stopPropagation();">Video: Full Competition Round</button>
-                                <button class="doc-btn" onclick="openDocument('2026', 'skyline_adventure', 'controller_user_manual'); event.stopPropagation();">Controller User Manual</button>
-                                <button class="doc-btn" onclick="openDocument('2026', 'skyline_adventure', 'product_list'); event.stopPropagation();">Product List</button>
-                                <button class="doc-btn" onclick="openDocument('2026', 'skyline_adventure', 'program_reference'); event.stopPropagation();">Program Reference</button>
+                                <button class="doc-btn" data-year="2026" data-project="skyline_adventure" data-doctype="competition_rule" onclick="openDocument('2026', 'skyline_adventure', 'competition_rule'); event.stopPropagation();">Competition Rule</button>
+                                <button class="doc-btn" data-year="2026" data-project="skyline_adventure" data-doctype="field_setup_guide" onclick="openDocument('2026', 'skyline_adventure', 'field_setup_guide'); event.stopPropagation();">Field Setup Guide</button>
+                                <button class="doc-btn" data-year="2026" data-project="skyline_adventure" data-doctype="parts_list" onclick="openDocument('2026', 'skyline_adventure', 'parts_list'); event.stopPropagation();">Parts List</button>
+                                <button class="doc-btn" data-year="2026" data-project="skyline_adventure" data-doctype="video_competition_rules" onclick="openDocument('2026', 'skyline_adventure', 'video_competition_rules'); event.stopPropagation();">Video: Competition Rules</button>
+                                <button class="doc-btn" data-year="2026" data-project="skyline_adventure" data-doctype="video_full_competition_round" onclick="openDocument('2026', 'skyline_adventure', 'video_full_competition_round'); event.stopPropagation();">Video: Full Competition Round</button>
+                                <button class="doc-btn" data-year="2026" data-project="skyline_adventure" data-doctype="controller_user_manual" onclick="openDocument('2026', 'skyline_adventure', 'controller_user_manual'); event.stopPropagation();">Controller User Manual</button>
+                                <button class="doc-btn" data-year="2026" data-project="skyline_adventure" data-doctype="product_list" onclick="openDocument('2026', 'skyline_adventure', 'product_list'); event.stopPropagation();">Product List</button>
+                                <button class="doc-btn" data-year="2026" data-project="skyline_adventure" data-doctype="program_reference" onclick="openDocument('2026', 'skyline_adventure', 'program_reference'); event.stopPropagation();">Program Reference</button>
                             </div>
                         </div>
                         
                         <div class="project-item">
                             <button class="project-btn" onclick="toggleProjectMenu('2026', 'ancient_civilizations', this); event.stopPropagation();">Ancient Civilizations</button>
                             <div id="project-2026-ancient_civilizations" class="doc-menu" style="display: none;">
-                                <button class="doc-btn" onclick="openDocument('2026', 'ancient_civilizations', 'competition_rules_field_setup_guide'); event.stopPropagation();">Competition Rules & Field Setup Guide</button>
-                                <button class="doc-btn" onclick="openDocument('2026', 'ancient_civilizations', 'parts_list'); event.stopPropagation();">Parts List</button>
-                                <button class="doc-btn" onclick="openDocument('2026', 'ancient_civilizations', 'video_competition_rules'); event.stopPropagation();">Video: Competition Rules</button>
-                                <button class="doc-btn" onclick="openDocument('2026', 'ancient_civilizations', 'video_full_competition_round'); event.stopPropagation();">Video: Full Competition Round</button>
-                                <button class="doc-btn" onclick="openDocument('2026', 'ancient_civilizations', 'product_list'); event.stopPropagation();">Product List</button>
-                                <button class="doc-btn" onclick="openDocument('2026', 'ancient_civilizations', 'program_reference'); event.stopPropagation();">Program Reference</button>
-                                <button class="doc-btn" onclick="openDocument('2026', 'ancient_civilizations', 'solution_construction_manual'); event.stopPropagation();">Solution Construction Manual</button>
+                                <button class="doc-btn" data-year="2026" data-project="ancient_civilizations" data-doctype="competition_rules_field_setup_guide" onclick="openDocument('2026', 'ancient_civilizations', 'competition_rules_field_setup_guide'); event.stopPropagation();">Competition Rules & Field Setup Guide</button>
+                                <button class="doc-btn" data-year="2026" data-project="ancient_civilizations" data-doctype="parts_list" onclick="openDocument('2026', 'ancient_civilizations', 'parts_list'); event.stopPropagation();">Parts List</button>
+                                <button class="doc-btn" data-year="2026" data-project="ancient_civilizations" data-doctype="video_competition_rules" onclick="openDocument('2026', 'ancient_civilizations', 'video_competition_rules'); event.stopPropagation();">Video: Competition Rules</button>
+                                <button class="doc-btn" data-year="2026" data-project="ancient_civilizations" data-doctype="video_full_competition_round" onclick="openDocument('2026', 'ancient_civilizations', 'video_full_competition_round'); event.stopPropagation();">Video: Full Competition Round</button>
+                                <button class="doc-btn" data-year="2026" data-project="ancient_civilizations" data-doctype="product_list" onclick="openDocument('2026', 'ancient_civilizations', 'product_list'); event.stopPropagation();">Product List</button>
+                                <button class="doc-btn" data-year="2026" data-project="ancient_civilizations" data-doctype="program_reference" onclick="openDocument('2026', 'ancient_civilizations', 'program_reference'); event.stopPropagation();">Program Reference</button>
+                                <button class="doc-btn" data-year="2026" data-project="ancient_civilizations" data-doctype="solution_construction_manual" onclick="openDocument('2026', 'ancient_civilizations', 'solution_construction_manual'); event.stopPropagation();">Solution Construction Manual</button>
                             </div>
                         </div>
                     </div>
@@ -669,8 +695,6 @@
                     </span>
                 </div>
             </div>
-            
-            <!-- Test 文件夹已移除，此处不显示任何Test文件夹卡片 -->
         </main>
         
         <button id="refresh-btn" class="refresh-btn" onclick="checkAllLinks()">
@@ -702,7 +726,6 @@
                 'status_service_error': '链接状态检测服务不可用',
                 'status_check_failed': '链接状态检测失败',
                 'btn_open': '打开文件夹',
-                'btn_open_test': '打开测试文件夹',
                 'btn_checking': '验证中...',
                 'btn_refresh': '重新检测所有链接状态',
                 'status_live': '链接正常',
@@ -718,16 +741,12 @@
                 'status_hierarchical_ready': '分级菜单就绪',
                 'desc_enjoy_ai_hierarchical': 'ENJOY AI项目的分级文档中心。按年份和项目分类，包含竞赛规则和场地设置指南。',
                 'desc_whalesbot': 'WhalesBot项目的共享文件夹。包含14个项目，包括代码、资源和项目文件。',
-                'desc_test': '用于测试链接失效检测功能的文件夹。您可以删除Dropbox中的分享链接来测试检测功能。',
                 'meta_shared': '共享文件夹',
-                'meta_test': '测试文件夹',
                 'meta_hierarchical': '分级文档中心',
                 'badge_shared': '共享 • 5个项目',
-                'badge_test': '测试 • 检测功能',
-                'badge_hierarchical': '分级 • 两级菜单',
+                'badge_hierarchical': '分级 • 自动检测',
                 'folder_enjoy': 'ENJOY AI',
                 'folder_whale': 'WhalesBot',
-                'folder_test': 'Test 文件夹',
                 'footer_copyright': '© 2024 Dropbox永久链接服务 | 智能链接验证版',
                 'footer_note': '系统每5分钟自动检测链接状态，失效链接将被禁用并提示。',
                 'last_checked': '最后检测',
@@ -750,7 +769,6 @@
                 'status_service_error': 'Link status service unavailable',
                 'status_check_failed': 'Link status check failed',
                 'btn_open': 'Open Folder',
-                'btn_open_test': 'Open Test Folder',
                 'btn_checking': 'Checking...',
                 'btn_refresh': 'Re-check All Links',
                 'status_live': 'Link Active',
@@ -766,16 +784,12 @@
                 'status_hierarchical_ready': 'Hierarchical Menu Ready',
                 'desc_enjoy_ai_hierarchical': 'Hierarchical document center for ENJOY AI projects. Organized by year and project, includes competition rules and field setup guides.',
                 'desc_whalesbot': 'Shared folder for WhalesBot projects. Contains 14 items including code, resources, and project files.',
-                'desc_test': 'Folder for testing link validation. You can delete the share link in Dropbox to test the detection feature.',
                 'meta_shared': 'Shared Folder',
-                'meta_test': 'Test Folder',
                 'meta_hierarchical': 'Hierarchical Document Center',
                 'badge_shared': 'Shared • 5 items',
-                'badge_test': 'Test • Validation',
-                'badge_hierarchical': 'Hierarchical • Two-Level Menu',
+                'badge_hierarchical': 'Hierarchical • Auto Detection',
                 'folder_enjoy': 'ENJOY AI',
                 'folder_whale': 'WhalesBot',
-                'folder_test': 'Test Folder',
                 'footer_copyright': '© 2024 Dropbox Permanent Link Service | Smart Validation',
                 'footer_note': 'The system automatically checks link status every 5 minutes. Invalid links are disabled.',
                 'last_checked': 'Last checked',
