@@ -6,7 +6,7 @@
     <title>Dropbox文件中心 | 智能链接验证</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-         * {
+        * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
@@ -165,6 +165,8 @@
             display: flex;
             flex-direction: column;
             position: relative;
+            max-width: 400px;  /* 添加此行：限制卡片最大宽度 */
+            width: 100%;       /* 添加此行：确保卡片填满网格单元格 */
         }
         
         .folder-card:hover {
@@ -219,6 +221,8 @@
             display: flex;
             justify-content: space-between;
             margin-bottom: 10px;
+            /* 新增居中和对齐优化 */
+            gap: 10px; /* 使用gap替代margin控制间距 */
         }
         
         .year-btn, .project-btn, .doc-btn {
@@ -245,7 +249,13 @@
             color: white;
             border: none;
             padding: 12px 15px;
+            border-radius: 8px;
             font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            flex: 1; /* 使按钮等宽分布 */
+            text-align: center; /* 文字居中 */
+            min-width: 100px; /* 设置最小宽度 */
         }
         
         .year-btn:hover {
@@ -262,16 +272,15 @@
         }
         
         .doc-menu {
-            margin-left: 15px;
-            border-left: 2px solid #e0e0e0;
-            padding-left: 10px;
-        }
-        
-        .doc-btn {
             background: white;
-            margin: 2px 0;
-            font-size: 0.85rem;
-            padding: 8px 10px;
+            border: 1px solid #d1e9ff;
+            border-radius: 8px;
+            padding: 10px;
+            margin-top: 5px;
+            margin-bottom: 10px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            display: none; /* 默认隐藏 */
+            width: 100%; /* 与父容器同宽 */
         }
         
         .year-menu, .doc-menu {
@@ -453,6 +462,12 @@
             color: rgba(255, 255, 255, 0.6);
             margin-top: 5px;
         }
+        
+        /* 新增：项目项容器，用于将项目按钮与其文档菜单关联 */
+        .project-item {
+            position: relative;
+            width: 100%;
+        }
     </style>
 </head>
 <body>
@@ -498,121 +513,131 @@
                     <button class="year-btn" onclick="toggleYearMenu('2026'); event.stopPropagation();">2026</button>
                 </div>
                 
-                <!-- 2025年项目菜单 - 已更新为4个项目 -->
+                <!-- 2025年项目菜单 -->
                 <div id="year-2025-menu" class="year-menu" style="display: none; margin-bottom: 15px;">
                     <div class="project-selection">
-                        <button class="project-btn" onclick="toggleProjectMenu('2025', 'cyber_city'); event.stopPropagation();">Cyber City</button>
-                        <button class="project-btn" onclick="toggleProjectMenu('2025', 'geometric_forest'); event.stopPropagation();">Geometric Forest</button>
-                        <button class="project-btn" onclick="toggleProjectMenu('2025', 'battle_of_tribes'); event.stopPropagation();">Battle of Tribes</button>
-                        <button class="project-btn" onclick="toggleProjectMenu('2025', 'skyline_adventures'); event.stopPropagation();">Skyline Adventures</button>
-                    </div>
-                    
-                    <!-- Cyber City 文档菜单 -->
-                    <div id="project-2025-cyber_city" class="doc-menu" style="display: none;">
-                        <button class="doc-btn" onclick="openDocument('2025', 'cyber_city', 'competition_rule_scoring_sheet'); event.stopPropagation();">Competition Rule & Scoring Sheet</button>
-                        <button class="doc-btn" onclick="openDocument('2025', 'cyber_city', 'field_setup_guide'); event.stopPropagation();">Field Setup Guide</button>
-                        <button class="doc-btn" onclick="openDocument('2025', 'cyber_city', 'sample_solution_ppt'); event.stopPropagation();">Sample Solution PPT</button>
-                        <button class="doc-btn" onclick="openDocument('2025', 'cyber_city', 'courses'); event.stopPropagation();">Courses</button>
-                    </div>
-                    
-                    <!-- Geometric Forest 文档菜单 -->
-                    <div id="project-2025-geometric_forest" class="doc-menu" style="display: none;">
-                        <button class="doc-btn" onclick="openDocument('2025', 'geometric_forest', 'competition_rule_scoring_sheet'); event.stopPropagation();">Competition Rule & Scoring Sheet</button>
-                        <button class="doc-btn" onclick="openDocument('2025', 'geometric_forest', 'field_setup_guide'); event.stopPropagation();">Field Setup Guide</button>
-                        <button class="doc-btn" onclick="openDocument('2025', 'geometric_forest', 'sample_solution_ppt'); event.stopPropagation();">Sample Solution PPT</button>
-                    </div>
-                    
-                    <!-- Battle of Tribes 文档菜单 -->
-                    <div id="project-2025-battle_of_tribes" class="doc-menu" style="display: none;">
-                        <button class="doc-btn" onclick="openDocument('2025', 'battle_of_tribes', 'competition_rule_scoring_sheet'); event.stopPropagation();">Competition Rule & Scoring Sheet</button>
-                        <button class="doc-btn" onclick="openDocument('2025', 'battle_of_tribes', 'field_setup_guide'); event.stopPropagation();">Field Setup Guide</button>
-                        <button class="doc-btn" onclick="openDocument('2025', 'battle_of_tribes', 'sample_solution_ppt'); event.stopPropagation();">Sample Solution PPT</button>
-                        <button class="doc-btn" onclick="openDocument('2025', 'battle_of_tribes', 'courses'); event.stopPropagation();">Courses</button>
-                    </div>
-                    
-                    <!-- Skyline Adventures 文档菜单 -->
-                    <div id="project-2025-skyline_adventures" class="doc-menu" style="display: none;">
-                        <button class="doc-btn" onclick="openDocument('2025', 'skyline_adventures', 'competition_rule_scoring_sheet'); event.stopPropagation();">Competition Rule & Scoring Sheet</button>
-                        <button class="doc-btn" onclick="openDocument('2025', 'skyline_adventures', 'field_setup_guide'); event.stopPropagation();">Field Setup Guide</button>
-                        <button class="doc-btn" onclick="openDocument('2025', 'skyline_adventures', 'sample_solution_ppt'); event.stopPropagation();">Sample Solution PPT</button>
+                        <!-- 使用项目项容器包裹每个项目按钮和其文档菜单 -->
+                        <div class="project-item">
+                            <button class="project-btn" onclick="toggleProjectMenu('2025', 'cyber_city', this); event.stopPropagation();">Cyber City</button>
+                            <!-- 文档菜单放在项目按钮的容器内，在项目按钮下方显示 -->
+                            <div id="project-2025-cyber_city" class="doc-menu" style="display: none;">
+                                <button class="doc-btn" onclick="openDocument('2025', 'cyber_city', 'competition_rule_scoring_sheet'); event.stopPropagation();">Competition Rule & Scoring Sheet</button>
+                                <button class="doc-btn" onclick="openDocument('2025', 'cyber_city', 'field_setup_guide'); event.stopPropagation();">Field Setup Guide</button>
+                                <button class="doc-btn" onclick="openDocument('2025', 'cyber_city', 'sample_solution_ppt'); event.stopPropagation();">Sample Solution PPT</button>
+                                <button class="doc-btn" onclick="openDocument('2025', 'cyber_city', 'courses'); event.stopPropagation();">Courses</button>
+                            </div>
+                        </div>
+                        
+                        <div class="project-item">
+                            <button class="project-btn" onclick="toggleProjectMenu('2025', 'geometric_forest', this); event.stopPropagation();">Geometric Forest</button>
+                            <div id="project-2025-geometric_forest" class="doc-menu" style="display: none;">
+                                <button class="doc-btn" onclick="openDocument('2025', 'geometric_forest', 'competition_rule_scoring_sheet'); event.stopPropagation();">Competition Rule & Scoring Sheet</button>
+                                <button class="doc-btn" onclick="openDocument('2025', 'geometric_forest', 'field_setup_guide'); event.stopPropagation();">Field Setup Guide</button>
+                                <button class="doc-btn" onclick="openDocument('2025', 'geometric_forest', 'sample_solution_ppt'); event.stopPropagation();">Sample Solution PPT</button>
+                            </div>
+                        </div>
+                        
+                        <div class="project-item">
+                            <button class="project-btn" onclick="toggleProjectMenu('2025', 'battle_of_tribes', this); event.stopPropagation();">Battle of Tribes</button>
+                            <div id="project-2025-battle_of_tribes" class="doc-menu" style="display: none;">
+                                <button class="doc-btn" onclick="openDocument('2025', 'battle_of_tribes', 'competition_rule_scoring_sheet'); event.stopPropagation();">Competition Rule & Scoring Sheet</button>
+                                <button class="doc-btn" onclick="openDocument('2025', 'battle_of_tribes', 'field_setup_guide'); event.stopPropagation();">Field Setup Guide</button>
+                                <button class="doc-btn" onclick="openDocument('2025', 'battle_of_tribes', 'sample_solution_ppt'); event.stopPropagation();">Sample Solution PPT</button>
+                                <button class="doc-btn" onclick="openDocument('2025', 'battle_of_tribes', 'courses'); event.stopPropagation();">Courses</button>
+                            </div>
+                        </div>
+                        
+                        <div class="project-item">
+                            <button class="project-btn" onclick="toggleProjectMenu('2025', 'skyline_adventures', this); event.stopPropagation();">Skyline Adventures</button>
+                            <div id="project-2025-skyline_adventures" class="doc-menu" style="display: none;">
+                                <button class="doc-btn" onclick="openDocument('2025', 'skyline_adventures', 'competition_rule_scoring_sheet'); event.stopPropagation();">Competition Rule & Scoring Sheet</button>
+                                <button class="doc-btn" onclick="openDocument('2025', 'skyline_adventures', 'field_setup_guide'); event.stopPropagation();">Field Setup Guide</button>
+                                <button class="doc-btn" onclick="openDocument('2025', 'skyline_adventures', 'sample_solution_ppt'); event.stopPropagation();">Sample Solution PPT</button>
+                            </div>
+                        </div>
                     </div>
                 </div>
                 
-                <!-- 2026年项目菜单 - 保持不变 -->
+                <!-- 2026年项目菜单 -->
                 <div id="year-2026-menu" class="year-menu" style="display: none; margin-bottom: 15px;">
                     <div class="project-selection">
-                        <!-- 2026年6个项目按钮 -->
-                        <button class="project-btn" onclick="toggleProjectMenu('2026', 'drone_cup'); event.stopPropagation();">Drone Cup</button>
-                        <button class="project-btn" onclick="toggleProjectMenu('2026', 'mining_expedition'); event.stopPropagation();">Mining Expedition</button>
-                        <button class="project-btn" onclick="toggleProjectMenu('2026', 'inventions_trail'); event.stopPropagation();">Inventions Trail</button>
-                        <button class="project-btn" onclick="toggleProjectMenu('2026', 'battle_of_stars'); event.stopPropagation();">Battle of Stars</button>
-                        <button class="project-btn" onclick="toggleProjectMenu('2026', 'skyline_adventure'); event.stopPropagation();">Skyline Adventure</button>
-                        <button class="project-btn" onclick="toggleProjectMenu('2026', 'ancient_civilizations'); event.stopPropagation();">Ancient Civilizations</button>
-                    </div>
-                    
-                    <!-- Drone Cup 文档菜单 -->
-                    <div id="project-2026-drone_cup" class="doc-menu" style="display: none;">
-                        <button class="doc-btn" onclick="openDocument('2026', 'drone_cup', 'parts_list'); event.stopPropagation();">Parts List</button>
-                        <button class="doc-btn" onclick="openDocument('2026', 'drone_cup', 'competition_rule_scoring_sheet'); event.stopPropagation();">Competition Rule & Scoring Sheet</button>
-                    </div>
-                    
-                    <!-- Mining Expedition 文档菜单 -->
-                    <div id="project-2026-mining_expedition" class="doc-menu" style="display: none;">
-                        <button class="doc-btn" onclick="openDocument('2026', 'mining_expedition', 'competition_rule_scoring_sheet'); event.stopPropagation();">Competition Rule & Scoring Sheet</button>
-                        <button class="doc-btn" onclick="openDocument('2026', 'mining_expedition', 'field_setup_guide'); event.stopPropagation();">Field Setup Guide</button>
-                        <button class="doc-btn" onclick="openDocument('2026', 'mining_expedition', 'parts_list'); event.stopPropagation();">Parts List</button>
-                        <button class="doc-btn" onclick="openDocument('2026', 'mining_expedition', 'video_full_competition_round'); event.stopPropagation();">Video: Full Competition Round</button>
-                        <button class="doc-btn" onclick="openDocument('2026', 'mining_expedition', 'program_reference'); event.stopPropagation();">Program Reference</button>
-                        <button class="doc-btn" onclick="openDocument('2026', 'mining_expedition', 'parts_list2'); event.stopPropagation();">Parts List 2</button>
-                    </div>
-                    
-                    <!-- Inventions Trail 文档菜单 -->
-                    <div id="project-2026-inventions_trail" class="doc-menu" style="display: none;">
-                        <button class="doc-btn" onclick="openDocument('2026', 'inventions_trail', 'competition_rule_scoring_sheet'); event.stopPropagation();">Competition Rule & Scoring Sheet</button>
-                        <button class="doc-btn" onclick="openDocument('2026', 'inventions_trail', 'parts_list'); event.stopPropagation();">Parts List</button>
-                        <button class="doc-btn" onclick="openDocument('2026', 'inventions_trail', 'video_competition_rules'); event.stopPropagation();">Video: Competition Rules</button>
-                        <button class="doc-btn" onclick="openDocument('2026', 'inventions_trail', 'video_full_competition_round'); event.stopPropagation();">Video: Full Competition Round</button>
-                        <button class="doc-btn" onclick="openDocument('2026', 'inventions_trail', 'field_setup_guide'); event.stopPropagation();">Field Setup Guide</button>
-                        <button class="doc-btn" onclick="openDocument('2026', 'inventions_trail', 'product_list'); event.stopPropagation();">Product List</button>
-                        <button class="doc-btn" onclick="openDocument('2026', 'inventions_trail', 'program_reference'); event.stopPropagation();">Program Reference</button>
-                        <button class="doc-btn" onclick="openDocument('2026', 'inventions_trail', 'solution_construction_manual'); event.stopPropagation();">Solution Construction Manual</button>
-                        <button class="doc-btn" onclick="openDocument('2026', 'inventions_trail', 'air_pump_user_manual'); event.stopPropagation();">Air Pump User Manual</button>
-                    </div>
-                    
-                    <!-- Battle of Stars 文档菜单 -->
-                    <div id="project-2026-battle_of_stars" class="doc-menu" style="display: none;">
-                        <button class="doc-btn" onclick="openDocument('2026', 'battle_of_stars', 'competition_rules'); event.stopPropagation();">Competition Rules</button>
-                        <button class="doc-btn" onclick="openDocument('2026', 'battle_of_stars', 'field_setup_guide'); event.stopPropagation();">Field Setup Guide</button>
-                        <button class="doc-btn" onclick="openDocument('2026', 'battle_of_stars', 'parts_list'); event.stopPropagation();">Parts List</button>
-                        <button class="doc-btn" onclick="openDocument('2026', 'battle_of_stars', 'video_competition_rules'); event.stopPropagation();">Video: Competition Rules</button>
-                        <button class="doc-btn" onclick="openDocument('2026', 'battle_of_stars', 'video_full_competition_round'); event.stopPropagation();">Video: Full Competition Round</button>
-                        <button class="doc-btn" onclick="openDocument('2026', 'battle_of_stars', 'controller_user_manual'); event.stopPropagation();">Controller User Manual</button>
-                        <button class="doc-btn" onclick="openDocument('2026', 'battle_of_stars', 'product_list'); event.stopPropagation();">Product List</button>
-                        <button class="doc-btn" onclick="openDocument('2026', 'battle_of_stars', 'program_reference'); event.stopPropagation();">Program Reference</button>
-                        <button class="doc-btn" onclick="openDocument('2026', 'battle_of_stars', 'solution_construction_manual'); event.stopPropagation();">Solution Construction Manual</button>
-                    </div>
-                    
-                    <!-- Skyline Adventure 文档菜单 -->
-                    <div id="project-2026-skyline_adventure" class="doc-menu" style="display: none;">
-                        <button class="doc-btn" onclick="openDocument('2026', 'skyline_adventure', 'competition_rule'); event.stopPropagation();">Competition Rule</button>
-                        <button class="doc-btn" onclick="openDocument('2026', 'skyline_adventure', 'field_setup_guide'); event.stopPropagation();">Field Setup Guide</button>
-                        <button class="doc-btn" onclick="openDocument('2026', 'skyline_adventure', 'parts_list'); event.stopPropagation();">Parts List</button>
-                        <button class="doc-btn" onclick="openDocument('2026', 'skyline_adventure', 'video_competition_rules'); event.stopPropagation();">Video: Competition Rules</button>
-                        <button class="doc-btn" onclick="openDocument('2026', 'skyline_adventure', 'video_full_competition_round'); event.stopPropagation();">Video: Full Competition Round</button>
-                        <button class="doc-btn" onclick="openDocument('2026', 'skyline_adventure', 'controller_user_manual'); event.stopPropagation();">Controller User Manual</button>
-                        <button class="doc-btn" onclick="openDocument('2026', 'skyline_adventure', 'product_list'); event.stopPropagation();">Product List</button>
-                        <button class="doc-btn" onclick="openDocument('2026', 'skyline_adventure', 'program_reference'); event.stopPropagation();">Program Reference</button>
-                    </div>
-                    
-                    <!-- Ancient Civilizations 文档菜单 -->
-                    <div id="project-2026-ancient_civilizations" class="doc-menu" style="display: none;">
-                        <button class="doc-btn" onclick="openDocument('2026', 'ancient_civilizations', 'competition_rules_field_setup_guide'); event.stopPropagation();">Competition Rules & Field Setup Guide</button>
-                        <button class="doc-btn" onclick="openDocument('2026', 'ancient_civilizations', 'parts_list'); event.stopPropagation();">Parts List</button>
-                        <button class="doc-btn" onclick="openDocument('2026', 'ancient_civilizations', 'video_competition_rules'); event.stopPropagation();">Video: Competition Rules</button>
-                        <button class="doc-btn" onclick="openDocument('2026', 'ancient_civilizations', 'video_full_competition_round'); event.stopPropagation();">Video: Full Competition Round</button>
-                        <button class="doc-btn" onclick="openDocument('2026', 'ancient_civilizations', 'product_list'); event.stopPropagation();">Product List</button>
-                        <button class="doc-btn" onclick="openDocument('2026', 'ancient_civilizations', 'program_reference'); event.stopPropagation();">Program Reference</button>
-                        <button class="doc-btn" onclick="openDocument('2026', 'ancient_civilizations', 'solution_construction_manual'); event.stopPropagation();">Solution Construction Manual</button>
+                        <!-- 2026年6个项目 -->
+                        <div class="project-item">
+                            <button class="project-btn" onclick="toggleProjectMenu('2026', 'drone_cup', this); event.stopPropagation();">Drone Cup</button>
+                            <div id="project-2026-drone_cup" class="doc-menu" style="display: none;">
+                                <button class="doc-btn" onclick="openDocument('2026', 'drone_cup', 'parts_list'); event.stopPropagation();">Parts List</button>
+                                <button class="doc-btn" onclick="openDocument('2026', 'drone_cup', 'competition_rule_scoring_sheet'); event.stopPropagation();">Competition Rule & Scoring Sheet</button>
+                            </div>
+                        </div>
+                        
+                        <div class="project-item">
+                            <button class="project-btn" onclick="toggleProjectMenu('2026', 'mining_expedition', this); event.stopPropagation();">Mining Expedition</button>
+                            <div id="project-2026-mining_expedition" class="doc-menu" style="display: none;">
+                                <button class="doc-btn" onclick="openDocument('2026', 'mining_expedition', 'competition_rule_scoring_sheet'); event.stopPropagation();">Competition Rule & Scoring Sheet</button>
+                                <button class="doc-btn" onclick="openDocument('2026', 'mining_expedition', 'field_setup_guide'); event.stopPropagation();">Field Setup Guide</button>
+                                <button class="doc-btn" onclick="openDocument('2026', 'mining_expedition', 'parts_list'); event.stopPropagation();">Parts List</button>
+                                <button class="doc-btn" onclick="openDocument('2026', 'mining_expedition', 'video_full_competition_round'); event.stopPropagation();">Video: Full Competition Round</button>
+                                <button class="doc-btn" onclick="openDocument('2026', 'mining_expedition', 'program_reference'); event.stopPropagation();">Program Reference</button>
+                                <button class="doc-btn" onclick="openDocument('2026', 'mining_expedition', 'parts_list2'); event.stopPropagation();">Parts List 2</button>
+                            </div>
+                        </div>
+                        
+                        <div class="project-item">
+                            <button class="project-btn" onclick="toggleProjectMenu('2026', 'inventions_trail', this); event.stopPropagation();">Inventions Trail</button>
+                            <div id="project-2026-inventions_trail" class="doc-menu" style="display: none;">
+                                <button class="doc-btn" onclick="openDocument('2026', 'inventions_trail', 'competition_rule_scoring_sheet'); event.stopPropagation();">Competition Rule & Scoring Sheet</button>
+                                <button class="doc-btn" onclick="openDocument('2026', 'inventions_trail', 'parts_list'); event.stopPropagation();">Parts List</button>
+                                <button class="doc-btn" onclick="openDocument('2026', 'inventions_trail', 'video_competition_rules'); event.stopPropagation();">Video: Competition Rules</button>
+                                <button class="doc-btn" onclick="openDocument('2026', 'inventions_trail', 'video_full_competition_round'); event.stopPropagation();">Video: Full Competition Round</button>
+                                <button class="doc-btn" onclick="openDocument('2026', 'inventions_trail', 'field_setup_guide'); event.stopPropagation();">Field Setup Guide</button>
+                                <button class="doc-btn" onclick="openDocument('2026', 'inventions_trail', 'product_list'); event.stopPropagation();">Product List</button>
+                                <button class="doc-btn" onclick="openDocument('2026', 'inventions_trail', 'program_reference'); event.stopPropagation();">Program Reference</button>
+                                <button class="doc-btn" onclick="openDocument('2026', 'inventions_trail', 'solution_construction_manual'); event.stopPropagation();">Solution Construction Manual</button>
+                                <button class="doc-btn" onclick="openDocument('2026', 'inventions_trail', 'air_pump_user_manual'); event.stopPropagation();">Air Pump User Manual</button>
+                            </div>
+                        </div>
+                        
+                        <div class="project-item">
+                            <button class="project-btn" onclick="toggleProjectMenu('2026', 'battle_of_stars', this); event.stopPropagation();">Battle of Stars</button>
+                            <div id="project-2026-battle_of_stars" class="doc-menu" style="display: none;">
+                                <button class="doc-btn" onclick="openDocument('2026', 'battle_of_stars', 'competition_rules'); event.stopPropagation();">Competition Rules</button>
+                                <button class="doc-btn" onclick="openDocument('2026', 'battle_of_stars', 'field_setup_guide'); event.stopPropagation();">Field Setup Guide</button>
+                                <button class="doc-btn" onclick="openDocument('2026', 'battle_of_stars', 'parts_list'); event.stopPropagation();">Parts List</button>
+                                <button class="doc-btn" onclick="openDocument('2026', 'battle_of_stars', 'video_competition_rules'); event.stopPropagation();">Video: Competition Rules</button>
+                                <button class="doc-btn" onclick="openDocument('2026', 'battle_of_stars', 'video_full_competition_round'); event.stopPropagation();">Video: Full Competition Round</button>
+                                <button class="doc-btn" onclick="openDocument('2026', 'battle_of_stars', 'controller_user_manual'); event.stopPropagation();">Controller User Manual</button>
+                                <button class="doc-btn" onclick="openDocument('2026', 'battle_of_stars', 'product_list'); event.stopPropagation();">Product List</button>
+                                <button class="doc-btn" onclick="openDocument('2026', 'battle_of_stars', 'program_reference'); event.stopPropagation();">Program Reference</button>
+                                <button class="doc-btn" onclick="openDocument('2026', 'battle_of_stars', 'solution_construction_manual'); event.stopPropagation();">Solution Construction Manual</button>
+                            </div>
+                        </div>
+                        
+                        <div class="project-item">
+                            <button class="project-btn" onclick="toggleProjectMenu('2026', 'skyline_adventure', this); event.stopPropagation();">Skyline Adventure</button>
+                            <div id="project-2026-skyline_adventure" class="doc-menu" style="display: none;">
+                                <button class="doc-btn" onclick="openDocument('2026', 'skyline_adventure', 'competition_rule'); event.stopPropagation();">Competition Rule</button>
+                                <button class="doc-btn" onclick="openDocument('2026', 'skyline_adventure', 'field_setup_guide'); event.stopPropagation();">Field Setup Guide</button>
+                                <button class="doc-btn" onclick="openDocument('2026', 'skyline_adventure', 'parts_list'); event.stopPropagation();">Parts List</button>
+                                <button class="doc-btn" onclick="openDocument('2026', 'skyline_adventure', 'video_competition_rules'); event.stopPropagation();">Video: Competition Rules</button>
+                                <button class="doc-btn" onclick="openDocument('2026', 'skyline_adventure', 'video_full_competition_round'); event.stopPropagation();">Video: Full Competition Round</button>
+                                <button class="doc-btn" onclick="openDocument('2026', 'skyline_adventure', 'controller_user_manual'); event.stopPropagation();">Controller User Manual</button>
+                                <button class="doc-btn" onclick="openDocument('2026', 'skyline_adventure', 'product_list'); event.stopPropagation();">Product List</button>
+                                <button class="doc-btn" onclick="openDocument('2026', 'skyline_adventure', 'program_reference'); event.stopPropagation();">Program Reference</button>
+                            </div>
+                        </div>
+                        
+                        <div class="project-item">
+                            <button class="project-btn" onclick="toggleProjectMenu('2026', 'ancient_civilizations', this); event.stopPropagation();">Ancient Civilizations</button>
+                            <div id="project-2026-ancient_civilizations" class="doc-menu" style="display: none;">
+                                <button class="doc-btn" onclick="openDocument('2026', 'ancient_civilizations', 'competition_rules_field_setup_guide'); event.stopPropagation();">Competition Rules & Field Setup Guide</button>
+                                <button class="doc-btn" onclick="openDocument('2026', 'ancient_civilizations', 'parts_list'); event.stopPropagation();">Parts List</button>
+                                <button class="doc-btn" onclick="openDocument('2026', 'ancient_civilizations', 'video_competition_rules'); event.stopPropagation();">Video: Competition Rules</button>
+                                <button class="doc-btn" onclick="openDocument('2026', 'ancient_civilizations', 'video_full_competition_round'); event.stopPropagation();">Video: Full Competition Round</button>
+                                <button class="doc-btn" onclick="openDocument('2026', 'ancient_civilizations', 'product_list'); event.stopPropagation();">Product List</button>
+                                <button class="doc-btn" onclick="openDocument('2026', 'ancient_civilizations', 'program_reference'); event.stopPropagation();">Program Reference</button>
+                                <button class="doc-btn" onclick="openDocument('2026', 'ancient_civilizations', 'solution_construction_manual'); event.stopPropagation();">Solution Construction Manual</button>
+                            </div>
+                        </div>
                     </div>
                 </div>
                 
@@ -703,7 +728,7 @@
                 'folder_enjoy': 'ENJOY AI',
                 'folder_whale': 'WhalesBot',
                 'folder_test': 'Test 文件夹',
-                'footer_copyright': '© 2026 Dropbox永久链接服务 | 智能链接验证版',
+                'footer_copyright': '© 2024 Dropbox永久链接服务 | 智能链接验证版',
                 'footer_note': '系统每5分钟自动检测链接状态，失效链接将被禁用并提示。',
                 'last_checked': '最后检测',
                 'error_link_expired': '链接已失效',
@@ -751,7 +776,7 @@
                 'folder_enjoy': 'ENJOY AI',
                 'folder_whale': 'WhalesBot',
                 'folder_test': 'Test Folder',
-                'footer_copyright': '© 2026 Dropbox Permanent Link Service | Smart Validation',
+                'footer_copyright': '© 2024 Dropbox Permanent Link Service | Smart Validation',
                 'footer_note': 'The system automatically checks link status every 5 minutes. Invalid links are disabled.',
                 'last_checked': 'Last checked',
                 'error_link_expired': 'Link has expired',
@@ -806,7 +831,8 @@
             }
         }
         
-        function toggleProjectMenu(year, project) {
+        // 修改：现在接收按钮元素参数
+        function toggleProjectMenu(year, project, buttonElement) {
             const menuId = `project-${year}-${project}`;
             const projectMenu = document.getElementById(menuId);
             
