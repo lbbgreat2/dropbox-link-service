@@ -6,7 +6,7 @@
     <title>Dropbox文件中心 | 智能链接验证</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        * {
+         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
@@ -23,6 +23,7 @@
         .container {
             max-width: 1200px;
             margin: 0 auto;
+            padding: 0 20px; /* 新增：添加左右内边距确保在小屏幕上不贴边 */
         }
         
         header {
@@ -97,24 +98,61 @@
         
         .card-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(300px, 400px)); /* 修改此处 */
             gap: 25px;
             margin-bottom: 30px;
+            justify-content: center;  /* 添加此行：网格内容居中 */
+            justify-items: center;    /* 添加此行：网格项在单元格内居中 */
         }
         
         @media (max-width: 768px) {
             .card-grid {
                 grid-template-columns: 1fr;
+                gap: 20px;
+                padding: 0 10px; /* 在移动端添加内边距 */
             }
+            
             header h1 {
                 font-size: 2.2rem;
             }
+            
             .language-switcher {
                 position: relative;
                 top: auto;
                 right: auto;
                 margin: 0 auto 20px;
                 display: inline-flex;
+            }
+            
+            .system-status {
+                padding: 12px 15px;
+                margin-top: 15px;
+            }
+            
+            /* 新增：移动端优化年份按钮 */
+            .year-selection {
+                flex-wrap: wrap;
+            }
+            
+            .year-btn {
+                padding: 10px 12px;
+                font-size: 0.85rem;
+            }
+        }
+        
+        /* 新增：针对中等屏幕的优化 */
+        @media (min-width: 769px) and (max-width: 1200px) {
+            .card-grid {
+                grid-template-columns: repeat(2, minmax(300px, 400px));
+                justify-content: center;
+            }
+        }
+        
+        /* 新增：针对大屏幕的优化 */
+        @media (min-width: 1201px) {
+            .card-grid {
+                grid-template-columns: repeat(2, 400px);
+                justify-content: center;
             }
         }
         
