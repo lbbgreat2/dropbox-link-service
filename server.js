@@ -289,24 +289,46 @@ async function checkLinkValidity(url) {
       timeout: 15000, // 15秒超时
       maxRedirects: 5,
       validateStatus: function (status) {
-        return status < 500; // 接受除服务器错误外的所有状态码
+        return true; // 接受所有状态码，包括404
       }
     });
     
     const htmlContent = response.data;
-    const isDropboxPage = htmlContent.includes('dropbox.com') || htmlContent.includes('Dropbox');
+    const statusCode = response.status;
+    const lowerHtml = htmlContent.toLowerCase();
     
-    if (!isDropboxPage) {
+    // ===== 第一层：HTTP状态码检查 =====
+    if (statusCode === 404 || statusCode === 410) {
       return {
         valid: false,
-        status: response.status,
+        status: statusCode,
         timestamp: new Date().toISOString(),
-        message: '链接未指向Dropbox有效页面',
-        reason: 'NOT_DROPBOX'
+        message: `HTTP ${statusCode}: 内容不存在`,
+        reason: 'HTTP_NOT_FOUND'
       };
     }
     
-    // 检查是否包含常见的失效提示关键词
+    if (statusCode === 403) {
+      return {
+        valid: false,
+        status: statusCode,
+        timestamp: new Date().toISOString(),
+        message: 'HTTP 403: 无权访问',
+        reason: 'HTTP_FORBIDDEN'
+      };
+    }
+    
+    if (statusCode >= 500) {
+      return {
+        valid: false,
+        status: statusCode,
+        timestamp: new Date().toISOString(),
+        message: `HTTP ${statusCode}: 服务器错误`,
+        reason: `HTTP_${statusCode}`
+      };
+    }
+    
+    // ===== 第二层：Dropbox页面失效关键词检查 =====
     const failureIndicators = [
       '此项目已删除',
       '该项目已删除',
@@ -317,66 +339,112 @@ async function checkLinkValidity(url) {
       'removed',
       'no longer available',
       '您没有访问权限',
-      'don\'t have permission',
       '找不到此文件',
       '文件不存在',
-      'This file was deleted',
-      'The file you\'re looking for',
+      'this file was deleted',
+      'the file you\'re looking for',
       'couldn\'t be found',
       '已取消分享',
       '分享已取消',
       'shared link has been disabled',
-      'shared link is not valid'
+      'shared link is not valid',
+      'link has been removed',
+      'file unavailable',
+      'content unavailable',
+      'access denied',
+      'permission denied',
+      'error (4',
+      'error 404',
+      'page not found',
+      'the link has expired',
+      '链接已过期',
+      '链接已失效',
+      'sorry, the file is not available',
+      'the file is no longer available',
+      'this shared file has been deleted'
     ];
     
     const isContentDeleted = failureIndicators.some(indicator => 
-      htmlContent.toLowerCase().includes(indicator.toLowerCase())
+      lowerHtml.includes(indicator.toLowerCase())
     );
     
     if (isContentDeleted) {
       return {
         valid: false,
-        status: response.status,
+        status: statusCode,
         timestamp: new Date().toISOString(),
-        message: '链接指向的内容可能已被删除或无权访问',
+        message: '链接指向的内容已被删除或无权访问',
         reason: 'CONTENT_DELETED_OR_NO_PERMISSION'
       };
     }
     
-    // 额外检查：Dropbox特定的成功标识
-    const successIndicators = [
-      '正在加载',
-      'loading',
-      '查看文件夹',
-      'view folder',
-      '下载',
-      'download',
-      '文件',
-      'files',
-      '文件夹',
-      'folder'
-    ];
+    // ===== 第三层：检查是否是Dropbox页面 =====
+    const isDropboxPage = lowerHtml.includes('dropbox.com') || 
+                          lowerHtml.includes('dropbox') ||
+                          lowerHtml.includes('dropboxapi');
     
-    const hasSuccessIndicator = successIndicators.some(indicator =>
-      htmlContent.toLowerCase().includes(indicator.toLowerCase())
-    );
-    
-    if (hasSuccessIndicator) {
+    if (!isDropboxPage && statusCode >= 300) {
       return {
-        valid: true,
-        status: response.status,
+        valid: false,
+        status: statusCode,
         timestamp: new Date().toISOString(),
-        message: '链接内容有效'
+        message: `重定向到非Dropbox页面 (HTTP ${statusCode})`,
+        reason: 'REDIRECT_ERROR'
       };
     }
     
-    // 默认情况下，如果页面是Dropbox但没有明显失败或成功标识，我们假设有效
+    // ===== 第四层：成功标识检查（更严格） =====
+    // 必须是明确的有效内容标识，不能仅凭通用词判断
+    const strongSuccessIndicators = [
+      'viewer-container',
+      'file-viewer',
+      'folder-viewer',
+      'preview-container',
+      'maestro-viewer',
+      'react-file-viewer'
+    ];
+    
+    const hasStrongSuccessIndicator = strongSuccessIndicators.some(indicator =>
+      lowerHtml.includes(indicator)
+    );
+    
+    if (hasStrongSuccessIndicator) {
+      return {
+        valid: true,
+        status: statusCode,
+        timestamp: new Date().toISOString(),
+        message: '链接内容有效（文件查看器加载成功）'
+      };
+    }
+    
+    // 弱成功标识：需要多个同时满足
+    const weakSuccessIndicators = [
+      '查看文件夹', 'view folder', 'folder viewer',
+      '下载', 'download', '文件名'
+    ];
+    
+    let weakMatchCount = 0;
+    weakSuccessIndicators.forEach(indicator => {
+      if (lowerHtml.includes(indicator.toLowerCase())) weakMatchCount++;
+    });
+    
+    // 如果同时匹配2个以上的弱标识，且没有失效标识，认为有效
+    if (weakMatchCount >= 2) {
+      return {
+        valid: true,
+        status: statusCode,
+        timestamp: new Date().toISOString(),
+        message: `链接可访问（匹配${weakMatchCount}个有效标识）`
+      };
+    }
+    
+    // ===== 默认：不确定状态，保守判定为有效但带警告 =====
     return {
       valid: true,
-      status: response.status,
+      status: statusCode,
       timestamp: new Date().toISOString(),
-      message: '链接可访问',
-      note: '未检测到明确的有效性标识，但页面可访问'
+      message: '链接可访问（未检测到明确失效标识）',
+      note: 'weak_validation'
     };
     
   } catch (error) {
