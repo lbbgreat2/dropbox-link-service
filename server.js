@@ -51,9 +51,9 @@ const ENJOY_AI_HIERARCHICAL_LINKS = {
       'competition_rule_scoring_sheet': 'https://www.dropbox.com/scl/fi/9f96q35r2nbt95nm2t8pc/2026ver.-Mining-Expedition-Competition-Rule-1.pdf?rlkey=dv3x7qo7s3vfo0lvbh2thdfoq&st=m77t5ahp&dl=0',
       'field_setup_guide': 'https://www.dropbox.com/scl/fi/mzy44dpqa97chaq6csgio/Mining-Expedition-Competition-Field-Setup-Guide.pdf?rlkey=o7e4djjzfw0vhyiwuvdtjzojh&st=oisb7be2&dl=0',
       'parts_list': 'https://www.dropbox.com/scl/fi/6pk2fecja7xlmhuo1l3c1/EA-P4-25-Building-Parts-List.pdf?rlkey=ioteom2itpe5axbwejeqtnwm7&st=81y1121l&dl=0',
-      'video_full_competition_round': '',
-      'program_reference': '',
-      'parts_list2': ''
+      'video_full_competition_round': 'https://www.dropbox.com/scl/fi/uqooga4bo4v0olr7ehxup/2026-Mining-Expedition-Full-Competition-Round.mp4?rlkey=gh2zbf9vv6odh8ivff4o6vcg0&st=mhdd1x1x&dl=0',
+      'program_reference': 'https://www.dropbox.com/scl/fo/yxmv2wffogybybn0f3ihy/AE5_v0MiV-YCZOQ4XrSJbVc?rlkey=eu3nxx8i8v773yq0dtrlezgpy&st=8utmbeo2&dl=0',
+      'product_list': 'https://www.dropbox.com/scl/fo/rgz5ze9ezzzs1hxs78715/ACYUKlf7kKBxwS70WVQW4ko?rlkey=u1unwut06fhe3fg13ioccsrem&st=uemq3w7p&dl=0'
     },
     'inventions_trail': {
       'competition_rule_scoring_sheet': 'https://www.dropbox.com/scl/fi/5qprcf8ezy26gqpey5tnp/compeition-rule.pdf?rlkey=ktvu3885ph0vw8yr6b2d1pr2a&st=qmiin83o&dl=0',
