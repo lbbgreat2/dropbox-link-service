@@ -444,8 +444,7 @@ async function getEnjoyAiAllLinksStatus() {
   
   const result = {
     '2025': {},
-    '2026': {},
-    timestamp: new Date().toISOString()
+    '2026': {}
   };
   
   // 并行检测所有链接
@@ -521,8 +520,7 @@ async function getWhalesbotAllLinksStatus() {
   
   const result = {
     'to_b': {},
-    'to_c': {},
-    timestamp: new Date().toISOString()
+    'to_c': {}
   };
   
   // 并行检测所有链接
