@@ -1154,7 +1154,7 @@
                     </div>
                 </div>
 
-                <div class="link-status">
+                <div class="link-status" style="display: none;">
                     <span id="status-whalesbot_hierarchical" class="status-text status-checking">
                         <i class="fas fa-spinner fa-spin"></i> <span data-i18n-key="status_hierarchical_ready">分级菜单就绪</span>
                     </span>
@@ -1573,7 +1573,7 @@
             }
 
             const whalesbotStatus = document.getElementById('status-whalesbot_hierarchical');
-            if (whalesbotStatus) {
+            if (whalesbotStatus && whalesbotStatus.parentElement.style.display !== 'none') {
                 if (whalesbotStatus.textContent.includes('分级菜单就绪') || whalesbotStatus.textContent.includes('Hierarchical Menu Ready')) {
                     whalesbotStatus.innerHTML = `<i class="fas fa-check-circle"></i> ${i18nResources[currentLang]['status_hierarchical_ready']}`;
                 }
@@ -1809,7 +1809,7 @@
             }
 
             const whalesbotHierarchicalStatus = document.getElementById('status-whalesbot_hierarchical');
-            if (whalesbotHierarchicalStatus) {
+            if (whalesbotHierarchicalStatus && whalesbotHierarchicalStatus.parentElement.style.display !== 'none') {
                 whalesbotHierarchicalStatus.innerHTML = `<i class="fas fa-check-circle"></i> ${i18nResources[currentLang]['status_hierarchical_ready']}`;
                 whalesbotHierarchicalStatus.className = 'status-text status-valid';
             }
@@ -2048,7 +2048,7 @@
                     }
 
                     const whalesbotStatus = document.getElementById('status-whalesbot_hierarchical');
-                    if (whalesbotStatus) {
+                    if (whalesbotStatus && whalesbotStatus.parentElement.style.display !== 'none') {
                         if (invalidLinks === 0) {
                             whalesbotStatus.innerHTML = `<i class="fas fa-check-circle"></i> ${i18nResources[currentLang]['status_live']} (${validLinks}/${totalLinks})`;
                             whalesbotStatus.className = 'status-text status-valid';
@@ -2071,7 +2071,7 @@
                 }
 
                 const whalesbotStatus = document.getElementById('status-whalesbot_hierarchical');
-                if (whalesbotStatus) {
+                if (whalesbotStatus && whalesbotStatus.parentElement.style.display !== 'none') {
                     whalesbotStatus.innerHTML = `<i class="fas fa-times-circle"></i> ${i18nResources[currentLang]['status_failed']}`;
                     whalesbotStatus.className = 'status-text status-invalid';
                 }
