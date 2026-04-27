@@ -432,13 +432,13 @@ async function getLinkStatus(folderId) {
 }
 
 // 获取ENJOY AI所有链接状态
-async function getEnjoyAiAllLinksStatus() {
+async function getEnjoyAiAllLinksStatus(force = false) {
   const now = Date.now();
   const cacheKey = 'enjoy_ai_all';
   
-  // 检查缓存
-  if (enjoyAiLinkStatusCache[cacheKey] && 
-      now - enjoyAiLinkStatusCache[cacheKey].timestamp < CACHE_DURATION) {
+  // 检查缓存（非强制模式）
+  if (!force && enjoyAiLinkStatusCache[cacheKey] && 
+      now - new Date(enjoyAiLinkStatusCache[cacheKey].timestamp).getTime() < CACHE_DURATION) {
     return enjoyAiLinkStatusCache[cacheKey];
   }
   
@@ -508,13 +508,13 @@ async function getEnjoyAiLinksStatus(year, project) {
 // ============ WhalesBot 链接状态检测 ============
 
 // 获取WhalesBot所有链接状态
-async function getWhalesbotAllLinksStatus() {
+async function getWhalesbotAllLinksStatus(force = false) {
   const now = Date.now();
   const cacheKey = 'whalesbot_all';
   
-  // 检查缓存
-  if (whalesbotLinkStatusCache[cacheKey] && 
-      now - whalesbotLinkStatusCache[cacheKey].timestamp < CACHE_DURATION) {
+  // 检查缓存（非强制模式）
+  if (!force && whalesbotLinkStatusCache[cacheKey] && 
+      now - new Date(whalesbotLinkStatusCache[cacheKey].timestamp).getTime() < CACHE_DURATION) {
     return whalesbotLinkStatusCache[cacheKey];
   }
   
@@ -654,12 +654,13 @@ app.get('/api/hierarchical/whalesbot', (req, res) => {
 // 获取ENJOY AI所有链接状态
 app.get('/api/hierarchical/all_status', async (req, res) => {
   try {
-    const status = await getEnjoyAiAllLinksStatus();
+    const force = req.query.force === 'true';
+    const status = await getEnjoyAiAllLinksStatus(force);
     res.json({
       success: true,
       data: status.data,
       timestamp: status.timestamp,
-      cache: true
+      cache: !force
     });
   } catch (error) {
     console.error('获取ENJOY AI链接状态失败:', error);
@@ -788,12 +789,13 @@ app.get('/api/hierarchical/link', async (req, res) => {
 // 获取WhalesBot所有链接状态
 app.get('/api/hierarchical/whalesbot_all_status', async (req, res) => {
   try {
-    const status = await getWhalesbotAllLinksStatus();
+    const force = req.query.force === 'true';
+    const status = await getWhalesbotAllLinksStatus(force);
     res.json({
       success: true,
       data: status.data,
       timestamp: status.timestamp,
-      cache: true
+      cache: !force
     });
   } catch (error) {
     console.error('获取WhalesBot链接状态失败:', error);
