@@ -1868,15 +1868,16 @@
         });
 
         // ==================== ENJOY AI 链接状态检测功能 ====================
-        async function checkEnjoyAiLinks() {
+        async function checkEnjoyAiLinks(force = false) {
             const statusCountEl = document.getElementById('enjoy-ai-status-count');
             if (statusCountEl) {
-                statusCountEl.textContent = '检测中...';
+                statusCountEl.textContent = force ? '强制检测中...' : '检测中...';
                 statusCountEl.className = 'status-count';
             }
 
             try {
-                const response = await fetch(`${API_BASE_URL}/api/hierarchical/all_status`);
+                const url = `${API_BASE_URL}/api/hierarchical/all_status${force ? '?force=true' : ''}`;
+                const response = await fetch(url);
 
                 if (!response.ok) {
                     if (statusCountEl) {
@@ -1993,15 +1994,16 @@
         }
 
         // ==================== WhalesBot 链接状态检测功能 ====================
-        async function checkWhalesbotLinks() {
+        async function checkWhalesbotLinks(force = false) {
             const statusCountEl = document.getElementById('whalesbot-status-count');
             if (statusCountEl) {
-                statusCountEl.textContent = '检测中...';
+                statusCountEl.textContent = force ? '强制检测中...' : '检测中...';
                 statusCountEl.className = 'status-count';
             }
 
             try {
-                const response = await fetch(`${API_BASE_URL}/api/hierarchical/whalesbot_all_status`);
+                const url = `${API_BASE_URL}/api/hierarchical/whalesbot_all_status${force ? '?force=true' : ''}`;
+                const response = await fetch(url);
 
                 if (!response.ok) {
                     if (statusCountEl) {
@@ -2139,21 +2141,21 @@
 
             const enjoyAiStatusCountEl = document.getElementById('enjoy-ai-status-count');
             if (enjoyAiStatusCountEl) {
-                enjoyAiStatusCountEl.textContent = '检测中...';
+                enjoyAiStatusCountEl.textContent = '强制刷新中...';
                 enjoyAiStatusCountEl.className = 'status-count';
             }
 
             const whalesbotStatusCountEl = document.getElementById('whalesbot-status-count');
             if (whalesbotStatusCountEl) {
-                whalesbotStatusCountEl.textContent = '检测中...';
+                whalesbotStatusCountEl.textContent = '强制刷新中...';
                 whalesbotStatusCountEl.className = 'status-count';
             }
 
             try {
                 const [whalesbotStatus, enjoyAiStatus, whalesbotHierarchicalStatus] = await Promise.allSettled([
                     fetch(`${API_BASE_URL}/api/links/status`).then(res => res.ok ? res.json() : null),
-                    checkEnjoyAiLinks(),
-                    checkWhalesbotLinks()
+                    checkEnjoyAiLinks(true),
+                    checkWhalesbotLinks(true)
                 ]);
 
                 if (whalesbotStatus.status === 'fulfilled' && whalesbotStatus.value && whalesbotStatus.value.success) {
