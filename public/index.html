@@ -59,7 +59,7 @@
         }
 
         .brand-logo img {
-            height: 30px;
+            height: 48px;
             width: auto;
         }
 
@@ -181,7 +181,7 @@
             }
 
             .brand-logo img {
-                height: 20px;
+                height: 40px;
             }
 
             .card-grid {
@@ -637,6 +637,42 @@
             position: relative;
             z-index: 1;
         }
+
+        /* Category selection for WhalesBot */
+        .category-selection {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            gap: 10px;
+        }
+
+        .category-btn {
+            background: linear-gradient(135deg, var(--wb-teal) 0%, var(--wb-teal-dark) 100%);
+            color: var(--wb-navy);
+            border: none;
+            padding: 12px 15px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            flex: 1;
+            text-align: center;
+            min-width: 100px;
+            box-shadow: 0 4px 12px rgba(60, 189, 177, 0.25);
+        }
+
+        .category-btn:hover:not(:disabled) {
+            background: linear-gradient(135deg, var(--wb-teal-light) 0%, var(--wb-teal) 100%);
+            box-shadow: 0 6px 20px rgba(60, 189, 177, 0.4);
+            transform: translateY(-1px);
+        }
+
+        .category-btn:disabled {
+            background: linear-gradient(135deg, #334155, #1e293b);
+            color: var(--wb-gray-dark);
+            cursor: not-allowed;
+            box-shadow: none;
+        }
     </style>
 </head>
 <body>
@@ -740,7 +776,6 @@
                 <!-- 2026年项目菜单 -->
                 <div id="year-2026-menu" class="year-menu" style="display: none; margin-bottom: 15px;">
                     <div class="project-selection">
-                        <!-- 2026年6个项目 -->
                         <div class="project-item">
                             <button class="project-btn" onclick="toggleProjectMenu('2026', 'drone_cup', this); event.stopPropagation();">Drone Cup</button>
                             <div id="project-2026-drone_cup" class="doc-menu" style="display: none;">
@@ -827,35 +862,312 @@
                 </div>
             </div>
 
-            <!-- WhalesBot 共享文件夹 -->
-            <div class="folder-card" data-folder-id="whalesbot">
+            <!-- WhalesBot 分级菜单卡片 -->
+            <div class="folder-card whalesbot-card">
                 <div class="card-icon">
                     <i class="fas fa-robot"></i>
                 </div>
                 <h3 class="card-title"><span data-i18n-key="folder_whale">WhalesBot</span>
-                    <span class="shared-badge" data-i18n-key="badge_shared">共享 • 5个项目</span>
+                    <span class="hierarchical-badge" data-i18n-key="badge_hierarchical_whale">分级 • 自动检测</span>
                 </h3>
-                <p class="card-desc" data-i18n-key="desc_whalesbot">WhalesBot项目的共享文件夹。包含14个项目，包括代码、资源和项目文件。</p>
+                <p class="card-desc" data-i18n-key="desc_whalesbot_hierarchical">WhalesBot产品的分级文档中心。按To B/To C和产品型号分类，包含课程、手册和零件清单。<span id="whalesbot-status-count" class="status-count">检测中...</span></p>
                 <div class="card-meta">
-                    <i class="fas fa-users"></i> <span data-i18n-key="meta_shared">共享文件夹</span>
+                    <i class="fas fa-sitemap"></i> <span data-i18n-key="meta_hierarchical_whale">分级文档中心</span>
                 </div>
-                <button class="access-btn" onclick="handleFolderClick('whalesbot')">
-                    <span class="btn-text" data-i18n-key="btn_open">打开文件夹</span>
-                </button>
+
+                <!-- 第一级菜单：分类选择 (To B / To C) -->
+                <div class="category-selection">
+                    <button class="category-btn" onclick="toggleCategoryMenu('to_b'); event.stopPropagation();">To B</button>
+                    <button class="category-btn" onclick="toggleCategoryMenu('to_c'); event.stopPropagation();">To C</button>
+                </div>
+
+                <!-- To B 产品菜单 -->
+                <div id="category-to_b-menu" class="year-menu" style="display: none; margin-bottom: 15px;">
+                    <div class="project-selection">
+                        <div class="project-item">
+                            <button class="project-btn" onclick="toggleWhalesbotProductMenu('to_b', 'u10', this); event.stopPropagation();">U10</button>
+                            <div id="whalesbot-to_b-u10" class="doc-menu" style="display: none;">
+                                <button class="doc-btn" data-category="to_b" data-product="u10" data-doctype="courses" onclick="openWhalesbotDocument('to_b', 'u10', 'courses'); event.stopPropagation();">Courses</button>
+                                <button class="doc-btn" data-category="to_b" data-product="u10" data-doctype="parts_list" onclick="openWhalesbotDocument('to_b', 'u10', 'parts_list'); event.stopPropagation();">Parts List</button>
+                            </div>
+                        </div>
+                        <div class="project-item">
+                            <button class="project-btn" onclick="toggleWhalesbotProductMenu('to_b', 'u10_pro', this); event.stopPropagation();">U10 Pro</button>
+                            <div id="whalesbot-to_b-u10_pro" class="doc-menu" style="display: none;">
+                                <button class="doc-btn" data-category="to_b" data-product="u10_pro" data-doctype="project_pictures" onclick="openWhalesbotDocument('to_b', 'u10_pro', 'project_pictures'); event.stopPropagation();">Project Pictures</button>
+                                <button class="doc-btn" data-category="to_b" data-product="u10_pro" data-doctype="courses" onclick="openWhalesbotDocument('to_b', 'u10_pro', 'courses'); event.stopPropagation();">Courses</button>
+                                <button class="doc-btn" data-category="to_b" data-product="u10_pro" data-doctype="parts_list" onclick="openWhalesbotDocument('to_b', 'u10_pro', 'parts_list'); event.stopPropagation();">Parts List</button>
+                            </div>
+                        </div>
+                        <div class="project-item">
+                            <button class="project-btn" onclick="toggleWhalesbotProductMenu('to_b', 'u20', this); event.stopPropagation();">U20</button>
+                            <div id="whalesbot-to_b-u20" class="doc-menu" style="display: none;">
+                                <button class="doc-btn" data-category="to_b" data-product="u20" data-doctype="courses" onclick="openWhalesbotDocument('to_b', 'u20', 'courses'); event.stopPropagation();">Courses</button>
+                                <button class="doc-btn" data-category="to_b" data-product="u20" data-doctype="parts_list" onclick="openWhalesbotDocument('to_b', 'u20', 'parts_list'); event.stopPropagation();">Parts List</button>
+                            </div>
+                        </div>
+                        <div class="project-item">
+                            <button class="project-btn" onclick="toggleWhalesbotProductMenu('to_b', 'u20_pro', this); event.stopPropagation();">U20 Pro</button>
+                            <div id="whalesbot-to_b-u20_pro" class="doc-menu" style="display: none;">
+                                <button class="doc-btn" data-category="to_b" data-product="u20_pro" data-doctype="project_pictures" onclick="openWhalesbotDocument('to_b', 'u20_pro', 'project_pictures'); event.stopPropagation();">Project Pictures</button>
+                                <button class="doc-btn" data-category="to_b" data-product="u20_pro" data-doctype="courses" onclick="openWhalesbotDocument('to_b', 'u20_pro', 'courses'); event.stopPropagation();">Courses</button>
+                                <button class="doc-btn" data-category="to_b" data-product="u20_pro" data-doctype="user_manual" onclick="openWhalesbotDocument('to_b', 'u20_pro', 'user_manual'); event.stopPropagation();">User Manual</button>
+                            </div>
+                        </div>
+                        <div class="project-item">
+                            <button class="project-btn" onclick="toggleWhalesbotProductMenu('to_b', 'u30_pro', this); event.stopPropagation();">U30 Pro</button>
+                            <div id="whalesbot-to_b-u30_pro" class="doc-menu" style="display: none;">
+                                <button class="doc-btn" data-category="to_b" data-product="u30_pro" data-doctype="courses" onclick="openWhalesbotDocument('to_b', 'u30_pro', 'courses'); event.stopPropagation();">Courses</button>
+                                <button class="doc-btn" data-category="to_b" data-product="u30_pro" data-doctype="parts_list_plus_quick_start_guide" onclick="openWhalesbotDocument('to_b', 'u30_pro', 'parts_list_plus_quick_start_guide'); event.stopPropagation();">Parts List + Quick Start Guide</button>
+                                <button class="doc-btn" data-category="to_b" data-product="u30_pro" data-doctype="bp201_user_manual" onclick="openWhalesbotDocument('to_b', 'u30_pro', 'bp201_user_manual'); event.stopPropagation();">BP201 User Manual</button>
+                            </div>
+                        </div>
+                        <div class="project-item">
+                            <button class="project-btn" onclick="toggleWhalesbotProductMenu('to_b', 's10', this); event.stopPropagation();">S10</button>
+                            <div id="whalesbot-to_b-s10" class="doc-menu" style="display: none;">
+                                <button class="doc-btn" data-category="to_b" data-product="s10" data-doctype="parts_list" onclick="openWhalesbotDocument('to_b', 's10', 'parts_list'); event.stopPropagation();">Parts List</button>
+                            </div>
+                        </div>
+                        <div class="project-item">
+                            <button class="project-btn" onclick="toggleWhalesbotProductMenu('to_b', 's30', this); event.stopPropagation();">S30</button>
+                            <div id="whalesbot-to_b-s30" class="doc-menu" style="display: none;">
+                                <button class="doc-btn" data-category="to_b" data-product="s30" data-doctype="courses" onclick="openWhalesbotDocument('to_b', 's30', 'courses'); event.stopPropagation();">Courses</button>
+                                <button class="doc-btn" data-category="to_b" data-product="s30" data-doctype="parts_list" onclick="openWhalesbotDocument('to_b', 's30', 'parts_list'); event.stopPropagation();">Parts List</button>
+                                <button class="doc-btn" data-category="to_b" data-product="s30" data-doctype="user_manual" onclick="openWhalesbotDocument('to_b', 's30', 'user_manual'); event.stopPropagation();">User Manual</button>
+                            </div>
+                        </div>
+                        <div class="project-item">
+                            <button class="project-btn" onclick="toggleWhalesbotProductMenu('to_b', 's40', this); event.stopPropagation();">S40</button>
+                            <div id="whalesbot-to_b-s40" class="doc-menu" style="display: none;">
+                                <button class="doc-btn" data-category="to_b" data-product="s40" data-doctype="project_pictures" onclick="openWhalesbotDocument('to_b', 's40', 'project_pictures'); event.stopPropagation();">Project Pictures</button>
+                                <button class="doc-btn" data-category="to_b" data-product="s40" data-doctype="courses" onclick="openWhalesbotDocument('to_b', 's40', 'courses'); event.stopPropagation();">Courses</button>
+                                <button class="doc-btn" data-category="to_b" data-product="s40" data-doctype="parts_list" onclick="openWhalesbotDocument('to_b', 's40', 'parts_list'); event.stopPropagation();">Parts List</button>
+                                <button class="doc-btn" data-category="to_b" data-product="s40" data-doctype="sc201_user_manual" onclick="openWhalesbotDocument('to_b', 's40', 'sc201_user_manual'); event.stopPropagation();">SC201 User Manual</button>
+                            </div>
+                        </div>
+                        <div class="project-item">
+                            <button class="project-btn" onclick="toggleWhalesbotProductMenu('to_b', 'ai_module_1s', this); event.stopPropagation();">AI Module 1S</button>
+                            <div id="whalesbot-to_b-ai_module_1s" class="doc-menu" style="display: none;">
+                                <button class="doc-btn" data-category="to_b" data-product="ai_module_1s" data-doctype="project_pictures" onclick="openWhalesbotDocument('to_b', 'ai_module_1s', 'project_pictures'); event.stopPropagation();">Project Pictures</button>
+                                <button class="doc-btn" data-category="to_b" data-product="ai_module_1s" data-doctype="courses" onclick="openWhalesbotDocument('to_b', 'ai_module_1s', 'courses'); event.stopPropagation();">Courses</button>
+                                <button class="doc-btn" data-category="to_b" data-product="ai_module_1s" data-doctype="quick_start_guide" onclick="openWhalesbotDocument('to_b', 'ai_module_1s', 'quick_start_guide'); event.stopPropagation();">Quick Start Guide</button>
+                                <button class="doc-btn" data-category="to_b" data-product="ai_module_1s" data-doctype="parts_list" onclick="openWhalesbotDocument('to_b', 'ai_module_1s', 'parts_list'); event.stopPropagation();">Parts List</button>
+                                <button class="doc-btn" data-category="to_b" data-product="ai_module_1s" data-doctype="mc101s_user_manual" onclick="openWhalesbotDocument('to_b', 'ai_module_1s', 'mc101s_user_manual'); event.stopPropagation();">MC101S User Manual</button>
+                            </div>
+                        </div>
+                        <div class="project-item">
+                            <button class="project-btn" onclick="toggleWhalesbotProductMenu('to_b', 'ai_module_2s', this); event.stopPropagation();">AI Module 2S</button>
+                            <div id="whalesbot-to_b-ai_module_2s" class="doc-menu" style="display: none;">
+                                <button class="doc-btn" data-category="to_b" data-product="ai_module_2s" data-doctype="mc101s_user_manual" onclick="openWhalesbotDocument('to_b', 'ai_module_2s', 'mc101s_user_manual'); event.stopPropagation();">MC101S User Manual</button>
+                                <button class="doc-btn" data-category="to_b" data-product="ai_module_2s" data-doctype="quick_start_guide" onclick="openWhalesbotDocument('to_b', 'ai_module_2s', 'quick_start_guide'); event.stopPropagation();">Quick Start Guide</button>
+                            </div>
+                        </div>
+                        <div class="project-item">
+                            <button class="project-btn" onclick="toggleWhalesbotProductMenu('to_b', 'ai_module_3s', this); event.stopPropagation();">AI Module 3S</button>
+                            <div id="whalesbot-to_b-ai_module_3s" class="doc-menu" style="display: none;">
+                                <button class="doc-btn" data-category="to_b" data-product="ai_module_3s" data-doctype="mc102_user_manual" onclick="openWhalesbotDocument('to_b', 'ai_module_3s', 'mc102_user_manual'); event.stopPropagation();">MC102 User Manual</button>
+                                <button class="doc-btn" data-category="to_b" data-product="ai_module_3s" data-doctype="parts_list_plus_quick_start_guide" onclick="openWhalesbotDocument('to_b', 'ai_module_3s', 'parts_list_plus_quick_start_guide'); event.stopPropagation();">Parts List + Quick Start Guide</button>
+                            </div>
+                        </div>
+                        <div class="project-item">
+                            <button class="project-btn" onclick="toggleWhalesbotProductMenu('to_b', 'ai_module_5', this); event.stopPropagation();">AI Module 5</button>
+                            <div id="whalesbot-to_b-ai_module_5" class="doc-menu" style="display: none;">
+                                <button class="doc-btn" data-category="to_b" data-product="ai_module_5" data-doctype="mc902_user_manual" onclick="openWhalesbotDocument('to_b', 'ai_module_5', 'mc902_user_manual'); event.stopPropagation();">MC902 User Manual</button>
+                                <button class="doc-btn" data-category="to_b" data-product="ai_module_5" data-doctype="carton_label" onclick="openWhalesbotDocument('to_b', 'ai_module_5', 'carton_label'); event.stopPropagation();">Carton Label</button>
+                            </div>
+                        </div>
+                        <div class="project-item">
+                            <button class="project-btn" onclick="toggleWhalesbotProductMenu('to_b', 'ai_module_5s', this); event.stopPropagation();">AI Module 5S</button>
+                            <div id="whalesbot-to_b-ai_module_5s" class="doc-menu" style="display: none;">
+                                <button class="doc-btn" data-category="to_b" data-product="ai_module_5s" data-doctype="courses" onclick="openWhalesbotDocument('to_b', 'ai_module_5s', 'courses'); event.stopPropagation();">Courses</button>
+                                <button class="doc-btn" data-category="to_b" data-product="ai_module_5s" data-doctype="mc902_user_manual" onclick="openWhalesbotDocument('to_b', 'ai_module_5s', 'mc902_user_manual'); event.stopPropagation();">MC902 User Manual</button>
+                                <button class="doc-btn" data-category="to_b" data-product="ai_module_5s" data-doctype="parts_list_plus_quick_start_guide" onclick="openWhalesbotDocument('to_b', 'ai_module_5s', 'parts_list_plus_quick_start_guide'); event.stopPropagation();">Parts List + Quick Start Guide</button>
+                            </div>
+                        </div>
+                        <div class="project-item">
+                            <button class="project-btn" onclick="toggleWhalesbotProductMenu('to_b', 'enginbot_1s', this); event.stopPropagation();">EnginBot 1s</button>
+                            <div id="whalesbot-to_b-enginbot_1s" class="doc-menu" style="display: none;">
+                                <button class="doc-btn" data-category="to_b" data-product="enginbot_1s" data-doctype="courses_old" onclick="openWhalesbotDocument('to_b', 'enginbot_1s', 'courses_old'); event.stopPropagation();">Courses (Old)</button>
+                                <button class="doc-btn" data-category="to_b" data-product="enginbot_1s" data-doctype="parts_list" onclick="openWhalesbotDocument('to_b', 'enginbot_1s', 'parts_list'); event.stopPropagation();">Parts List</button>
+                                <button class="doc-btn" data-category="to_b" data-product="enginbot_1s" data-doctype="scratch" onclick="openWhalesbotDocument('to_b', 'enginbot_1s', 'scratch'); event.stopPropagation();">Scratch</button>
+                                <button class="doc-btn" data-category="to_b" data-product="enginbot_1s" data-doctype="python" onclick="openWhalesbotDocument('to_b', 'enginbot_1s', 'python'); event.stopPropagation();">Python</button>
+                                <button class="doc-btn" data-category="to_b" data-product="enginbot_1s" data-doctype="basics" onclick="openWhalesbotDocument('to_b', 'enginbot_1s', 'basics'); event.stopPropagation();">Basics</button>
+                            </div>
+                        </div>
+                        <div class="project-item">
+                            <button class="project-btn" onclick="toggleWhalesbotProductMenu('to_b', 'wobot_1s', this); event.stopPropagation();">Wobot 1s</button>
+                            <div id="whalesbot-to_b-wobot_1s" class="doc-menu" style="display: none;">
+                                <button class="doc-btn" data-category="to_b" data-product="wobot_1s" data-doctype="project_manual" onclick="openWhalesbotDocument('to_b', 'wobot_1s', 'project_manual'); event.stopPropagation();">Project Manual</button>
+                                <button class="doc-btn" data-category="to_b" data-product="wobot_1s" data-doctype="parts_list" onclick="openWhalesbotDocument('to_b', 'wobot_1s', 'parts_list'); event.stopPropagation();">Parts List</button>
+                                <button class="doc-btn" data-category="to_b" data-product="wobot_1s" data-doctype="mc_602_user_guide" onclick="openWhalesbotDocument('to_b', 'wobot_1s', 'mc_602_user_guide'); event.stopPropagation();">MC602 User Guide</button>
+                                <button class="doc-btn" data-category="to_b" data-product="wobot_1s" data-doctype="project_assembly_manual" onclick="openWhalesbotDocument('to_b', 'wobot_1s', 'project_assembly_manual'); event.stopPropagation();">Project Assembly Manual</button>
+                                <button class="doc-btn" data-category="to_b" data-product="wobot_1s" data-doctype="courses" onclick="openWhalesbotDocument('to_b', 'wobot_1s', 'courses'); event.stopPropagation();">Courses</button>
+                            </div>
+                        </div>
+                        <div class="project-item">
+                            <button class="project-btn" onclick="toggleWhalesbotProductMenu('to_b', 'rocky', this); event.stopPropagation();">Rocky</button>
+                            <div id="whalesbot-to_b-rocky" class="doc-menu" style="display: none;">
+                                <button class="doc-btn" data-category="to_b" data-product="rocky" data-doctype="parts_list_plus_building_guide" onclick="openWhalesbotDocument('to_b', 'rocky', 'parts_list_plus_building_guide'); event.stopPropagation();">Parts List + Building Guide</button>
+                                <button class="doc-btn" data-category="to_b" data-product="rocky" data-doctype="quick_start_guide" onclick="openWhalesbotDocument('to_b', 'rocky', 'quick_start_guide'); event.stopPropagation();">Quick Start Guide</button>
+                                <button class="doc-btn" data-category="to_b" data-product="rocky" data-doctype="mc603_user_manual" onclick="openWhalesbotDocument('to_b', 'rocky', 'mc603_user_manual'); event.stopPropagation();">MC603 User Manual</button>
+                                <button class="doc-btn" data-category="to_b" data-product="rocky" data-doctype="courses" onclick="openWhalesbotDocument('to_b', 'rocky', 'courses'); event.stopPropagation();">Courses</button>
+                                <button class="doc-btn" data-category="to_b" data-product="rocky" data-doctype="fpv_quick_start" onclick="openWhalesbotDocument('to_b', 'rocky', 'fpv_quick_start'); event.stopPropagation();">FPV Quick Start</button>
+                            </div>
+                        </div>
+                        <div class="project-item">
+                            <button class="project-btn" onclick="toggleWhalesbotProductMenu('to_b', 'eagle_1001', this); event.stopPropagation();">Eagle 1001</button>
+                            <div id="whalesbot-to_b-eagle_1001" class="doc-menu" style="display: none;">
+                                <button class="doc-btn" data-category="to_b" data-product="eagle_1001" data-doctype="courses" onclick="openWhalesbotDocument('to_b', 'eagle_1001', 'courses'); event.stopPropagation();">Courses</button>
+                                <button class="doc-btn" data-category="to_b" data-product="eagle_1001" data-doctype="user_guide" onclick="openWhalesbotDocument('to_b', 'eagle_1001', 'user_guide'); event.stopPropagation();">User Guide</button>
+                            </div>
+                        </div>
+                        <div class="project-item">
+                            <button class="project-btn" onclick="toggleWhalesbotProductMenu('to_b', 'eagle_1003', this); event.stopPropagation();">Eagle 1003</button>
+                            <div id="whalesbot-to_b-eagle_1003" class="doc-menu" style="display: none;">
+                                <button class="doc-btn" data-category="to_b" data-product="eagle_1003" data-doctype="parts_list_plus_quick_start_guide" onclick="openWhalesbotDocument('to_b', 'eagle_1003', 'parts_list_plus_quick_start_guide'); event.stopPropagation();">Parts List + Quick Start Guide</button>
+                                <button class="doc-btn" data-category="to_b" data-product="eagle_1003" data-doctype="courses" onclick="openWhalesbotDocument('to_b', 'eagle_1003', 'courses'); event.stopPropagation();">Courses</button>
+                                <button class="doc-btn" data-category="to_b" data-product="eagle_1003" data-doctype="user_guide" onclick="openWhalesbotDocument('to_b', 'eagle_1003', 'user_guide'); event.stopPropagation();">User Guide</button>
+                            </div>
+                        </div>
+                        <div class="project-item">
+                            <button class="project-btn" onclick="toggleWhalesbotProductMenu('to_b', 'eagle_125f', this); event.stopPropagation();">Eagle 125F</button>
+                            <div id="whalesbot-to_b-eagle_125f" class="doc-menu" style="display: none;">
+                                <button class="doc-btn" data-category="to_b" data-product="eagle_125f" data-doctype="parts_list_plus_quick_start_guide_plus_field_setup_tutorial" onclick="openWhalesbotDocument('to_b', 'eagle_125f', 'parts_list_plus_quick_start_guide_plus_field_setup_tutorial'); event.stopPropagation();">Parts List + Quick Start + Field Setup</button>
+                                <button class="doc-btn" data-category="to_b" data-product="eagle_125f" data-doctype="courses" onclick="openWhalesbotDocument('to_b', 'eagle_125f', 'courses'); event.stopPropagation();">Courses</button>
+                            </div>
+                        </div>
+                        <div class="project-item">
+                            <button class="project-btn" onclick="toggleWhalesbotProductMenu('to_b', 'eagle_2001', this); event.stopPropagation();">Eagle 2001</button>
+                            <div id="whalesbot-to_b-eagle_2001" class="doc-menu" style="display: none;">
+                                <button class="doc-btn" data-category="to_b" data-product="eagle_2001" data-doctype="quick_start" onclick="openWhalesbotDocument('to_b', 'eagle_2001', 'quick_start'); event.stopPropagation();">Quick Start</button>
+                                <button class="doc-btn" data-category="to_b" data-product="eagle_2001" data-doctype="courses" onclick="openWhalesbotDocument('to_b', 'eagle_2001', 'courses'); event.stopPropagation();">Courses</button>
+                                <button class="doc-btn" data-category="to_b" data-product="eagle_2001" data-doctype="program_guide" onclick="openWhalesbotDocument('to_b', 'eagle_2001', 'program_guide'); event.stopPropagation();">Program Guide</button>
+                                <button class="doc-btn" data-category="to_b" data-product="eagle_2001" data-doctype="wind_rider" onclick="openWhalesbotDocument('to_b', 'eagle_2001', 'wind_rider'); event.stopPropagation();">Wind Rider</button>
+                            </div>
+                        </div>
+                        <div class="project-item">
+                            <button class="project-btn" onclick="toggleWhalesbotProductMenu('to_b', 'eagle3001', this); event.stopPropagation();">Eagle3001</button>
+                            <div id="whalesbot-to_b-eagle3001" class="doc-menu" style="display: none;">
+                                <button class="doc-btn" data-category="to_b" data-product="eagle3001" data-doctype="outer_packaging_box" onclick="openWhalesbotDocument('to_b', 'eagle3001', 'outer_packaging_box'); event.stopPropagation();">Outer Packaging Box</button>
+                                <button class="doc-btn" data-category="to_b" data-product="eagle3001" data-doctype="quick_start" onclick="openWhalesbotDocument('to_b', 'eagle3001', 'quick_start'); event.stopPropagation();">Quick Start</button>
+                            </div>
+                        </div>
+                        <div class="project-item">
+                            <button class="project-btn" onclick="toggleWhalesbotProductMenu('to_b', 'robovr', this); event.stopPropagation();">RoboVR</button>
+                            <div id="whalesbot-to_b-robovr" class="doc-menu" style="display: none;">
+                                <button class="doc-btn" data-category="to_b" data-product="robovr" data-doctype="robovr_tutorial" onclick="openWhalesbotDocument('to_b', 'robovr', 'robovr_tutorial'); event.stopPropagation();">RoboVR Tutorial</button>
+                                <button class="doc-btn" data-category="to_b" data-product="robovr" data-doctype="robovr_contest_signup_tutorial" onclick="openWhalesbotDocument('to_b', 'robovr', 'robovr_contest_signup_tutorial'); event.stopPropagation();">RoboVR Contest Signup Tutorial</button>
+                            </div>
+                        </div>
+                        <div class="project-item">
+                            <button class="project-btn" onclick="toggleWhalesbotProductMenu('to_b', 'ai_visual_module', this); event.stopPropagation();">AI Visual Module</button>
+                            <div id="whalesbot-to_b-ai_visual_module" class="doc-menu" style="display: none;">
+                                <button class="doc-btn" data-category="to_b" data-product="ai_visual_module" data-doctype="ai_visual_module_introduction" onclick="openWhalesbotDocument('to_b', 'ai_visual_module', 'ai_visual_module_introduction'); event.stopPropagation();">AI Visual Module Introduction</button>
+                            </div>
+                        </div>
+                        <div class="project-item">
+                            <button class="project-btn" onclick="toggleWhalesbotProductMenu('to_b', 'make_u', this); event.stopPropagation();">Make U</button>
+                            <div id="whalesbot-to_b-make_u" class="doc-menu" style="display: none;">
+                                <button class="doc-btn" data-category="to_b" data-product="make_u" data-doctype="make_u_coding_cards__introduction" onclick="openWhalesbotDocument('to_b', 'make_u', 'make_u_coding_cards__introduction'); event.stopPropagation();">Make U Coding Cards Introduction</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- To C 产品菜单 -->
+                <div id="category-to_c-menu" class="year-menu" style="display: none; margin-bottom: 15px;">
+                    <div class="project-selection">
+                        <div class="project-item">
+                            <button class="project-btn" onclick="toggleWhalesbotProductMenu('to_c', 'a1', this); event.stopPropagation();">A1</button>
+                            <div id="whalesbot-to_c-a1" class="doc-menu" style="display: none;">
+                                <button class="doc-btn" data-category="to_c" data-product="a1" data-doctype="storybook" onclick="openWhalesbotDocument('to_c', 'a1', 'storybook'); event.stopPropagation();">Storybook</button>
+                                <button class="doc-btn" data-category="to_c" data-product="a1" data-doctype="project_pictures" onclick="openWhalesbotDocument('to_c', 'a1', 'project_pictures'); event.stopPropagation();">Project Pictures</button>
+                                <button class="doc-btn" data-category="to_c" data-product="a1" data-doctype="manual_and_list" onclick="openWhalesbotDocument('to_c', 'a1', 'manual_and_list'); event.stopPropagation();">Manual & List</button>
+                            </div>
+                        </div>
+                        <div class="project-item">
+                            <button class="project-btn" onclick="toggleWhalesbotProductMenu('to_c', 'a3', this); event.stopPropagation();">A3</button>
+                            <div id="whalesbot-to_c-a3" class="doc-menu" style="display: none;">
+                                <button class="doc-btn" data-category="to_c" data-product="a3" data-doctype="courses" onclick="openWhalesbotDocument('to_c', 'a3', 'courses'); event.stopPropagation();">Courses</button>
+                                <button class="doc-btn" data-category="to_c" data-product="a3" data-doctype="project_pictures" onclick="openWhalesbotDocument('to_c', 'a3', 'project_pictures'); event.stopPropagation();">Project Pictures</button>
+                                <button class="doc-btn" data-category="to_c" data-product="a3" data-doctype="manual_and_list" onclick="openWhalesbotDocument('to_c', 'a3', 'manual_and_list'); event.stopPropagation();">Manual & List</button>
+                            </div>
+                        </div>
+                        <div class="project-item">
+                            <button class="project-btn" onclick="toggleWhalesbotProductMenu('to_c', 'a7', this); event.stopPropagation();">A7</button>
+                            <div id="whalesbot-to_c-a7" class="doc-menu" style="display: none;">
+                                <button class="doc-btn" data-category="to_c" data-product="a7" data-doctype="building_guide_plus_manual_plus_storybook" onclick="openWhalesbotDocument('to_c', 'a7', 'building_guide_plus_manual_plus_storybook'); event.stopPropagation();">Building Guide + Manual + Storybook</button>
+                            </div>
+                        </div>
+                        <div class="project-item">
+                            <button class="project-btn" onclick="toggleWhalesbotProductMenu('to_c', 'b3_pro', this); event.stopPropagation();">B3 Pro</button>
+                            <div id="whalesbot-to_c-b3_pro" class="doc-menu" style="display: none;">
+                                <button class="doc-btn" data-category="to_c" data-product="b3_pro" data-doctype="courses" onclick="openWhalesbotDocument('to_c', 'b3_pro', 'courses'); event.stopPropagation();">Courses</button>
+                                <button class="doc-btn" data-category="to_c" data-product="b3_pro" data-doctype="project_pictures" onclick="openWhalesbotDocument('to_c', 'b3_pro', 'project_pictures'); event.stopPropagation();">Project Pictures</button>
+                                <button class="doc-btn" data-category="to_c" data-product="b3_pro" data-doctype="manual_and_list" onclick="openWhalesbotDocument('to_c', 'b3_pro', 'manual_and_list'); event.stopPropagation();">Manual & List</button>
+                            </div>
+                        </div>
+                        <div class="project-item">
+                            <button class="project-btn" onclick="toggleWhalesbotProductMenu('to_c', 'c3', this); event.stopPropagation();">C3</button>
+                            <div id="whalesbot-to_c-c3" class="doc-menu" style="display: none;">
+                                <button class="doc-btn" data-category="to_c" data-product="c3" data-doctype="parts_list_plus_storybook" onclick="openWhalesbotDocument('to_c', 'c3', 'parts_list_plus_storybook'); event.stopPropagation();">Parts List + Storybook</button>
+                            </div>
+                        </div>
+                        <div class="project-item">
+                            <button class="project-btn" onclick="toggleWhalesbotProductMenu('to_c', 'd1', this); event.stopPropagation();">D1</button>
+                            <div id="whalesbot-to_c-d1" class="doc-menu" style="display: none;">
+                                <button class="doc-btn" data-category="to_c" data-product="d1" data-doctype="parts_list_plus_quick_start_guide" onclick="openWhalesbotDocument('to_c', 'd1', 'parts_list_plus_quick_start_guide'); event.stopPropagation();">Parts List + Quick Start Guide</button>
+                            </div>
+                        </div>
+                        <div class="project-item">
+                            <button class="project-btn" onclick="toggleWhalesbotProductMenu('to_c', 'd3_pro', this); event.stopPropagation();">D3 Pro</button>
+                            <div id="whalesbot-to_c-d3_pro" class="doc-menu" style="display: none;">
+                                <button class="doc-btn" data-category="to_c" data-product="d3_pro" data-doctype="storybook" onclick="openWhalesbotDocument('to_c', 'd3_pro', 'storybook'); event.stopPropagation();">Storybook</button>
+                                <button class="doc-btn" data-category="to_c" data-product="d3_pro" data-doctype="product_images" onclick="openWhalesbotDocument('to_c', 'd3_pro', 'product_images'); event.stopPropagation();">Product Images</button>
+                                <button class="doc-btn" data-category="to_c" data-product="d3_pro" data-doctype="manual_and_list" onclick="openWhalesbotDocument('to_c', 'd3_pro', 'manual_and_list'); event.stopPropagation();">Manual & List</button>
+                                <button class="doc-btn" data-category="to_c" data-product="d3_pro" data-doctype="building_guide" onclick="openWhalesbotDocument('to_c', 'd3_pro', 'building_guide'); event.stopPropagation();">Building Guide</button>
+                            </div>
+                        </div>
+                        <div class="project-item">
+                            <button class="project-btn" onclick="toggleWhalesbotProductMenu('to_c', 'e7_pro', this); event.stopPropagation();">E7 Pro</button>
+                            <div id="whalesbot-to_c-e7_pro" class="doc-menu" style="display: none;">
+                                <button class="doc-btn" data-category="to_c" data-product="e7_pro" data-doctype="courses" onclick="openWhalesbotDocument('to_c', 'e7_pro', 'courses'); event.stopPropagation();">Courses</button>
+                                <button class="doc-btn" data-category="to_c" data-product="e7_pro" data-doctype="project_pictures" onclick="openWhalesbotDocument('to_c', 'e7_pro', 'project_pictures'); event.stopPropagation();">Project Pictures</button>
+                                <button class="doc-btn" data-category="to_c" data-product="e7_pro" data-doctype="manual_and_list" onclick="openWhalesbotDocument('to_c', 'e7_pro', 'manual_and_list'); event.stopPropagation();">Manual & List</button>
+                            </div>
+                        </div>
+                        <div class="project-item">
+                            <button class="project-btn" onclick="toggleWhalesbotProductMenu('to_c', 'e9_pro', this); event.stopPropagation();">E9 Pro</button>
+                            <div id="whalesbot-to_c-e9_pro" class="doc-menu" style="display: none;">
+                                <button class="doc-btn" data-category="to_c" data-product="e9_pro" data-doctype="courses" onclick="openWhalesbotDocument('to_c', 'e9_pro', 'courses'); event.stopPropagation();">Courses</button>
+                                <button class="doc-btn" data-category="to_c" data-product="e9_pro" data-doctype="parts_list" onclick="openWhalesbotDocument('to_c', 'e9_pro', 'parts_list'); event.stopPropagation();">Parts List</button>
+                                <button class="doc-btn" data-category="to_c" data-product="e9_pro" data-doctype="pack_label" onclick="openWhalesbotDocument('to_c', 'e9_pro', 'pack_label'); event.stopPropagation();">Pack Label</button>
+                                <button class="doc-btn" data-category="to_c" data-product="e9_pro" data-doctype="building_guide" onclick="openWhalesbotDocument('to_c', 'e9_pro', 'building_guide'); event.stopPropagation();">Building Guide</button>
+                            </div>
+                        </div>
+                        <div class="project-item">
+                            <button class="project-btn" onclick="toggleWhalesbotProductMenu('to_c', 'pubbo', this); event.stopPropagation();">Pubbo</button>
+                            <div id="whalesbot-to_c-pubbo" class="doc-menu" style="display: none;">
+                                <button class="doc-btn" data-category="to_c" data-product="pubbo" data-doctype="user_manual__plus__video" onclick="openWhalesbotDocument('to_c', 'pubbo', 'user_manual__plus__video'); event.stopPropagation();">User Manual + Video</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <div class="link-status">
-                    <span id="status-whalesbot" class="status-text status-checking">
-                        <i class="fas fa-spinner fa-spin"></i> <span data-i18n-key="status_checking_short">检测中...</span>
+                    <span id="status-whalesbot_hierarchical" class="status-text status-checking">
+                        <i class="fas fa-spinner fa-spin"></i> <span data-i18n-key="status_hierarchical_ready">分级菜单就绪</span>
                     </span>
                 </div>
             </div>
         </main>
 
-        <button id="refresh-btn" class="refresh-btn" onclick="checkAllLinks()">
+        <button id="refresh-btn" class="refresh-btn" onclick="checkAllLinksEnhanced()">
             <i class="fas fa-sync-alt"></i> <span data-i18n-key="btn_refresh">重新检测所有链接状态</span>
         </button>
 
         <footer>
-            <p data-i18n-key="footer_copyright">© 2026 WhalesBot Resource Hub | Smart Link Validation</p>
+            <p data-i18n-key="footer_copyright">&copy; 2026 WhalesBot Resource Hub | Smart Link Validation</p>
             <p data-i18n-key="footer_note">系统每5分钟自动检测链接状态，失效链接将被禁用并提示。</p>
         </footer>
     </div>
@@ -864,8 +1176,7 @@
         const API_BASE_URL = window.location.origin;
         let linkStatusCache = {};
 
-        // 修改关键点：CURRENT_FOLDER_IDS 只包含whalesbot，test已移除
-        const CURRENT_FOLDER_IDS = ['whalesbot']; // 只包含需要检测状态的文件夹，test已移除
+        const CURRENT_FOLDER_IDS = ['whalesbot'];
 
         // ==================== 语言资源定义 ====================
         const i18nResources = {
@@ -893,11 +1204,13 @@
                 'status_fallback': '直接访问',
                 'status_hierarchical_ready': '分级菜单就绪',
                 'desc_enjoy_ai_hierarchical': 'ENJOY AI项目的分级文档中心。按年份和项目分类，包含竞赛规则和场地设置指南。',
-                'desc_whalesbot': 'WhalesBot项目的共享文件夹。包含14个项目，包括代码、资源和项目文件。',
+                'desc_whalesbot_hierarchical': 'WhalesBot产品的分级文档中心。按To B/To C和产品型号分类，包含课程、手册和零件清单。',
                 'meta_shared': '共享文件夹',
                 'meta_hierarchical': '分级文档中心',
+                'meta_hierarchical_whale': '分级文档中心',
                 'badge_shared': '共享 • 5个项目',
                 'badge_hierarchical': '分级 • 自动检测',
+                'badge_hierarchical_whale': '分级 • 自动检测',
                 'folder_enjoy': 'ENJOY AI',
                 'folder_whale': 'WhalesBot',
                 'footer_copyright': '© 2026 WhalesBot Resource Hub | 智能链接验证版',
@@ -936,11 +1249,13 @@
                 'status_fallback': 'Direct Access',
                 'status_hierarchical_ready': 'Hierarchical Menu Ready',
                 'desc_enjoy_ai_hierarchical': 'Hierarchical document center for ENJOY AI projects. Organized by year and project, includes competition rules and field setup guides.',
-                'desc_whalesbot': 'Shared folder for WhalesBot projects. Contains 14 items including code, resources, and project files.',
+                'desc_whalesbot_hierarchical': 'Hierarchical document center for WhalesBot products. Organized by To B/To C and product model, includes courses, manuals and parts lists.',
                 'meta_shared': 'Shared Folder',
                 'meta_hierarchical': 'Hierarchical Document Center',
+                'meta_hierarchical_whale': 'Hierarchical Document Center',
                 'badge_shared': 'Shared • 5 items',
                 'badge_hierarchical': 'Hierarchical • Auto Detection',
+                'badge_hierarchical_whale': 'Hierarchical • Auto Detection',
                 'folder_enjoy': 'ENJOY AI',
                 'folder_whale': 'WhalesBot',
                 'footer_copyright': '© 2026 WhalesBot Resource Hub | Smart Validation',
@@ -957,10 +1272,9 @@
             }
         };
 
-        // 当前语言设置
         let currentLang = localStorage.getItem('preferredLang') || 'zh-CN';
 
-        // ==================== 分级菜单控制 ====================
+        // ==================== 分级菜单控制 (ENJOY AI) ====================
         let activeYear = null;
         let activeProject = null;
 
@@ -968,29 +1282,20 @@
             const menu2025 = document.getElementById('year-2025-menu');
             const menu2026 = document.getElementById('year-2026-menu');
 
-            // 如果点击的是当前已激活的年份，则关闭菜单
             if (activeYear === year) {
                 if (year === '2025') menu2025.style.display = 'none';
                 if (year === '2026') menu2026.style.display = 'none';
                 activeYear = null;
-
-                // 关闭所有项目子菜单
                 document.querySelectorAll('.doc-menu').forEach(menu => {
                     menu.style.display = 'none';
                 });
                 activeProject = null;
             } else {
-                // 关闭其他年份菜单
                 menu2025.style.display = 'none';
                 menu2026.style.display = 'none';
-
-                // 显示当前年份菜单
                 if (year === '2025') menu2025.style.display = 'block';
                 if (year === '2026') menu2026.style.display = 'block';
-
                 activeYear = year;
-
-                // 关闭所有项目子菜单
                 document.querySelectorAll('.doc-menu').forEach(menu => {
                     menu.style.display = 'none';
                 });
@@ -998,30 +1303,25 @@
             }
         }
 
-        // 修改：现在接收按钮元素参数
         function toggleProjectMenu(year, project, buttonElement) {
             const menuId = `project-${year}-${project}`;
             const projectMenu = document.getElementById(menuId);
 
-            // 如果点击的是当前已激活的项目，则关闭菜单
             if (activeProject === `${year}-${project}`) {
                 projectMenu.style.display = 'none';
                 activeProject = null;
             } else {
-                // 关闭同一年的其他项目菜单
                 document.querySelectorAll(`.year-menu#year-${year}-menu .doc-menu`).forEach(menu => {
                     menu.style.display = 'none';
                 });
-
-                // 显示当前项目菜单
                 projectMenu.style.display = 'block';
                 activeProject = `${year}-${project}`;
             }
         }
 
-        // 打开文档链接
+        // 打开ENJOY AI文档链接
         async function openDocument(year, project, docType) {
-            const button = document.querySelector(`.doc-btn[onclick*="${year}', '${project}', '${docType}"]`);
+            const button = document.querySelector(`.doc-btn[data-year="${year}"][data-project="${project}"][data-doctype="${docType}"]`);
             let originalText = '';
             if (button) {
                 originalText = button.textContent;
@@ -1047,8 +1347,6 @@
 
                 if (data && data.url) {
                     window.open(data.url, '_blank');
-
-                    // 更新状态显示
                     const statusEl = document.getElementById('status-enjoy_ai');
                     statusEl.innerHTML = `<i class="fas fa-check-circle"></i> ${i18nResources[currentLang]['status_live']} (${docType})`;
                     statusEl.className = 'status-text status-valid';
@@ -1057,12 +1355,105 @@
                 }
             } catch (error) {
                 console.error('打开文档失败:', error);
-
-                // 更新状态显示
                 const statusEl = document.getElementById('status-enjoy_ai');
                 statusEl.innerHTML = `<i class="fas fa-times-circle"></i> ${error.message.substring(0, 30)}...`;
                 statusEl.className = 'status-text status-invalid';
+                showError(`${currentLang === 'zh-CN' ? '打开失败' : 'Open failed'}: ${error.message}`);
+            } finally {
+                if (button) {
+                    button.textContent = originalText;
+                    button.disabled = false;
+                }
+            }
+        }
 
+        // ==================== 分级菜单控制 (WhalesBot) ====================
+        let activeCategory = null;
+        let activeWhalesbotProduct = null;
+
+        function toggleCategoryMenu(category) {
+            const menuToB = document.getElementById('category-to_b-menu');
+            const menuToC = document.getElementById('category-to_c-menu');
+
+            if (activeCategory === category) {
+                if (category === 'to_b') menuToB.style.display = 'none';
+                if (category === 'to_c') menuToC.style.display = 'none';
+                activeCategory = null;
+                // 关闭所有产品子菜单
+                document.querySelectorAll('[id^="whalesbot-"].doc-menu').forEach(menu => {
+                    menu.style.display = 'none';
+                });
+                activeWhalesbotProduct = null;
+            } else {
+                menuToB.style.display = 'none';
+                menuToC.style.display = 'none';
+                if (category === 'to_b') menuToB.style.display = 'block';
+                if (category === 'to_c') menuToC.style.display = 'block';
+                activeCategory = category;
+                // 关闭所有产品子菜单
+                document.querySelectorAll('[id^="whalesbot-"].doc-menu').forEach(menu => {
+                    menu.style.display = 'none';
+                });
+                activeWhalesbotProduct = null;
+            }
+        }
+
+        function toggleWhalesbotProductMenu(category, product, buttonElement) {
+            const menuId = `whalesbot-${category}-${product}`;
+            const productMenu = document.getElementById(menuId);
+
+            if (activeWhalesbotProduct === `${category}-${product}`) {
+                productMenu.style.display = 'none';
+                activeWhalesbotProduct = null;
+            } else {
+                // 关闭同一分类的其他产品菜单
+                document.querySelectorAll(`[id^="whalesbot-${category}-"].doc-menu`).forEach(menu => {
+                    menu.style.display = 'none';
+                });
+                productMenu.style.display = 'block';
+                activeWhalesbotProduct = `${category}-${product}`;
+            }
+        }
+
+        // 打开WhalesBot文档链接
+        async function openWhalesbotDocument(category, product, docType) {
+            const button = document.querySelector(`.doc-btn[data-category="${category}"][data-product="${product}"][data-doctype="${docType}"]`);
+            let originalText = '';
+            if (button) {
+                originalText = button.textContent;
+                button.innerHTML = `<span class="loading-spinner"></span>${currentLang === 'zh-CN' ? '打开中...' : 'Opening...'}`;
+                button.disabled = true;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/hierarchical/whalesbot_link?category=${category}&product=${product}&docType=${docType}`);
+
+                if (!response.ok) {
+                    if (response.status === 404) {
+                        throw new Error(currentLang === 'zh-CN' ? '文档链接未配置，请在server.js中配置链接' : 'Document link not configured, please configure link in server.js');
+                    } else if (response.status === 503) {
+                        const data = await response.json();
+                        throw new Error(`${currentLang === 'zh-CN' ? '链接已失效' : 'Link expired'}: ${data.error}`);
+                    } else {
+                        throw new Error(`${currentLang === 'zh-CN' ? '服务器错误' : 'Server error'}: ${response.status}`);
+                    }
+                }
+
+                const data = await response.json();
+
+                if (data && data.url) {
+                    window.open(data.url, '_blank');
+                    const statusEl = document.getElementById('status-whalesbot_hierarchical');
+                    statusEl.innerHTML = `<i class="fas fa-check-circle"></i> ${i18nResources[currentLang]['status_live']}`;
+                    statusEl.className = 'status-text status-valid';
+                } else {
+                    throw new Error(currentLang === 'zh-CN' ? '无效的链接数据' : 'Invalid link data');
+                }
+            } catch (error) {
+                console.error('打开文档失败:', error);
+                const statusEl = document.getElementById('status-whalesbot_hierarchical');
+                statusEl.innerHTML = `<i class="fas fa-times-circle"></i> ${error.message.substring(0, 30)}...`;
+                statusEl.className = 'status-text status-invalid';
                 showError(`${currentLang === 'zh-CN' ? '打开失败' : 'Open failed'}: ${error.message}`);
             } finally {
                 if (button) {
@@ -1078,11 +1469,9 @@
             currentLang = langCode;
             localStorage.setItem('preferredLang', langCode);
 
-            // 更新按钮激活状态
             document.querySelectorAll('.lang-btn').forEach(btn => btn.classList.remove('active'));
             document.getElementById(`lang-${langCode === 'zh-CN' ? 'zh' : 'en'}`).classList.add('active');
 
-            // 更新所有带有 data-i18n-key 属性的元素
             document.querySelectorAll('[data-i18n-key]').forEach(element => {
                 const key = element.getAttribute('data-i18n-key');
                 if (i18nResources[langCode][key]) {
@@ -1090,34 +1479,26 @@
                 }
             });
 
-            // 特殊处理：更新刷新按钮文本
             updateRefreshButtonText();
-
-            // 特殊处理：动态更新的状态文本需要重新应用当前语言
             updateStatusTexts();
             console.log(`Language switched to: ${langCode}`);
         }
 
-        // 更新刷新按钮文本
         function updateRefreshButtonText() {
             const refreshBtn = document.getElementById('refresh-btn');
             if (!refreshBtn) return;
-
             const spinner = refreshBtn.querySelector('.loading-spinner');
             if (spinner) {
-                // 按钮处于加载状态
                 const textNodes = [];
                 refreshBtn.childNodes.forEach(node => {
                     if (node.nodeType === 3 && node.textContent.trim()) {
                         textNodes.push(node);
                     }
                 });
-
                 if (textNodes.length > 0) {
                     textNodes[0].textContent = i18nResources[currentLang]['btn_checking'];
                 }
             } else {
-                // 正常状态
                 const btnTextSpan = refreshBtn.querySelector('[data-i18n-key="btn_refresh"]');
                 if (btnTextSpan) {
                     btnTextSpan.textContent = i18nResources[currentLang]['btn_refresh'];
@@ -1125,22 +1506,16 @@
             }
         }
 
-        // 更新动态状态文本
         function updateStatusTexts() {
-            // 更新最后检测时间显示
             const lastCheckedEl = document.getElementById('last-checked-time');
             if (lastCheckedEl && lastCheckedEl.textContent) {
                 const timeMatch = lastCheckedEl.textContent.match(/(\d{1,2}:\d{2}:\d{2}\s*(?:AM|PM)?)/i);
                 if (timeMatch) {
                     const prefix = i18nResources[currentLang]['last_checked'] + ': ';
                     lastCheckedEl.textContent = prefix + timeMatch[0];
-                } else if (!lastCheckedEl.textContent.includes(':')) {
-                    const prefix = i18nResources[currentLang]['last_checked'] + ': ';
-                    lastCheckedEl.textContent = prefix;
                 }
             }
 
-            // 更新系统状态文本
             const statusTextEl = document.getElementById('status-text');
             if (statusTextEl && statusTextEl.textContent) {
                 const currentText = statusTextEl.textContent;
@@ -1162,7 +1537,6 @@
                 }
             }
 
-            // 更新链接状态文本
             CURRENT_FOLDER_IDS.forEach(folderId => {
                 const statusEl = document.getElementById(`status-${folderId}`);
                 if (statusEl) {
@@ -1191,33 +1565,31 @@
                 }
             });
 
-            // 更新ENJOY AI状态文本
             const enjoyAiStatus = document.getElementById('status-enjoy_ai');
             if (enjoyAiStatus) {
                 if (enjoyAiStatus.textContent.includes('分级菜单就绪') || enjoyAiStatus.textContent.includes('Hierarchical Menu Ready')) {
                     enjoyAiStatus.innerHTML = `<i class="fas fa-check-circle"></i> ${i18nResources[currentLang]['status_hierarchical_ready']}`;
                 }
             }
+
+            const whalesbotStatus = document.getElementById('status-whalesbot_hierarchical');
+            if (whalesbotStatus) {
+                if (whalesbotStatus.textContent.includes('分级菜单就绪') || whalesbotStatus.textContent.includes('Hierarchical Menu Ready')) {
+                    whalesbotStatus.innerHTML = `<i class="fas fa-check-circle"></i> ${i18nResources[currentLang]['status_hierarchical_ready']}`;
+                }
+            }
         }
 
-        // 绑定语言切换按钮事件
         document.addEventListener('DOMContentLoaded', function() {
-            // 初始化语言
             switchLanguage(currentLang);
-
-            // 为语言按钮绑定点击事件
             document.getElementById('lang-zh').addEventListener('click', () => switchLanguage('zh-CN'));
             document.getElementById('lang-en').addEventListener('click', () => switchLanguage('en-US'));
-
-            // 原有的初始化逻辑
             useFallbackMode();
             checkHealth();
             console.log('页面初始化完成，当前语言:', currentLang);
         });
 
         // ==================== 核心功能函数 ====================
-
-        // 格式化时间
         function formatTime(date) {
             return date.toLocaleTimeString(currentLang === 'zh-CN' ? 'zh-CN' : 'en-US', { 
                 hour: '2-digit', 
@@ -1226,18 +1598,15 @@
             });
         }
 
-        // 显示错误信息
         function showError(message, duration = 5000) {
             const errorEl = document.getElementById('error-message');
             errorEl.innerHTML = `<i class="fas fa-exclamation-triangle"></i> ${message}`;
             errorEl.style.display = 'block';
-
             setTimeout(() => {
                 errorEl.style.display = 'none';
             }, duration);
         }
 
-        // 更新最后检测时间
         function updateLastCheckedTime() {
             const timeEl = document.getElementById('last-checked-time');
             const now = new Date();
@@ -1251,7 +1620,6 @@
             const btnText = button.querySelector('.btn-text');
             const statusEl = document.getElementById(`status-${folderId}`);
 
-            // 显示加载状态
             button.disabled = true;
             btnText.innerHTML = `<span class="loading-spinner"></span>${i18nResources[currentLang]['btn_checking']}`;
 
@@ -1277,11 +1645,8 @@
 
                 if (data && data.url) {
                     window.open(data.url, '_blank');
-
-                    // 更新状态显示
                     statusEl.innerHTML = `<i class="fas fa-check-circle"></i> ${i18nResources[currentLang]['status_live']}`;
                     statusEl.className = 'status-text status-valid';
-
                     btnText.textContent = i18nResources[currentLang]['btn_open'];
                     setTimeout(() => {
                         button.disabled = false;
@@ -1291,11 +1656,8 @@
                 }
             } catch (error) {
                 console.error('打开链接失败:', error);
-
-                // 更新状态显示
                 statusEl.innerHTML = `<i class="fas fa-times-circle"></i> ${i18nResources[currentLang]['status_failed']}`;
                 statusEl.className = 'status-text status-invalid';
-
                 showError(`${i18nResources[currentLang]['error_network']}: ${error.message}`);
                 btnText.textContent = i18nResources[currentLang]['btn_open'];
                 button.disabled = false;
@@ -1309,13 +1671,11 @@
             const statusIndicator = document.getElementById('system-status-indicator');
             const statusText = document.getElementById('status-text');
 
-            // 更新按钮状态
             refreshBtn.disabled = true;
             refreshBtn.innerHTML = `<span class="loading-spinner"></span>${i18nResources[currentLang]['btn_checking']}`;
             statusText.textContent = i18nResources[currentLang]['status_checking'];
-            statusIndicator.style.backgroundColor = '#f6ad55'; // 黄色，表示检测中
+            statusIndicator.style.backgroundColor = '#f6ad55';
 
-            // 重置所有状态为检测中
             CURRENT_FOLDER_IDS.forEach(folderId => {
                 const statusEl = document.getElementById(`status-${folderId}`);
                 if (statusEl) {
@@ -1329,7 +1689,6 @@
 
                 if (!response.ok) {
                     if (response.status === 404) {
-                        // 如果状态检测接口不存在，使用降级模式
                         useFallbackMode();
                         refreshBtn.innerHTML = originalHtml;
                         refreshBtn.disabled = false;
@@ -1344,12 +1703,9 @@
 
                 if (data.success && data.data) {
                     linkStatusCache = data.data;
-
-                    // 统计有效链接数量
                     let validCount = 0;
                     let totalCount = 0;
 
-                    // 更新每个链接的状态显示
                     CURRENT_FOLDER_IDS.forEach(folderId => {
                         totalCount++;
                         const button = document.querySelector(`[data-folder-id="${folderId}"] .access-btn`);
@@ -1360,20 +1716,14 @@
                             const status = linkStatusCache[folderId];
 
                             if (status.valid) {
-                                // 链接有效
                                 validCount++;
                                 button.disabled = false;
                                 statusEl.innerHTML = `<i class="fas fa-check-circle"></i> ${i18nResources[currentLang]['status_live']}`;
                                 statusEl.className = 'status-text status-valid';
                                 button.title = currentLang === 'zh-CN' ? '点击打开链接' : 'Click to open link';
-
-                                // 更新按钮文本
                                 btnText.textContent = i18nResources[currentLang]['btn_open'];
                             } else {
-                                // 链接失效
                                 button.disabled = true;
-
-                                // 根据失效原因显示不同提示
                                 let messageKey = 'status_expired';
                                 if (status.reason === 'CONTENT_DELETED_OR_NO_PERMISSION') {
                                     messageKey = 'status_deleted';
@@ -1384,49 +1734,44 @@
                                 } else if (status.reason === 'NETWORK_ERROR') {
                                     messageKey = 'status_network_error';
                                 }
-
                                 statusEl.innerHTML = `<i class="fas fa-times-circle"></i> ${i18nResources[currentLang][messageKey]}`;
                                 statusEl.className = 'status-text status-invalid';
-
-                                // 添加详细的工具提示
                                 button.title = `${currentLang === 'zh-CN' ? '失效原因: ' : 'Reason: '}${status.message || 'Unknown error'}`;
-
-                                // 更新按钮文本
                                 btnText.textContent = i18nResources[currentLang]['btn_open'];
                             }
                         } else {
-                            // 状态未知
                             button.disabled = true;
                             statusEl.innerHTML = `<i class="fas fa-question-circle"></i> ${i18nResources[currentLang]['status_unknown']}`;
                             statusEl.className = 'status-text status-checking';
                             button.title = currentLang === 'zh-CN' ? '状态检测失败' : 'Status check failed';
-
-                            // 更新按钮文本
                             btnText.textContent = i18nResources[currentLang]['btn_open'];
                         }
                     });
 
-                    // 更新ENJOY AI状态显示
                     const enjoyAiStatus = document.getElementById('status-enjoy_ai');
                     if (enjoyAiStatus) {
                         enjoyAiStatus.innerHTML = `<i class="fas fa-check-circle"></i> ${i18nResources[currentLang]['status_hierarchical_ready']}`;
                         enjoyAiStatus.className = 'status-text status-valid';
                     }
 
-                    // 更新系统状态
+                    const whalesbotHierarchicalStatus = document.getElementById('status-whalesbot_hierarchical');
+                    if (whalesbotHierarchicalStatus) {
+                        whalesbotHierarchicalStatus.innerHTML = `<i class="fas fa-check-circle"></i> ${i18nResources[currentLang]['status_hierarchical_ready']}`;
+                        whalesbotHierarchicalStatus.className = 'status-text status-valid';
+                    }
+
                     if (validCount === totalCount) {
                         statusText.textContent = `${i18nResources[currentLang]['status_all_good']} (${validCount}/${totalCount})`;
-                        statusIndicator.style.backgroundColor = '#48bb78'; // 绿色
+                        statusIndicator.style.backgroundColor = '#48bb78';
                     } else if (validCount > 0) {
                         statusText.textContent = `${validCount}/${totalCount} ${i18nResources[currentLang]['status_some_good']}`;
-                        statusIndicator.style.backgroundColor = '#f6ad55'; // 黄色
+                        statusIndicator.style.backgroundColor = '#f6ad55';
                     } else {
                         statusText.textContent = i18nResources[currentLang]['status_all_bad'];
-                        statusIndicator.style.backgroundColor = '#f56565'; // 红色
+                        statusIndicator.style.backgroundColor = '#f56565';
                         showError(i18nResources[currentLang]['warning_all_links_down'], 10000);
                     }
 
-                    // 更新最后检测时间
                     updateLastCheckedTime();
                 }
             } catch (error) {
@@ -1436,7 +1781,6 @@
                 statusIndicator.style.backgroundColor = '#f56565';
                 showError(`${i18nResources[currentLang]['error_network']}: ${error.message}`);
             } finally {
-                // 恢复按钮状态
                 setTimeout(() => {
                     refreshBtn.innerHTML = `<i class="fas fa-sync-alt"></i> <span data-i18n-key="btn_refresh">${i18nResources[currentLang]['btn_refresh']}</span>`;
                     refreshBtn.disabled = false;
@@ -1444,7 +1788,7 @@
             }
         }
 
-        // 降级模式：所有按钮可用，不检测状态
+        // 降级模式
         function useFallbackMode() {
             CURRENT_FOLDER_IDS.forEach(folderId => {
                 const button = document.querySelector(`[data-folder-id="${folderId}"] .access-btn`);
@@ -1455,16 +1799,19 @@
                 statusEl.innerHTML = `<i class="fas fa-exclamation-triangle"></i> ${i18nResources[currentLang]['status_fallback']}`;
                 statusEl.className = 'status-text status-checking';
                 button.title = currentLang === 'zh-CN' ? '状态检测不可用，点击尝试访问' : 'Status check unavailable, click to try access';
-
-                // 更新按钮文本
                 btnText.textContent = i18nResources[currentLang]['btn_open'];
             });
 
-            // ENJOY AI卡片保持分级菜单就绪状态
             const enjoyAiStatus = document.getElementById('status-enjoy_ai');
             if (enjoyAiStatus) {
                 enjoyAiStatus.innerHTML = `<i class="fas fa-check-circle"></i> ${i18nResources[currentLang]['status_hierarchical_ready']}`;
                 enjoyAiStatus.className = 'status-text status-valid';
+            }
+
+            const whalesbotHierarchicalStatus = document.getElementById('status-whalesbot_hierarchical');
+            if (whalesbotHierarchicalStatus) {
+                whalesbotHierarchicalStatus.innerHTML = `<i class="fas fa-check-circle"></i> ${i18nResources[currentLang]['status_hierarchical_ready']}`;
+                whalesbotHierarchicalStatus.className = 'status-text status-valid';
             }
 
             console.log('使用降级模式：跳过链接状态检测');
@@ -1479,16 +1826,19 @@
                     document.getElementById('system-status-indicator').style.backgroundColor = '#48bb78';
                     document.getElementById('status-text').textContent = i18nResources[currentLang]['status_all_good'].split(' (')[0];
 
-                    // 设置ENJOY AI初始状态
                     const enjoyAiStatus = document.getElementById('status-enjoy_ai');
                     if (enjoyAiStatus) {
                         enjoyAiStatus.innerHTML = `<i class="fas fa-check-circle"></i> ${i18nResources[currentLang]['status_hierarchical_ready']}`;
                         enjoyAiStatus.className = 'status-text status-valid';
                     }
 
-                    // 自动检测一次链接状态
-                    setTimeout(() => checkAllLinks(), 1000);
+                    const whalesbotHierarchicalStatus = document.getElementById('status-whalesbot_hierarchical');
+                    if (whalesbotHierarchicalStatus) {
+                        whalesbotHierarchicalStatus.innerHTML = `<i class="fas fa-check-circle"></i> ${i18nResources[currentLang]['status_hierarchical_ready']}`;
+                        whalesbotHierarchicalStatus.className = 'status-text status-valid';
+                    }
 
+                    setTimeout(() => checkAllLinks(), 1000);
                     return true;
                 }
             } catch (error) {
@@ -1497,8 +1847,6 @@
 
             document.getElementById('system-status-indicator').style.backgroundColor = '#f56565';
             document.getElementById('status-text').textContent = i18nResources[currentLang]['error_unavailable'];
-
-            // 健康检查失败时使用降级模式
             useFallbackMode();
             return false;
         }
@@ -1516,13 +1864,10 @@
         window.addEventListener('online', () => {
             const errorEl = document.getElementById('error-message');
             if (errorEl) errorEl.style.display = 'none';
-            // 重新检测链接状态
             checkAllLinks();
         });
 
         // ==================== ENJOY AI 链接状态检测功能 ====================
-
-        // 获取ENJOY AI所有链接状态
         async function checkEnjoyAiLinks() {
             const statusCountEl = document.getElementById('enjoy-ai-status-count');
             if (statusCountEl) {
@@ -1545,32 +1890,25 @@
 
                 if (data.success && data.data) {
                     const statusData = data.data;
-
-                    // 统计有效和无效链接数量
                     let totalLinks = 0;
                     let validLinks = 0;
                     let invalidLinks = 0;
 
-                    // 遍历所有年份、项目和文档类型
                     for (const year in statusData) {
                         for (const project in statusData[year]) {
                             for (const docType in statusData[year][project]) {
                                 totalLinks++;
                                 const linkStatus = statusData[year][project][docType];
-
                                 if (linkStatus.valid === true) {
                                     validLinks++;
                                 } else {
                                     invalidLinks++;
                                 }
-
-                                // 更新对应按钮的状态
                                 updateDocumentButtonStatus(year, project, docType, linkStatus);
                             }
                         }
                     }
 
-                    // 更新状态计数显示
                     if (statusCountEl) {
                         if (invalidLinks === 0) {
                             statusCountEl.textContent = `${validLinks}/${totalLinks} 正常`;
@@ -1584,7 +1922,6 @@
                         }
                     }
 
-                    // 更新ENJOY AI卡片的总体状态
                     const enjoyAiStatus = document.getElementById('status-enjoy_ai');
                     if (enjoyAiStatus) {
                         if (invalidLinks === 0) {
@@ -1618,28 +1955,21 @@
             }
         }
 
-        // 更新文档按钮状态
+        // 更新ENJOY AI文档按钮状态
         function updateDocumentButtonStatus(year, project, docType, linkStatus) {
-            // 查找对应的按钮
             const button = document.querySelector(`.doc-btn[data-year="${year}"][data-project="${project}"][data-doctype="${docType}"]`);
 
             if (button) {
                 if (linkStatus.valid === true) {
-                    // 链接有效
                     button.disabled = false;
                     button.classList.remove('invalid');
                     button.title = currentLang === 'zh-CN' ? '链接正常，点击打开' : 'Link active, click to open';
-
-                    // 添加悬停提示显示链接状态信息
                     if (linkStatus.message) {
                         button.title += `\n${currentLang === 'zh-CN' ? '状态: ' : 'Status: '}${linkStatus.message}`;
                     }
                 } else {
-                    // 链接失效
                     button.disabled = true;
                     button.classList.add('invalid');
-
-                    // 根据失效原因设置不同的提示
                     let reasonText = i18nResources[currentLang]['status_expired'];
                     if (linkStatus.reason === 'CONTENT_DELETED_OR_NO_PERMISSION') {
                         reasonText = i18nResources[currentLang]['status_deleted'];
@@ -1654,9 +1984,7 @@
                     } else if (linkStatus.reason === 'NOT_CONFIGURED') {
                         reasonText = currentLang === 'zh-CN' ? '链接未配置' : 'Link not configured';
                     }
-
                     button.title = `${currentLang === 'zh-CN' ? '链接已失效: ' : 'Link expired: '}${reasonText}`;
-
                     if (linkStatus.message) {
                         button.title += `\n${currentLang === 'zh-CN' ? '详情: ' : 'Details: '}${linkStatus.message}`;
                     }
@@ -1664,20 +1992,143 @@
             }
         }
 
-        // 检查所有链接（包括ENJOY AI）
+        // ==================== WhalesBot 链接状态检测功能 ====================
+        async function checkWhalesbotLinks() {
+            const statusCountEl = document.getElementById('whalesbot-status-count');
+            if (statusCountEl) {
+                statusCountEl.textContent = '检测中...';
+                statusCountEl.className = 'status-count';
+            }
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/hierarchical/whalesbot_all_status`);
+
+                if (!response.ok) {
+                    if (statusCountEl) {
+                        statusCountEl.textContent = '检测失败';
+                        statusCountEl.className = 'status-count error';
+                    }
+                    throw new Error(`WhalesBot状态检测失败: ${response.status}`);
+                }
+
+                const data = await response.json();
+
+                if (data.success && data.data) {
+                    const statusData = data.data;
+                    let totalLinks = 0;
+                    let validLinks = 0;
+                    let invalidLinks = 0;
+
+                    for (const category in statusData) {
+                        for (const product in statusData[category]) {
+                            for (const docType in statusData[category][product]) {
+                                totalLinks++;
+                                const linkStatus = statusData[category][product][docType];
+                                if (linkStatus.valid === true) {
+                                    validLinks++;
+                                } else {
+                                    invalidLinks++;
+                                }
+                                updateWhalesbotDocumentButtonStatus(category, product, docType, linkStatus);
+                            }
+                        }
+                    }
+
+                    if (statusCountEl) {
+                        if (invalidLinks === 0) {
+                            statusCountEl.textContent = `${validLinks}/${totalLinks} 正常`;
+                            statusCountEl.className = 'status-count valid';
+                        } else if (validLinks === 0) {
+                            statusCountEl.textContent = `${invalidLinks}/${totalLinks} 失效`;
+                            statusCountEl.className = 'status-count error';
+                        } else {
+                            statusCountEl.textContent = `${validLinks}/${totalLinks} 正常`;
+                            statusCountEl.className = 'status-count warning';
+                        }
+                    }
+
+                    const whalesbotStatus = document.getElementById('status-whalesbot_hierarchical');
+                    if (whalesbotStatus) {
+                        if (invalidLinks === 0) {
+                            whalesbotStatus.innerHTML = `<i class="fas fa-check-circle"></i> ${i18nResources[currentLang]['status_live']} (${validLinks}/${totalLinks})`;
+                            whalesbotStatus.className = 'status-text status-valid';
+                        } else {
+                            whalesbotStatus.innerHTML = `<i class="fas fa-exclamation-triangle"></i> ${i18nResources[currentLang]['status_checking']} (${validLinks}/${totalLinks})`;
+                            whalesbotStatus.className = 'status-text status-checking';
+                        }
+                    }
+
+                    console.log(`WhalesBot链接检测完成: ${validLinks}个有效, ${invalidLinks}个失效, 总共${totalLinks}个链接`);
+                    return { valid: validLinks, invalid: invalidLinks, total: totalLinks };
+                } else {
+                    throw new Error('WhalesBot状态数据格式错误');
+                }
+            } catch (error) {
+                console.error('检测WhalesBot链接状态失败:', error);
+                if (statusCountEl) {
+                    statusCountEl.textContent = '检测失败';
+                    statusCountEl.className = 'status-count error';
+                }
+
+                const whalesbotStatus = document.getElementById('status-whalesbot_hierarchical');
+                if (whalesbotStatus) {
+                    whalesbotStatus.innerHTML = `<i class="fas fa-times-circle"></i> ${i18nResources[currentLang]['status_failed']}`;
+                    whalesbotStatus.className = 'status-text status-invalid';
+                }
+
+                return { valid: 0, invalid: 0, total: 0, error: true };
+            }
+        }
+
+        // 更新WhalesBot文档按钮状态
+        function updateWhalesbotDocumentButtonStatus(category, product, docType, linkStatus) {
+            const button = document.querySelector(`.doc-btn[data-category="${category}"][data-product="${product}"][data-doctype="${docType}"]`);
+
+            if (button) {
+                if (linkStatus.valid === true) {
+                    button.disabled = false;
+                    button.classList.remove('invalid');
+                    button.title = currentLang === 'zh-CN' ? '链接正常，点击打开' : 'Link active, click to open';
+                    if (linkStatus.message) {
+                        button.title += `\n${currentLang === 'zh-CN' ? '状态: ' : 'Status: '}${linkStatus.message}`;
+                    }
+                } else {
+                    button.disabled = true;
+                    button.classList.add('invalid');
+                    let reasonText = i18nResources[currentLang]['status_expired'];
+                    if (linkStatus.reason === 'CONTENT_DELETED_OR_NO_PERMISSION') {
+                        reasonText = i18nResources[currentLang]['status_deleted'];
+                    } else if (linkStatus.reason === 'NOT_DROPBOX') {
+                        reasonText = i18nResources[currentLang]['status_abnormal'];
+                    } else if (linkStatus.reason === 'TIMEOUT') {
+                        reasonText = i18nResources[currentLang]['status_timeout'];
+                    } else if (linkStatus.reason === 'NETWORK_ERROR') {
+                        reasonText = i18nResources[currentLang]['status_network_error'];
+                    } else if (linkStatus.reason === 'EMPTY_URL') {
+                        reasonText = currentLang === 'zh-CN' ? '链接为空' : 'Link is empty';
+                    } else if (linkStatus.reason === 'NOT_CONFIGURED') {
+                        reasonText = currentLang === 'zh-CN' ? '链接未配置' : 'Link not configured';
+                    }
+                    button.title = `${currentLang === 'zh-CN' ? '链接已失效: ' : 'Link expired: '}${reasonText}`;
+                    if (linkStatus.message) {
+                        button.title += `\n${currentLang === 'zh-CN' ? '详情: ' : 'Details: '}${linkStatus.message}`;
+                    }
+                }
+            }
+        }
+
+        // 检查所有链接（包括ENJOY AI和WhalesBot）
         async function checkAllLinksEnhanced() {
             const refreshBtn = document.getElementById('refresh-btn');
             const originalHtml = refreshBtn.innerHTML;
             const statusIndicator = document.getElementById('system-status-indicator');
             const statusText = document.getElementById('status-text');
 
-            // 更新按钮状态
             refreshBtn.disabled = true;
             refreshBtn.innerHTML = `<span class="loading-spinner"></span>${i18nResources[currentLang]['btn_checking']}`;
             statusText.textContent = i18nResources[currentLang]['status_checking'];
             statusIndicator.style.backgroundColor = '#f6ad55';
 
-            // 重置所有状态为检测中
             CURRENT_FOLDER_IDS.forEach(folderId => {
                 const statusEl = document.getElementById(`status-${folderId}`);
                 if (statusEl) {
@@ -1686,25 +2137,28 @@
                 }
             });
 
-            // 重置ENJOY AI状态计数
-            const statusCountEl = document.getElementById('enjoy-ai-status-count');
-            if (statusCountEl) {
-                statusCountEl.textContent = '检测中...';
-                statusCountEl.className = 'status-count';
+            const enjoyAiStatusCountEl = document.getElementById('enjoy-ai-status-count');
+            if (enjoyAiStatusCountEl) {
+                enjoyAiStatusCountEl.textContent = '检测中...';
+                enjoyAiStatusCountEl.className = 'status-count';
+            }
+
+            const whalesbotStatusCountEl = document.getElementById('whalesbot-status-count');
+            if (whalesbotStatusCountEl) {
+                whalesbotStatusCountEl.textContent = '检测中...';
+                whalesbotStatusCountEl.className = 'status-count';
             }
 
             try {
-                // 并行检测所有链接
-                const [whalesbotStatus, enjoyAiStatus] = await Promise.allSettled([
+                const [whalesbotStatus, enjoyAiStatus, whalesbotHierarchicalStatus] = await Promise.allSettled([
                     fetch(`${API_BASE_URL}/api/links/status`).then(res => res.ok ? res.json() : null),
-                    checkEnjoyAiLinks()
+                    checkEnjoyAiLinks(),
+                    checkWhalesbotLinks()
                 ]);
 
-                // 处理whalesbot状态
                 if (whalesbotStatus.status === 'fulfilled' && whalesbotStatus.value && whalesbotStatus.value.success) {
                     linkStatusCache = whalesbotStatus.value.data;
 
-                    // 更新whalesbot按钮状态
                     CURRENT_FOLDER_IDS.forEach(folderId => {
                         const button = document.querySelector(`[data-folder-id="${folderId}"] .access-btn`);
                         const statusEl = document.getElementById(`status-${folderId}`);
@@ -1712,7 +2166,6 @@
 
                         if (linkStatusCache[folderId]) {
                             const status = linkStatusCache[folderId];
-
                             if (status.valid) {
                                 button.disabled = false;
                                 statusEl.innerHTML = `<i class="fas fa-check-circle"></i> ${i18nResources[currentLang]['status_live']}`;
@@ -1728,12 +2181,10 @@
                     });
                 }
 
-                // 统计总体状态
                 let totalValid = 0;
                 let totalInvalid = 0;
                 let totalCount = 0;
 
-                // 统计whalesbot
                 CURRENT_FOLDER_IDS.forEach(folderId => {
                     totalCount++;
                     if (linkStatusCache[folderId] && linkStatusCache[folderId].valid) {
@@ -1743,14 +2194,18 @@
                     }
                 });
 
-                // 统计ENJOY AI
                 if (enjoyAiStatus.status === 'fulfilled' && enjoyAiStatus.value) {
                     totalValid += enjoyAiStatus.value.valid;
                     totalInvalid += enjoyAiStatus.value.invalid;
                     totalCount += enjoyAiStatus.value.total;
                 }
 
-                // 更新系统状态
+                if (whalesbotHierarchicalStatus.status === 'fulfilled' && whalesbotHierarchicalStatus.value) {
+                    totalValid += whalesbotHierarchicalStatus.value.valid;
+                    totalInvalid += whalesbotHierarchicalStatus.value.invalid;
+                    totalCount += whalesbotHierarchicalStatus.value.total;
+                }
+
                 if (totalInvalid === 0) {
                     statusText.textContent = `${i18nResources[currentLang]['status_all_good']} (${totalValid}/${totalCount})`;
                     statusIndicator.style.backgroundColor = '#48bb78';
@@ -1770,32 +2225,29 @@
                 statusIndicator.style.backgroundColor = '#f56565';
                 showError(`${i18nResources[currentLang]['error_network']}: ${error.message}`);
             } finally {
-                // 恢复按钮状态
                 setTimeout(() => {
                     refreshBtn.innerHTML = `<i class="fas fa-sync-alt"></i> <span data-i18n-key="btn_refresh">${i18nResources[currentLang]['btn_refresh']}</span>`;
                     refreshBtn.disabled = false;
                 }, 1000);
-
-                // 更新最后检测时间
                 updateLastCheckedTime();
             }
         }
 
-        // 页面加载时检测ENJOY AI链接
+        // 页面加载时检测链接
         document.addEventListener('DOMContentLoaded', function() {
-            // 页面加载后稍等片刻再检测ENJOY AI链接
             setTimeout(() => {
                 checkEnjoyAiLinks();
+                checkWhalesbotLinks();
             }, 2000);
 
-            // 修改刷新按钮的点击事件，使用增强版的检测功能
             const refreshBtn = document.getElementById('refresh-btn');
             refreshBtn.onclick = checkAllLinksEnhanced;
         });
 
-        // 定期检测ENJOY AI链接状态（每5分钟一次）
+        // 定期检测链接状态（每5分钟一次）
         setInterval(() => {
             checkEnjoyAiLinks();
+            checkWhalesbotLinks();
         }, 5 * 60 * 1000);
     </script>
 </body>
