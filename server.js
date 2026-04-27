@@ -63,7 +63,7 @@ const ENJOY_AI_HIERARCHICAL_LINKS = {
       'field_setup_guide': 'https://www.dropbox.com/scl/fo/uv1aqaoopgly0tyuyit4i/AFuwkxQHWJ9vW22o75xCdJE?rlkey=9p52ziaha7snk8lmthpwtdh9u&st=kvxtyiic&dl=0',
       'product_list': 'https://www.dropbox.com/scl/fo/7oj3k7pc0tk4whhw7twjx/AKvxOsp6Is0_lYh0orNvrms?rlkey=8tjej12f7vkka9zjmfhvcy6zo&st=wm1m4bi0&dl=0',
       'program_reference': 'https://www.dropbox.com/scl/fo/lqj1yp7e15w760sgg4oo1/AJQmPDtNZSocYvMg88rlAhs?rlkey=0009ly68xuzkp5dvcjl6s1ipa&st=1w7bjhor&dl=0',
-      'solution_construction_manual': 'https://www.dropbox.com/scl/fi/k4e3nc9nb738e1wzl054p/Enjoy-AI-2026-Inventions-Trail-Competition-Solution-Demonstration-Manual.pdf?rlkey=ehr2zgwafwwjpxrevqnsgtu8y&st=5tckg3ay&dl=0',
+      'solution_construction_manual': 'https://www.dropbox.com/scl/fo/fq37o2unsi4osr9jyg1x9/ADGELW51XFP1SNwXgn29cSI?rlkey=gm9uop2yh3dqqsiuavin23mep&st=ro6u6x4s&dl=0',
       'air_pump_user_manual': 'https://www.dropbox.com/scl/fi/r8irw71cbf3bz2z2mdkgg/Air-pump-user-manual.pdf?rlkey=e0koldinv5qozowf7gtca88by&st=96p9s3ze&dl=0'
     },
     'battle_of_stars': {
