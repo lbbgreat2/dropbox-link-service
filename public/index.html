@@ -2006,9 +2006,9 @@
                     button.disabled = true;
                     button.classList.add('invalid');
                     let reasonText = i18nResources[currentLang]['status_expired'];
-                    if (linkStatus.reason === 'CONTENT_DELETED_OR_NO_PERMISSION') {
+                    if (linkStatus.reason === 'CONTENT_DELETED_OR_NO_PERMISSION' || linkStatus.reason === 'HTTP_NOT_FOUND') {
                         reasonText = i18nResources[currentLang]['status_deleted'];
-                    } else if (linkStatus.reason === 'NOT_DROPBOX') {
+                    } else if (linkStatus.reason === 'NOT_DROPBOX' || linkStatus.reason === 'REDIRECT_ERROR') {
                         reasonText = i18nResources[currentLang]['status_abnormal'];
                     } else if (linkStatus.reason === 'TIMEOUT') {
                         reasonText = i18nResources[currentLang]['status_timeout'];
@@ -2018,6 +2018,8 @@
                         reasonText = currentLang === 'zh-CN' ? '链接为空' : 'Link is empty';
                     } else if (linkStatus.reason === 'NOT_CONFIGURED') {
                         reasonText = currentLang === 'zh-CN' ? '链接未配置' : 'Link not configured';
+                    } else if (linkStatus.reason === 'HTTP_FORBIDDEN') {
+                        reasonText = currentLang === 'zh-CN' ? '无权访问' : 'Access denied';
                     }
                     button.title = `${currentLang === 'zh-CN' ? '链接已失效: ' : 'Link expired: '}${reasonText}`;
                     if (linkStatus.message) {
@@ -2132,9 +2134,9 @@
                     button.disabled = true;
                     button.classList.add('invalid');
                     let reasonText = i18nResources[currentLang]['status_expired'];
-                    if (linkStatus.reason === 'CONTENT_DELETED_OR_NO_PERMISSION') {
+                    if (linkStatus.reason === 'CONTENT_DELETED_OR_NO_PERMISSION' || linkStatus.reason === 'HTTP_NOT_FOUND') {
                         reasonText = i18nResources[currentLang]['status_deleted'];
-                    } else if (linkStatus.reason === 'NOT_DROPBOX') {
+                    } else if (linkStatus.reason === 'NOT_DROPBOX' || linkStatus.reason === 'REDIRECT_ERROR') {
                         reasonText = i18nResources[currentLang]['status_abnormal'];
                     } else if (linkStatus.reason === 'TIMEOUT') {
                         reasonText = i18nResources[currentLang]['status_timeout'];
@@ -2144,6 +2146,8 @@
                         reasonText = currentLang === 'zh-CN' ? '链接为空' : 'Link is empty';
                     } else if (linkStatus.reason === 'NOT_CONFIGURED') {
                         reasonText = currentLang === 'zh-CN' ? '链接未配置' : 'Link not configured';
+                    } else if (linkStatus.reason === 'HTTP_FORBIDDEN') {
+                        reasonText = currentLang === 'zh-CN' ? '无权访问' : 'Access denied';
                     }
                     button.title = `${currentLang === 'zh-CN' ? '链接已失效: ' : 'Link expired: '}${reasonText}`;
                     if (linkStatus.message) {
