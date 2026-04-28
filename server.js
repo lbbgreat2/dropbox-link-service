@@ -90,7 +90,7 @@ const ENJOY_AI_HIERARCHICAL_LINKS = {
     'ancient_civilizations': {
       'competition_rules_field_setup_guide': 'https://www.dropbox.com/scl/fo/abnf2uufaifqhbr0mmplb/AHITzxaVbJ9qhSVuhl1mbwY?rlkey=bt61eqfrwsvofpkzacf2g42kx&st=qjvrvbh1&dl=0',
       'parts_list': 'https://www.dropbox.com/scl/fi/gppfrtuhsdybsfz222xu7/EA-Y1-26-EN-parts-list.pdf?rlkey=3o407jonxacdrc86wj7khxw1h&st=7efo5qic&dl=0',
-      'video_competition_rules': 'https://www.dropbox.com/scl/fi/jtb4vilmbdv7teovma13q/ENJOY-AI-2026-Ancient-Civilizations-Full-Competition-Round.mp4?rlkey=hzr3f43yzcrybhq8kseaium7p&st=05vbykir&dl=0',
+      'video_competition_rules': 'https://www.dropbox.com/scl/fi/rhyo2o4k9h6g3cd7mi2l3/ENJOY-AI-2026-Ancient-Civilizations-Rules.mp4?rlkey=x725smspyozjmgx3h0ib8m1ph&st=f0twel42&dl=0',
       'video_full_competition_round': 'https://www.dropbox.com/scl/fi/4ieo2ia6vmlxubl5ydza0/2026-Ancient-civilization-Full-Competition-Round.mp4?rlkey=lyjjv6gtts1mdny826ghyy4t8&st=x2los35r&dl=0',
       'product_list': 'https://www.dropbox.com/scl/fi/vodwge1rqu635ufkloddo/U20-pro-Part-List.png?rlkey=h1s0hapcsmhxsyz3y229ttnuo&st=xv2kxpba&dl=0',
       'program_reference': 'https://www.dropbox.com/scl/fo/0riwu037fopipwxu2g69b/AMhRKMnD4YvQKy-NYvahGRo?rlkey=o3jdtjg6ede669s2twmt8i7a6&st=n3o3csff&dl=0',
